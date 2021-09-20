@@ -1,12 +1,12 @@
 class Api::V1::GatewaysController < ApplicationController
 
   def index
-    @gateways = Gateway.all
+    @gateways = CloudGateway.all
     render json: @gateways, status: :ok
   end
 
   def show
-    @gateway = Gateway.find_by(:id => params[:id])
+    @gateway = CloudGateway.find_by(:id => params[:id])
     if @gateway
       render json: @gateway, status: :ok
     else
@@ -16,7 +16,7 @@ class Api::V1::GatewaysController < ApplicationController
 
   def create
     params.require(:cloudgw).permit(:name, :account)
-    Gateway.create!(params[:cloudgw])
+    CloudGateway.create!(params[:cloudgw])
   end
 
   def delete
@@ -27,5 +27,10 @@ class Api::V1::GatewaysController < ApplicationController
     else
       render json: nil, status: :not_found
     end
+  end
+
+  def traefik_config
+    config = CloudGateway.find_by(:id => params[:id])&.config
+    render json: config, status: :ok
   end
 end

@@ -4,12 +4,11 @@ class CreateRoutes < ActiveRecord::Migration[6.1]
       t.string :name
       t.string :hostname
       t.string :path
-      t.numeric :target
+      t.numeric :target_port
       t.string :insecure
-      t.numeric :tls
-      t.string :labels
-      t.references :gateways, null: false, foreign_key: true
-      t.references :services, null: false, foreign_key: true
+      t.string :tls_termination
+      t.jsonb :labels
+      t.references :cloud_gateway, null: false, foreign_key: true
       t.references :certificate, null: false, foreign_key: true
 
       t.timestamps

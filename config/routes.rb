@@ -5,9 +5,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get 'cloudgw', to: 'gateways#index'
-      get 'cloudgw/:id', to: 'gateways#show'
-      post 'cloudgw', to: 'gateways#create'
-      delete 'cloudgw/:id', to: 'gateways#delete'
+      get 'cloudgw/:id', to: 'gateways#traefik_config'
     end
   end
 end

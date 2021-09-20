@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_09_18_163528) do
+ActiveRecord::Schema.define(version: 2021_09_20_145712) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 2021_09_18_163528) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  create_table "gateways", force: :cascade do |t|
+  create_table "cloud_gateways", force: :cascade do |t|
     t.string "name"
     t.string "account"
     t.datetime "created_at", precision: 6, null: false
@@ -35,18 +35,23 @@ ActiveRecord::Schema.define(version: 2021_09_18_163528) do
     t.string "name"
     t.string "hostname"
     t.string "path"
-    t.decimal "target"
+    t.decimal "target_port"
     t.string "insecure"
-    t.decimal "tls"
-    t.string "labels"
-    t.bigint "gateways_id", null: false
-    t.bigint "services_id", null: false
+    t.string "tls_termination"
+    t.jsonb "labels"
+    t.bigint "cloud_gateway_id", null: false
     t.bigint "certificate_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["certificate_id"], name: "index_routes_on_certificate_id"
-    t.index ["gateways_id"], name: "index_routes_on_gateways_id"
-    t.index ["services_id"], name: "index_routes_on_services_id"
+    t.index ["cloud_gateway_id"], name: "index_routes_on_cloud_gateway_id"
+  end
+
+  create_table "routes_services", id: false, force: :cascade do |t|
+    t.bigint "route_id", null: false
+    t.bigint "service_id", null: false
+    t.index ["route_id"], name: "index_routes_services_on_route_id"
+    t.index ["service_id"], name: "index_routes_services_on_service_id"
   end
 
   create_table "services", force: :cascade do |t|
@@ -57,6 +62,5 @@ ActiveRecord::Schema.define(version: 2021_09_18_163528) do
   end
 
   add_foreign_key "routes", "certificates"
-  add_foreign_key "routes", "gateways", column: "gateways_id"
-  add_foreign_key "routes", "services", column: "services_id"
+  add_foreign_key "routes", "cloud_gateways"
 end
