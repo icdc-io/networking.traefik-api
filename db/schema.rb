@@ -56,7 +56,10 @@ ActiveRecord::Schema.define(version: 2021_09_20_145712) do
 
   create_table "services", force: :cascade do |t|
     t.string "name"
-    t.string "url"
+    t.integer "ext_id"
+    t.string "ipaddresses"
+    t.string "owner"
+    t.string "account"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
