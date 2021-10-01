@@ -26,16 +26,18 @@ class CloudGateway < ApplicationRecord
 
   def services_from_template
     services = {}
-    routes.collect(&:services).flatten.map do |service|
-      services[service.name] = {
-        "loadBalancer" => {
-          "servers" => [
-            {
-              "url" => service.url
-            }
-          ]
+    routes.map do |route|
+      route.services.map do |service|
+        services[service.name] = {
+          "loadBalancer" => {
+            "servers" => [
+              {
+                "url" => "http://#{service.url}:#{route.target_port.to_i}"
+              }
+            ]
+          }
         }
-      }
+      end
       services
     end
   end

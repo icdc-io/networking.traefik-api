@@ -56,7 +56,7 @@ ActiveRecord::Schema.define(version: 2021_09_20_145712) do
 
   create_table "services", force: :cascade do |t|
     t.string "name"
-    t.integer "ext_id"
+    t.bigint "ext_id"
     t.string "ipaddresses"
     t.string "owner"
     t.string "account"
