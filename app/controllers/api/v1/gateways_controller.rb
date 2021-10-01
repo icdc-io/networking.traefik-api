@@ -31,6 +31,8 @@ class Api::V1::GatewaysController < ApplicationController
 
   def traefik_config
     config = CloudGateway.find_by(:id => params[:id])&.config
-    render json: config, status: :ok
+    render :json => config, :content_type => 'text/yaml'
   end
 end
+
+

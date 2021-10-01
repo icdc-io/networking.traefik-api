@@ -32,7 +32,7 @@ class CloudGateway < ApplicationRecord
           "loadBalancer" => {
             "servers" => [
               {
-                "url" => "http://#{service.url}:#{route.target_port.to_i}"
+                "url" => "http://#{service.ipaddresses.split(',')[0]}:#{route.target_port.to_i}"
               }
             ]
           }
