@@ -29,6 +29,8 @@ gem 'json2yaml'
 gem 'sidekiq'
 gem 'sidekiq-cron'
 gem 'rest-client'
+gem 'jwt'
+gem 'json-jwt'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
