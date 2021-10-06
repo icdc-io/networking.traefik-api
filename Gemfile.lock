@@ -62,6 +62,8 @@ GEM
       zeitwerk (~> 2.3)
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
+    aes_key_wrap (1.1.0)
+    bindata (2.4.10)
     bootsnap (1.9.0)
       msgpack (~> 1.0)
     builder (3.2.4)
@@ -86,10 +88,15 @@ GEM
       domain_name (~> 0.5)
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
+    json-jwt (1.13.0)
+      activesupport (>= 4.2)
+      aes_key_wrap
+      bindata
     json-schema (2.8.1)
       addressable (>= 2.4)
     json2yaml (0.0.3)
       yajl-ruby
+    jwt (2.2.3)
     listen (3.7.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -220,7 +227,9 @@ PLATFORMS
 DEPENDENCIES
   bootsnap (>= 1.4.4)
   byebug
+  json-jwt
   json2yaml
+  jwt
   listen (~> 3.3)
   pg (~> 1.1)
   puma (~> 5.0)
@@ -239,4 +248,4 @@ RUBY VERSION
    ruby 3.0.2p107
 
 BUNDLED WITH
-   2.2.25
+   2.2.28
