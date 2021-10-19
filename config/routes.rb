@@ -18,7 +18,7 @@ Rails.application.routes.draw do
       get 'certificates/:id', to: 'certificates#show'
       delete 'certificates/:id', to: 'certificates#delete'
 
- 
+      get 'services', to: 'services#index'
     end
   end
 end

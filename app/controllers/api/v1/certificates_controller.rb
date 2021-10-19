@@ -14,6 +14,10 @@ class Api::V1::CertificatesController < ApplicationController
     end
   end
 
+  def create
+    Certificate.create!(params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner_email'))
+  end
+
   def delete
     @certificate.find_by(:id => params[:id])
     if @certificate&.owner_email.eql?(@@user_email)
