@@ -15,8 +15,7 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def create
-    params.require(:cloudgw).permit(:name, :account)
-    CloudGateway.create!(params[:cloudgw])
+    CloudGateway.create!(params.require(:cloudgw).permit(:name, :account))
   end
 
   def delete
