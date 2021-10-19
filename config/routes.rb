@@ -13,6 +13,12 @@ Rails.application.routes.draw do
     namespace :v1 do
       get 'cloudgw', to: 'gateways#index'
       get 'cloudgw/:id', to: 'gateways#traefik_config'
+
+      get 'certificates', to: 'certificates#index'
+      get 'certificates/:id', to: 'certificates#show'
+      delete 'certificates/:id', to: 'certificates#delete'
+
+ 
     end
   end
 end
