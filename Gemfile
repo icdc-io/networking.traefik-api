@@ -31,6 +31,7 @@ gem 'sidekiq-cron'
 gem 'rest-client'
 gem 'jwt'
 gem 'json-jwt'
+gem 'haikunator'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

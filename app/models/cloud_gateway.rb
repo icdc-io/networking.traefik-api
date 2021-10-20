@@ -17,29 +17,50 @@ class CloudGateway < ApplicationRecord
     routes.map do |route|
       routers[route.name] = {
         "entryPoints" => ["web"],
-        "service" => route.services.first.name,
+        "service" => route.routes_services[0].name,
         "rule" => "Path(`#{route.path}`)"
       }
     end
+    puts routers
     routers
   end
 
   def services_from_template
     services = {}
     routes.map do |route|
-      route.services.map do |service|
-        services[service.name] = {
-          "loadBalancer" => {
-            "servers" => [
-              {
-                "url" => "http://#{service.ipaddresses.split(',')[0]}:#{route.target_port.to_i}"
-              }
-            ]
+      route.routes_services.map do |rs|
+        if rs.balance_type == "loadbalancer"
+          services[rs.service.name] = {"loadBalancer" => {
+            "servers" =>
+              rs.service.ipaddresses.split(',').map do |ip|
+                {"url" => "#{ip}:#{route.target_port}"}
+              end
           }
         }
+        else
+          services[rs.name] = {"weighted" => {
+            "services" => 
+              RoutesService.where(:route_id => route.id).map do |route_service|
+                services[route_service.service.name] = {
+                  "loadBalancer" => {
+                    "servers" =>
+                      route_service.service.ipaddresses.split(',').map do |ip|
+                        {"url" => "#{ip}:#{route.target_port}"}
+                      end
+                  }
+                }
+                {
+                  :name => route_service.service.name, 
+                  :weight => route_service.value
+                }
+              end
+          }
+        }
+        end
       end
-      services
     end
+    services
   end
+
 
 end
