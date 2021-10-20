@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_12_130749) do
+ActiveRecord::Schema.define(version: 2021_10_20_111536) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,13 +44,18 @@ ActiveRecord::Schema.define(version: 2021_10_12_130749) do
     t.bigint "certificate_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "owner_email"
     t.index ["certificate_id"], name: "index_routes_on_certificate_id"
     t.index ["cloud_gateway_id"], name: "index_routes_on_cloud_gateway_id"
   end
 
-  create_table "routes_services", id: false, force: :cascade do |t|
-    t.bigint "route_id", null: false
-    t.bigint "service_id", null: false
+  create_table "routes_services", force: :cascade do |t|
+    t.bigint "route_id"
+    t.bigint "service_id"
+    t.string "balance_type"
+    t.float "value"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["route_id"], name: "index_routes_services_on_route_id"
     t.index ["service_id"], name: "index_routes_services_on_service_id"
   end
