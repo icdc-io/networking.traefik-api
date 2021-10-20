@@ -16,9 +16,12 @@ Rails.application.routes.draw do
 
       get 'certificates', to: 'certificates#index'
       get 'certificates/:id', to: 'certificates#show'
+      post 'certificates', to: 'certificates#create'
       delete 'certificates/:id', to: 'certificates#delete'
 
       get 'services', to: 'services#index'
+
+      resources :routes 
     end
   end
 end

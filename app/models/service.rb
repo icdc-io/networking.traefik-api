@@ -1,3 +1,4 @@
 class Service < ApplicationRecord
-  has_and_belongs_to_many :routes
+ has_many :routes_services
+ has_many :routes, :through => :routes_services
 end
