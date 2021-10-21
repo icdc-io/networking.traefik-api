@@ -16,10 +16,12 @@ class CloudGateway < ApplicationRecord
     routers = {}
     routes.map do |route|
       routers[route.name] = {
-        "entryPoints" => ["web"],
-        "service" => route.routes_services[0].name,
-        "rule" => "Path(`#{route.path}`)"
-      }
+        "entryPoints" => [
+          "web" => {
+            "service" => route.routes_services[0].name,
+            "rule" => "Path(`#{route.path}`)"
+          }
+        ]}
     end
     puts routers
     routers
@@ -33,7 +35,7 @@ class CloudGateway < ApplicationRecord
           services[rs.service.name] = {"loadBalancer" => {
             "servers" =>
               rs.service.ipaddresses.split(',').map do |ip|
-                {"url" => "#{ip}:#{route.target_port}"}
+                {"url" => "#{ip}:#{route.target_port.to_i}"}
               end
           }
         }
@@ -45,13 +47,13 @@ class CloudGateway < ApplicationRecord
                   "loadBalancer" => {
                     "servers" =>
                       route_service.service.ipaddresses.split(',').map do |ip|
-                        {"url" => "#{ip}:#{route.target_port}"}
+                        {"url" => "#{ip}:#{route.target_port.to_i}"}
                       end
                   }
                 }
                 {
-                  :name => route_service.service.name, 
-                  :weight => route_service.value
+                  "name" => route_service.service.name, 
+                  "weight" => route_service.value
                 }
               end
           }
