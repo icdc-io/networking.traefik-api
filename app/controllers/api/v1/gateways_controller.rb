@@ -15,7 +15,9 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def create
-    CloudGateway.create!(params.require(:cloudgw).permit(:name, :account))
+    gw = CloudGateway.create!(params.require(:cloudgw).permit(:name, :account))
+    gw.uuid = SecureRandom.hex
+    gw.save!
   end
 
   def delete
@@ -29,7 +31,7 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def traefik_config
-    config = CloudGateway.find_by(:id => params[:id])&.config
+    config = CloudGateway.find_by(:uuid => params[:uuid])&.config
     render :json => config, :content_type => 'text/yaml'
   end
 end

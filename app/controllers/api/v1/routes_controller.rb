@@ -18,9 +18,9 @@ class Api::V1::RoutesController < ApplicationController
     services = params[:route].delete(:services)
     @route = Route.create!((params.require(:route).permit(:name, :hostname, :path, :target_post, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner_email, :services_ids)))
     services.each do |data|
-      RoutesService.create!(:route => @route, :service => Service.find_by(:id => data['id']), :balance_type => :weighted ,:value => data['weight'])
+      RoutesService.create!(:route => @route, :service => Service.find_by(:id => data['id']), :balance_type => :weighted ,:value => data['weight'], :name => Haikunator.haikunate)
     end if services.count > 1
-    RoutesService.create!(:route => @route, :service => Service.find_by(:id => services.first['id']), :balance_type => :loadbalancer, :value => nil) if services.count == 1
+    RoutesService.create!(:route => @route, :service => Service.find_by(:id => services.first['id']), :balance_type => :loadbalancer, :value => nil, :name => Service.find_by(:id => services.first['id']).name) if services.count == 1
     render json: @route, status: :ok
   end
 
