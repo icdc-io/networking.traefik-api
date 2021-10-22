@@ -15,11 +15,16 @@ class CloudGateway < ApplicationRecord
   def routers_from_template
     routers = {}
     routes.map do |route|
+      puts route.id
       routers[route.name] = {
         "entryPoints" => [
           "web" => {
             "service" => route.routes_services[0].name,
-            "rule" => "Path(`#{route.path}`)"
+            "rule" => "Path(`#{route.path}`)",
+            "tls" => [{
+              "certFile" => route.certificate.cert_path,
+              "keyFile" => route.certificate.key_path
+            }]
           }
         ]}
     end
