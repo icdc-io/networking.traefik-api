@@ -10,19 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_21_085621) do
+ActiveRecord::Schema.define(version: 2021_10_22_080746) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "certificates", force: :cascade do |t|
-    t.text "cert"
-    t.text "key"
-    t.text "ca"
-    t.text "dest_ca"
+    t.text "cert_path"
+    t.text "key_path"
+    t.text "ca_path"
+    t.text "dest_ca_path"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "owner_email"
+    t.string "name"
   end
 
   create_table "cloud_gateways", force: :cascade do |t|

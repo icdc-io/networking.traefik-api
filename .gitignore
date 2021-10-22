@@ -28,3 +28,4 @@
 
 # ahrechushkin: ignore locally installed gems
 /vendor/*
+/certificates/*
