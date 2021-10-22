@@ -15,7 +15,7 @@ class Api::V1::CertificatesController < ApplicationController
   end
 
   def create
-    Certificate.create!(params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner_email'))
+    Certificate.store(params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner_email', 'name'))
   end
 
   def delete
