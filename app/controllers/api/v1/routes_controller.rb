@@ -16,7 +16,7 @@ class Api::V1::RoutesController < ApplicationController
 
   def create
     services = params[:route].delete(:services)
-    @route = Route.create!((params.require(:route).permit(:name, :hostname, :path, :target_post, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner_email)))
+    @route = Route.create!((params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels, :cloud_gateway_id, :owner_email)))
     name = nil
     services.each do |data|
       name ||= Haikunator.haikunate

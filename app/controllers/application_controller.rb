@@ -2,7 +2,7 @@ require 'json/jwt'
 
 class ApplicationController < ActionController::API
   include ResponseHelper
-  #before_action :authorize
+  before_action :authorize, :except => [:traefik_config]
 
   def authorize
     return not_authorized unless auth_header

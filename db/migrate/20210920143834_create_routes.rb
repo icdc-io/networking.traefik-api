@@ -9,7 +9,7 @@ class CreateRoutes < ActiveRecord::Migration[6.1]
       t.string :tls_termination
       t.jsonb :labels
       t.references :cloud_gateway, null: false, foreign_key: true
-      t.references :certificate, null: false, foreign_key: true
+      t.references :certificate, null: true, foreign_key: true
 
       t.timestamps
     end

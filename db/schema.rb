@@ -43,7 +43,7 @@ ActiveRecord::Schema.define(version: 2021_10_22_080746) do
     t.string "tls_termination"
     t.jsonb "labels"
     t.bigint "cloud_gateway_id", null: false
-    t.bigint "certificate_id", null: false
+    t.bigint "certificate_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "owner_email"
@@ -71,6 +71,16 @@ ActiveRecord::Schema.define(version: 2021_10_22_080746) do
     t.string "account"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "weights", force: :cascade do |t|
+    t.bigint "route_id"
+    t.bigint "service_id"
+    t.integer "weight"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["route_id"], name: "index_weights_on_route_id"
+    t.index ["service_id"], name: "index_weights_on_service_id"
   end
 
   add_foreign_key "routes", "certificates"

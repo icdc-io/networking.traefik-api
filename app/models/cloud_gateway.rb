@@ -2,45 +2,90 @@ class CloudGateway < ApplicationRecord
   has_many :routes
 
   def config
-    {
+    generated_config = {
       "http" => {
-        "routers" => routers_from_template,
-        "services" => services_from_template
-      }
-    }.to_yaml.strip
+        "routers" => http_section(routes.where(:tls_termination => ["re-encrypt", "edge"])),
+        "services" => services_section(routes.where(:tls_termination => ["re-encrypt", "edge"]), "http")
+      },
+      "tcp" => {
+        "routers" => tcp_section(routes.where(:tls_termination => ["passthrough"])),
+        "services" => services_section(routes.where(:tls_termination => ["passthrough"]), "tcp")
+      },
+      #"udp" => {},
+      "tls" => tls_section
+    }
+    generated_config.delete("http") if routes.where(:tls_termination => ["re-encrypt", "edge"]).empty?
+    generated_config.delete("tcp") if routes.where(:tls_termination => ["passthrough"]).empty?
+    generated_config.to_yaml.strip
   end
 
   private
 
-  def routers_from_template
-    routers = {}
-    routes.map do |route|
-      puts route.id
-      routers[route.name] = {
-        "entryPoints" => [
-          "web" => {
-            "service" => route.routes_services[0].name,
-            "rule" => "Path(`#{route.path}`)",
-            "tls" => [{
-              "certFile" => route.certificate.cert_path,
-              "keyFile" => route.certificate.key_path
-            }]
-          }
-        ]}
+  def tls_section
+    {
+    "certificates" => Certificate.all.map do |certificate|
+        {
+        "certFile" => certificate.cert_path,
+        "keyFile" => certificate.key_path
+        }
+      end
+    }
+  end
+
+  def generate_rule(route)
+    if route.path == "/"
+      "Host(`#{route.hostname}`)"
+    else
+      "Path(`#{route.path}`)"
     end
-    puts routers
+  end
+
+  def http_section(filtered_routes)
+    routers = {}
+    filtered_routes.map do |route|
+      routers[route.hostname] = {
+        "entryPoints" => [
+          "web"
+         ],
+        "service" => route.routes_services[0].name,
+        "rule" => generate_rule(route)
+      }
+      routers[route.hostname]["tls"] = {} if route.insecure == "none"
+    end
     routers
   end
 
-  def services_from_template
+  def tcp_section(filtered_routes)
+    routers = {}
+    filtered_routes.map do |route|
+      routers[route.name] = {
+        "entryPoints" => [
+          "web",
+          "websecure"
+         ],
+        "service" => route.routes_services[0].name,
+        "rule" => "HostSNI(`#{route.hostname}`)",
+        "tls" => {
+          "passthrough" => true
+        }
+      }
+    end
+    routers
+  end
+
+  def services_section(filtered_routes, trafik_type)
     services = {}
-    routes.map do |route|
+    filtered_routes.map do |route|
       route.routes_services.map do |rs|
         if rs.balance_type == "loadbalancer"
           services[rs.service.name] = {"loadBalancer" => {
             "servers" =>
               rs.service.ipaddresses.split(',').map do |ip|
-                {"url" => "#{ip}:#{route.target_port.to_i}"}
+                if trafik_type == "http"
+                  {"url" => "http://#{ip}:#{route.target_port.to_i}#{route.path}"}
+                else
+                  {"address" => "#{ip}:#{route.target_port.to_i}#{route.path}"}
+                end
               end
           }
         }
@@ -52,7 +97,11 @@ class CloudGateway < ApplicationRecord
                   "loadBalancer" => {
                     "servers" =>
                       route_service.service.ipaddresses.split(',').map do |ip|
-                        {"url" => "#{ip}:#{route.target_port.to_i}"}
+                        if trafik_type == "http"
+                          {"url" => "http://#{ip}:#{route.target_port.to_i}#{route.path}"}
+                        else
+                          {"address" => "#{ip}:#{route.target_port.to_i}#{route.path}"}
+                        end
                       end
                   }
                 }
