@@ -36,7 +36,7 @@ class CloudGateway < ApplicationRecord
     if route.path == "/"
       "Host(`#{route.hostname}`)"
     else
-      "Path(`#{route.path}`)"
+      "PathPrefix(`#{route.path}`)"
     end
   end
 
