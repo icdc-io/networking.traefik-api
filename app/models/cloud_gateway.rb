@@ -4,15 +4,14 @@ class CloudGateway < ApplicationRecord
   def config
     generated_config = {
       "http" => {
-        "routers" => http_section(routes.where(:tls_termination => ["re-encrypt", "edge"])),
+        "routers" => http(routes.where(:tls_termination => ["re-encrypt", "edge"])),
         "services" => services_section(routes.where(:tls_termination => ["re-encrypt", "edge"]), "http")
       },
       "tcp" => {
-        "routers" => tcp_section(routes.where(:tls_termination => ["passthrough"])),
+        "routers" => tcp(routes.where(:tls_termination => ["passthrough"])),
         "services" => services_section(routes.where(:tls_termination => ["passthrough"]), "tcp")
       },
-      #"udp" => {},
-      "tls" => tls_section
+      "tls" => tls
     }
     generated_config.delete("http") if routes.where(:tls_termination => ["re-encrypt", "edge"]).empty?
     generated_config.delete("tcp") if routes.where(:tls_termination => ["passthrough"]).empty?
@@ -21,18 +20,20 @@ class CloudGateway < ApplicationRecord
 
   private
 
-  def tls_section
+  def entrypoints =  { "entryPoints" => ["web", "websecure"] }
+  
+  def tls
     {
     "certificates" => Certificate.all.map do |certificate|
         {
-        "certFile" => certificate.cert_path,
-        "keyFile" => certificate.key_path
+        "certFile" => "#{ENV['TRAEFIK_PATH']}/#{certificate.cert_path}",
+        "keyFile" => "#{ENV['TRAEFIK_PATH']}/#{certificate.key_path}"
         }
       end
     }
   end
 
-  def generate_rule(route)
+  def rule(route)
     if route.path == "/"
       "Host(`#{route.hostname}`)"
     else
@@ -40,83 +41,80 @@ class CloudGateway < ApplicationRecord
     end
   end
 
-  def http_section(filtered_routes)
+  def http(filtered_routes)
     routers = {}
     filtered_routes.map do |route|
       routers[route.hostname] = {
-        "entryPoints" => [
-          "web"
-         ],
         "service" => route.routes_services[0].name,
-        "rule" => generate_rule(route)
+        "rule" => rule(route)
       }
+      routers[route.hostname].merge!(entrypoints)
       routers[route.hostname]["tls"] = {} if route.insecure == "none"
     end
     routers
   end
 
-  def tcp_section(filtered_routes)
+  def tcp(filtered_routes)
     routers = {}
     filtered_routes.map do |route|
       routers[route.name] = {
-        "entryPoints" => [
-          "web",
-          "websecure"
-         ],
         "service" => route.routes_services[0].name,
         "rule" => "HostSNI(`#{route.hostname}`)",
         "tls" => {
           "passthrough" => true
         }
       }
+      routers[route.name].merge!(entrypoints)
     end
     routers
   end
 
-  def services_section(filtered_routes, trafik_type)
+  def services_section(selected_routes, section)
     services = {}
-    filtered_routes.map do |route|
-      route.routes_services.map do |rs|
-        if rs.balance_type == "loadbalancer"
-          services[rs.service.name] = {"loadBalancer" => {
-            "servers" =>
-              rs.service.ipaddresses.split(',').map do |ip|
-                if trafik_type == "http"
-                  {"url" => "http://#{ip}:#{route.target_port.to_i}#{route.path}"}
-                else
-                  {"address" => "#{ip}:#{route.target_port.to_i}#{route.path}"}
-                end
-              end
+    selected_routes.map do |route|
+      route.routes_services.map do |route_service|
+        if route_service.balance_type == "loadbalancer"
+          services[route_service.service.name] = {
+            "loadBalancer" => {
+              "servers" =>  lb_server(route_service.service, section, route)
+            }
           }
-        }
         else
-          services[rs.name] = {"weighted" => {
-            "services" => 
-              RoutesService.where(:route_id => route.id).map do |route_service|
-                services[route_service.service.name] = {
-                  "loadBalancer" => {
-                    "servers" =>
-                      route_service.service.ipaddresses.split(',').map do |ip|
-                        if trafik_type == "http"
-                          {"url" => "http://#{ip}:#{route.target_port.to_i}#{route.path}"}
-                        else
-                          {"address" => "#{ip}:#{route.target_port.to_i}#{route.path}"}
-                        end
-                      end
-                  }
-                }
-                {
-                  "name" => route_service.service.name, 
-                  "weight" => route_service.value
-                }
-              end
+          service[route_service.name] = {
+            "weighted" => {
+              "services" => weighted(RoutesService.where(:route_id => route.id), section, route)
+            }
           }
-        }
         end
       end
-    end
-    services
+    end.flatten
   end
 
+  def lb_server(service, section, route)
+    case section
+    when "http"
+      service.ipaddresses.split(',').map do |ip|
+        {"url" => "#{schema(route)}://#{ip}:#{route.target_port.to_i}"}
+      end
+    when "tcp"
+      service.ipaddresses.split(',').map do |ip|
+        {"address" => "#{ip}:#{route.target_port.to_i}"}
+      end
+    end
+  end
+
+  def weighted(route_services, section, route)
+    route_services.map do |route_service|
+      {
+        "name" => route_service.service.name, 
+        "weight" => route_service.value
+      }.merge!(lb_server(route_service, section, route))
+    end
+  end
+
+  def schema(route)
+    return "https" if route.insecure == "none"
+    "https"
+  end
 
 end
