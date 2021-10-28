@@ -87,7 +87,7 @@ class CloudGateway < ApplicationRecord
           }
         end
       end
-    end
+    end.flatten
   end
 
   def lb_server(service, section, route)
