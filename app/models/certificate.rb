@@ -2,9 +2,6 @@ class Certificate < ApplicationRecord
   has_many :routes
 
   def self.store(params)
-    # ahrechushkin: So, when we create certificate separately from route
-    # we don't knows name of route, i wanna to divide certs by folders
-    # and i'll generate folder name
     path = "certificates/#{CloudGateway.find_by(:account => $current_account.downcase).uuid}/#{params["name"]}"
     dir = find_or_build_path(path)
     cert = Certificate.new(:owner_email => params["owner_email"], :name => params["name"])
@@ -13,7 +10,6 @@ class Certificate < ApplicationRecord
       cert.send(:"#{file}_path=", "#{path}/#{file}")
     end
     cert.save!
-    cert
   end
 
   private
