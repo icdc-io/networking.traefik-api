@@ -10,6 +10,7 @@ class Certificate < ApplicationRecord
       cert.send(:"#{file}_path=", "#{path}/#{file}")
     end
     cert.save!
+    cert
   end
 
   private

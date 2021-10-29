@@ -80,14 +80,22 @@ class CloudGateway < ApplicationRecord
             }
           }
         else
-          service[route_service.name] = {
+          services[route_service.name] = {
             "weighted" => {
               "services" => weighted(RoutesService.where(:route_id => route.id), section, route)
             }
           }
+          RoutesService.where(:route_id => route.id).collect(&:service).each do |service|
+            services[service.name] = {
+              "loadBalancer" => {
+                "servers" => lb_server(service, section, route)
+              }
+            }
+          end
         end
       end
     end.flatten
+    services
   end
 
   def lb_server(service, section, route)
@@ -108,7 +116,7 @@ class CloudGateway < ApplicationRecord
       {
         "name" => route_service.service.name, 
         "weight" => route_service.value
-      }.merge!(lb_server(route_service, section, route))
+      }
     end
   end
 
