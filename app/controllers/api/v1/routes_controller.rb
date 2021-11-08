@@ -1,13 +1,13 @@
 class Api::V1::RoutesController < ApplicationController
 
   def index
-    @routes = Route.where { |route| route.owner_email.eql?(@@user_email) }
+    @routes = Route.where { |route| route.owner.eql?(@@user_email) }
     render json: @routes, status: :ok
   end
 
   def show
     @route = Route.find_by(:id => params[:id])
-    if @route&.owner_email.eql?(@@user_email)      
+    if @route&.owner.eql?(@@user_email)      
       render json: {route: @route, services: @route.weights}, status: :ok
     else
       render json: nil, status: :not_found
@@ -16,7 +16,7 @@ class Api::V1::RoutesController < ApplicationController
 
   def create
     services = params[:route].delete(:services)
-    @route = Route.create!((params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels, :cloud_gateway_id, :owner_email)))
+    @route = Route.create!((params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels, :cloud_gateway_id, :owner, :source_proto, :destination_proto, :ip_type)))
     name = nil
     services.each do |data|
       name ||= Haikunator.haikunate
@@ -30,8 +30,8 @@ class Api::V1::RoutesController < ApplicationController
     services = params[:route].delete(:services)
     @route = Route.find_by(:id => params[:id])
 
-    if @route&.owner_email.eql?(@@user_email) # double check
-      @route.update((params.require(:route).permit(:name, :hostname, :path, :target_post, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner_email, :services_ids)), services)
+    if @route&.owner.eql?(@@user_email) # double check
+      @route.update((params.require(:route).permit(:name, :hostname, :path, :target_post, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner)), services)
       render json: @route, status: :ok
     else
       render json: nil, status: :not_found
@@ -40,7 +40,7 @@ class Api::V1::RoutesController < ApplicationController
 
   def delete
     @route.find_by(:id => params[:id])
-    if @route&.owner_email.eql?(@@user_email)
+    if @route&.owner.eql?(@@user_email)
       @route.destroy!
       render json: @route, status: :ok
     else
