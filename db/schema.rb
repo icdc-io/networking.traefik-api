@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_22_080746) do
+ActiveRecord::Schema.define(version: 2021_11_01_104911) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,7 +22,7 @@ ActiveRecord::Schema.define(version: 2021_10_22_080746) do
     t.text "dest_ca_path"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.string "owner_email"
+    t.string "owner"
     t.string "name"
   end
 
@@ -38,7 +38,7 @@ ActiveRecord::Schema.define(version: 2021_10_22_080746) do
     t.string "name"
     t.string "hostname"
     t.string "path"
-    t.decimal "target_port"
+    t.integer "target_port"
     t.string "insecure"
     t.string "tls_termination"
     t.jsonb "labels"
@@ -46,7 +46,10 @@ ActiveRecord::Schema.define(version: 2021_10_22_080746) do
     t.bigint "certificate_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.string "owner_email"
+    t.string "owner"
+    t.string "source_proto"
+    t.string "destination_proto"
+    t.string "ip_version"
     t.index ["certificate_id"], name: "index_routes_on_certificate_id"
     t.index ["cloud_gateway_id"], name: "index_routes_on_cloud_gateway_id"
   end
