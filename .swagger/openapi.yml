@@ -1,0 +1,270 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0-oas3
+  title: ICDC Traefik Manager API
+  description: Traefik Manager provide multi-tenant Traefik HTTP provider API to pull dynamic configuration by traefik loadbalancers installed in Account's CloudGWs.
+  contact:
+    email: compute@icdc.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+tags:
+  - name: Certificates
+    description: Basic info about db certificates
+  - name: Routes
+    description: Routes
+  - name: Services
+    description:  Compute Services
+paths:
+  /api/cloudgw/{uuid}:
+    get:
+      tags:
+        - Routes
+      summary: Show all existing certificates
+      parameters:
+        - name: uuid
+          in: path
+          description: Unique ID of account
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+    post:
+      tags:
+        - Certificates
+      summary: Create a new route
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+  /api/certificates:
+    get:
+      tags:
+        - Certificates
+      summary: Show all certificates
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'              
+  /api/certificates/{id}:
+    get:
+      tags:
+        - Certificates
+      summary: Show certificate record
+      parameters:
+        - name: id
+          in: path
+          description: Unique ID of certificate
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+    delete:
+      tags:
+        - Certificates
+      summary: Delete certificate
+      parameters:
+        - name: id
+          in: path
+          description: Unique ID of certificate
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No content
+  /api/v1/services:
+    get:
+      tags:
+        - Service
+      summary: Show all existing certificates
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+  /api/routes:
+    get:
+      tags:
+        - Routes
+      summary: Get info about existing routes
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+    post:
+      tags:
+        - Routes
+      summary: Create a new route
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+  /api/routes/{id}:
+    get:
+      tags:
+        - Routes
+      summary: Show info about selected route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+    put:
+      tags:
+        - Routes
+      summary: Add routes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prices_ids:
+                  type: array
+                  items:
+                    example:
+                      - 1
+                      - 2
+                      - 3
+      responses:
+        '200':
+          description: 'Operation successful'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route' 
+    delete:
+      tags:
+        - Routes
+      summary: Delete route
+      parameters:
+        - name: id
+          in: path
+          description: Unique ID of route
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No content
+components:
+  schemas:
+    Certificate:
+      type: object
+      required:
+        - cert
+        - key   
+        - ca
+        - dest-ca
+      properties:
+        id:
+          type: integer
+          example: 5
+        cert:
+          type: string
+          example: test_acc1
+        key:
+          type: string
+          example: test
+        ca:
+          type: string
+          example: 
+        dest-ca:
+          type: string
+          example: test
+        owner_email:
+          type: string
+          example: nuspenskaya@ibagroup.eu
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        route_id:
+          type: integer
+          example: 4
+        service:
+          type: string
+          example: compute/my_service_1
+    Route:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Route
+        hostname:
+          type: string
+          example: test.zby.icdc.io
+        path:
+          type: string
+          example: /
+        terget_port:
+          type: integer
+          example: 6587
+        insecure:
+          type: string
+          example: None
+        tls_termination:
+          type: string
+          example: Edge
+        labels:
+          type: string
+          example: KV
+        cloud_gateway_id:
+          type: integer
+          example: 1
+        certificate_id:
+          type: integer
+          example: 1
+        owner_email:
+          type: string
+          example: nuspenskaya@ibagroup.eu
+        services:
+          type: array
+          items: {}
