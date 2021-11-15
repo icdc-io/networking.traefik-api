@@ -99,13 +99,14 @@ class CloudGateway < ApplicationRecord
   end
 
   def lb_server(service, section, route)
+    ip_version = 4
     case section
     when "http"
-      service.addresses(ip_type).split(',').map do |ip|
+      service.addresses(ip_version).split(',').map do |ip|
         {"url" => "#{schema(route)}://#{ip}:#{route.target_port.to_i}"}
       end
     when "tcp"
-      service.addresses(ip_type).split(',').map do |ip|
+      service.addresses(ip_version).split(',').map do |ip|
         {"address" => "#{ip}:#{route.target_port.to_i}"}
       end
     end
