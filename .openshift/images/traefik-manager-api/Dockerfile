@@ -16,8 +16,8 @@ WORKDIR /usr/src/app
 RUN git log -n 1
 RUN RAILS_ENV=${RAILS_ENV} bundle update
 RUN RAILS_ENV=${RAILS_ENV} bundle install
-RUN rake db:create
-RUN rake db:migrate
+#RUN rake db:create
+#RUN rake db:migrate
 RUN chgrp -R 0  /usr/src/app && chmod -R g+rwX /usr/src/app
 EXPOSE 3000
 CMD ["bundle", "exec", "rails", "s", "-b", "0.0.0.0"]
