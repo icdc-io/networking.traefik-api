@@ -41,7 +41,7 @@ class Api::V1::RoutesController < ApplicationController
   end
 
   def destroy
-    @route.find_by(:id => params[:id])
+    @route = Route.find_by(:id => params[:id])
     if @route&.owner.eql?(@@user_email)
       @route.destroy!
       render json: @route, status: :ok
