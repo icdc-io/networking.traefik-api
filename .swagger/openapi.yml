@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: 1.0.0-oas3
+  version: '1.0'
   title: ICDC Traefik Manager API
   description: Traefik Manager provide multi-tenant Traefik HTTP provider API to pull dynamic configuration by traefik loadbalancers installed in Account's CloudGWs.
   contact:
@@ -72,7 +72,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Service'
+                $ref: '#/components/schemas/ServiceCollection'
   '/api/routes':
     get:
       tags:
@@ -84,11 +84,64 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route'
+                $ref: '#/components/schemas/RouteCollection'
     post:
       tags:
         - Routes
       summary: Create a new route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                route:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: 'miq-api'
+                    hostname:
+                      type: string
+                      example: 'miq.computedev.zby.icdc.io'
+                    target_port:
+                      type: integer
+                      example: 3000
+                    tls_termination:
+                      type: string
+                      example: 'passthrough'
+                    owner:
+                      type: string
+                      example: 'ahrechushkin@ibagroup.eu'
+                    cloud_gateway_id:
+                      type: integer
+                      example: 1
+                    path:
+                      type: string
+                      example: '/'
+                    source_proto:
+                      type: string
+                      example: 'tcp'
+                    destination_proto:
+                      type: string
+                      example: 'tcp'
+                    ip_version:
+                      type: integer
+                      example: 4
+                    services:
+                      type: array
+                      items:
+                        properties:
+                          id:
+                            type: string
+                            example: 61
+                    certificate_id:
+                      type: integer
+                      example: 6
+                    insecure:
+                      type: string
+                      example: 'none'
       responses:
         '200':
           description: Operation successful
@@ -131,13 +184,52 @@ paths:
             schema:
               type: object
               properties:
-                prices_ids:
-                  type: array
-                  items:
-                    example:
-                      - 1
-                      - 2
-                      - 3
+                route:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: 'miq-api'
+                    hostname:
+                      type: string
+                      example: 'miq.computedev.zby.icdc.io'
+                    target_port:
+                      type: integer
+                      example: 3000
+                    tls_termination:
+                      type: string
+                      example: 'passthrough'
+                    owner:
+                      type: string
+                      example: 'ahrechushkin@ibagroup.eu'
+                    cloud_gateway_id:
+                      type: integer
+                      example: 1
+                    path:
+                      type: string
+                      example: '/'
+                    source_proto:
+                      type: string
+                      example: 'tcp'
+                    destination_proto:
+                      type: string
+                      example: 'tcp'
+                    ip_version:
+                      type: integer
+                      example: 4
+                    services:
+                      type: array
+                      items:
+                        properties:
+                          id:
+                            type: string
+                            example: 61
+                    certificate_id:
+                      type: integer
+                      example: 6
+                    insecure:
+                      type: string
+                      example: 'none'
       responses:
         '200':
           description: 'Operation successful'
@@ -210,18 +302,35 @@ components:
             dest_ca:
               type: string
               example: ""
+    ServiceCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Service'
     Service:
       type: object
       properties:
         id:
           type: integer
           example: 1
-        route_id:
-          type: integer
-          example: 4
-        service:
+        name:
           type: string
-          example: compute/my_service_1
+          example: "Clone#59"
+        ext_id:
+          type: string
+          example: "26000000000113"
+        ipaddresses:
+          type: string
+          example: "10.254.20.65,fe80::f1d6:c354:43f5:b643"
+        owner:
+          type: string
+          example: "ahrechushkin@ibagroup.eu"
+        account:
+          type: string
+          example: "icdc"
+    RouteCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Route'
     Route:
       type: object
       properties:
@@ -255,9 +364,19 @@ components:
         certificate_id:
           type: integer
           example: 1
-        owner_email:
+        source_proto:
           type: string
-          example: nuspenskaya@ibagroup.eu
+          example: tcp
+        destination_proto:
+          type: string
+          example: tcp
+        ip_version:
+          type: integer
+          example: 4
+        owner:
+          type: string
+          example: ahrechushkin@ibagroup.eu
         services:
           type: array
-          items: {}
+          items:
+            $ref: '#/components/schemas/Service'

@@ -4,6 +4,8 @@ class Route < ApplicationRecord
   has_many :routes_services
   has_many :services, :through => :routes_services
 
+  attribute :services
+
   def update(data, new_services)
     update!(data)
 
