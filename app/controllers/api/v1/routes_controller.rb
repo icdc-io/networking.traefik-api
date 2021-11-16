@@ -33,7 +33,7 @@ class Api::V1::RoutesController < ApplicationController
     @route = Route.find_by(:id => params[:id])
 
     if @route&.owner.eql?(@@user_email) # double check
-      @route.update((params.require(:route).permit(:name, :hostname, :path, :target_post, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner)), services)
+      @route.update((params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner)), services)
       render json: @route, status: :ok
     else
       render json: nil, status: :not_found
