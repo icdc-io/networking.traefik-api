@@ -40,7 +40,7 @@ class Api::V1::RoutesController < ApplicationController
     end 
   end
 
-  def delete
+  def destroy
     @route.find_by(:id => params[:id])
     if @route&.owner.eql?(@@user_email)
       @route.destroy!
