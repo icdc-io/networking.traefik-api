@@ -99,7 +99,7 @@ class CloudGateway < ApplicationRecord
   end
 
   def lb_server(service, section, route)
-    ip_version = 4
+    ip_version = route.ip_version || 4
     case section
     when "http"
       service.addresses(ip_version).split(',').map do |ip|
