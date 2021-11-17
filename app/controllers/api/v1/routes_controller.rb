@@ -8,7 +8,7 @@ class Api::V1::RoutesController < ApplicationController
   def show
     @route = Route.find_by(:id => params[:id])
     if @route&.owner.eql?(@@user_email)      
-      render json: {route: @route, services: @route.weights}, status: :ok
+      render json: { route: @route }, status: :ok
     else
       render json: nil, status: :not_found
     end
