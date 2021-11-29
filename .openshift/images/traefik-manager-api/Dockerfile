@@ -31,6 +31,8 @@ RUN mkdir /usr/local/apache2/conf.d
 
 COPY ./certificates.conf /usr/local/apache2/conf.d/certificates.conf
 
+RUN echo "LoadModule rewrite_module modules/mod_rewrite.so" >> /usr/local/apache2/conf/httpd.conf
+
 RUN  echo "Include conf.d/*.conf" >> /usr/local/apache2/conf/httpd.conf
 
 EXPOSE 8080
