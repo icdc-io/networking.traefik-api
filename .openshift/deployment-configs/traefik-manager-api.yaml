@@ -76,10 +76,3 @@ spec:
         name: traefik-manager-api:latest
         namespace: icdc-cloud-stage
     type: ImageChange
-status:
-  availableReplicas: 0
-  latestVersion: 0
-  observedGeneration: 0
-  replicas: 0
-  unavailableReplicas: 0
-  updatedReplicas: 0
