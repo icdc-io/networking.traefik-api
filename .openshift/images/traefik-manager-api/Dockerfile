@@ -1,6 +1,3 @@
-########################
-#     Build stage      #
-########################
 FROM ruby:latest
 
 LABEL AUTHOR, tmatlash@ibagroup.eu
@@ -15,32 +12,12 @@ RUN apt update -y && \
 RUN git clone -b ${BUILD_BRANCH} https://${GIT_AUTH}/icdc/networking/traefik-manager-api.git /usr/src/app
 
 WORKDIR /usr/src/app
+
 RUN git log -n 1
 RUN RAILS_ENV=${RAILS_ENV} bundle update
 RUN RAILS_ENV=${RAILS_ENV} bundle install
 RUN chgrp -R 0  /usr/src/app && chmod -R g+rwX /usr/src/app
+
 EXPOSE 3000
+
 CMD ["bundle", "exec", "rails", "s", "-b", "0.0.0.0"]
-
-#########################
-#       Run stage       #
-#########################
-from httpd:latest
-
-RUN mkdir /usr/local/apache2/conf.d
-
-COPY ./certificates.conf /usr/local/apache2/conf.d/certificates.conf
-
-RUN echo "LoadModule rewrite_module modules/mod_rewrite.so" >> /usr/local/apache2/conf/httpd.conf
-
-RUN  echo "Include conf.d/*.conf" >> /usr/local/apache2/conf/httpd.conf
-
-RUN sed -i 's/80/8080/' /usr/local/apache2/conf/httpd.conf 
-
-RUN echo "ServerName 127.0.0.1" >> conf/httpd.conf 
-
-RUN chmod -R 777 /usr/local/apache2/logs
-
-RUN  ln -s /usr/src/app/certificates/ /usr/local/apache2/htdocs/certificates/
-
-EXPOSE 8080
