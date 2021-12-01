@@ -1,7 +1,6 @@
 class Api::V1::CertificatesController < ApplicationController
 
   def index
-    puts @@user_email
     @certificates = Certificate.all.select { |cert| cert.owner.eql?(@@user_email) }
     render json: @certificates, status: :ok
   end
@@ -29,4 +28,18 @@ class Api::V1::CertificatesController < ApplicationController
       render json: nil, status: :not_found
     end
   end
+
+  def download
+    @cloudgw = CloudGateway.find_by(:uuid => params[:uuid])
+    if @cloudgw
+      cert_path = ENV['CERT_PATH'] || 'certificates'
+      raise json: nil, status: :not_found unless Dir.exists?(cert_path)
+      tarball = ZipFileGenerator.new("#{cert_path}/#{@cloudgw.uuid}", "tmp/#{cert_path}.zip")
+      tarball.write
+      send_file "tmp/#{cert_path}.zip"
+    else
+      render json: nil, status: :not_found
+    end
+  end
+
 end
