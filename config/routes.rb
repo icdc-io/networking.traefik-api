@@ -12,10 +12,11 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get 'cloudgw', to: 'gateways#index'
-      get 'cloudgw/:uuid', to: 'gateways#traefik_config'
+      get 'config/:uuid', to: 'gateways#traefik_config'
 
       get 'certificates', to: 'certificates#index'
       get 'certificates/:id', to: 'certificates#show'
+      get 'cert-download/:uuid', to: 'certificates#download'
       post 'certificates', to: 'certificates#create'
       delete 'certificates/:id', to: 'certificates#delete'
 
