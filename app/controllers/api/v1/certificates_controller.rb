@@ -20,9 +20,12 @@ class Api::V1::CertificatesController < ApplicationController
   end
 
   def delete
-    @certificate.find_by(:id => params[:id])
+    @certificate = Certificate.find_by(:id => params[:id])
+    puts "IM HERE #{@certificate}"
     if @certificate&.owner.eql?(@@user_email)
       @certificate.destroy!
+      account_uuid = CloudGateway.find_by(:account => $current_account).uuid
+      remove_dir("certificates/#{account_uuid}/#{@certificate.name}")
       render json: @certificate, status: :ok
     else
       render json: nil, status: :not_found
@@ -39,6 +42,21 @@ class Api::V1::CertificatesController < ApplicationController
       send_file "tmp/#{cert_path}.zip"
     else
       render json: nil, status: :not_found
+    end
+  end
+
+  private
+
+  def remove_dir(path)
+    if File.directory?(path)
+      Dir.foreach(path) do |file|
+        if ((file.to_s != ".") and (file.to_s != ".."))
+          remove_dir("#{path}/#{file}")
+        end
+      end
+      Dir.delete(path)
+    else
+      File.delete(path)
     end
   end
 
