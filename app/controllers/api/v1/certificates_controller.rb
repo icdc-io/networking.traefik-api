@@ -21,7 +21,7 @@ class Api::V1::CertificatesController < ApplicationController
 
   def delete
     @certificate = Certificate.find_by(:id => params[:id])
-    puts "IM HERE #{@certificate}"
+    raise "You can't delete certificate cause certificate don't have name" unless @certificate.name
     if @certificate&.owner.eql?(@@user_email)
       @certificate.destroy!
       account_uuid = CloudGateway.find_by(:account => $current_account).uuid
