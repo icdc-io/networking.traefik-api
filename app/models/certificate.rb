@@ -62,7 +62,7 @@ class Certificate < ApplicationRecord
       :ca => File.read(ca_path),
       :dest_ca => File.read(dest_ca_path)
     }
-  raise => e
+  rescue => e
     {
       :cert => nil,
       :key => nil,
