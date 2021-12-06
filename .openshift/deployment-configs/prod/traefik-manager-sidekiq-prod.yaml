@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftWebConsole
+  creationTimestamp: null
+  generation: 1
+  labels:
+    app: traefik-manager
+  name: traefik-manager-sidekiq
+spec:
+  replicas: 1
+  selector:
+    app: traefik-manager
+    deploymentconfig: traefik-manager-sidekiq
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      annotations:
+        openshift.io/generated-by: OpenShiftWebConsole
+      creationTimestamp: null
+      labels:
+        app: traefik-manager
+        deploymentconfig: traefik-manager-sidekiq
+    spec:
+      containers:
+      - env:
+        - name: REDIS_URL
+          value: redis://traefik-manager-redis:6379/0
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: traefik-manager-redis
+        - name: DB_HOST
+          value: traefik-manager-postgresql
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: traefik-manager-postgresql
+        - name: INFLUXDB_HOST
+          value: traefik-manager-influxdb
+        - name: INFLUXDB_PORT
+          value: "8086"
+        - name: INFLUXDB_USERNAME
+          value: admin
+        - name: INFLUXDB_PASSWORD
+          value: B1gb0sss
+        - name: RAILS_ENV
+          value: production
+        image: 'registry.zby.icdc.io/icdc/traefik-manager-sidekiq:prod'
+        imagePullPolicy: Always
+        name: traefik-manager-sidekiq
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+  - type: ConfigChange
