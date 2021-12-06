@@ -16,7 +16,7 @@ spec:
   resources: {}
   runPolicy: Serial
   source:
-    contextDir: .openshift/images/traefik-manager-sidekiq
+    contextDir: .openshift/images/traefik-manager-sidekiq/prod
     git:
       ref: dev
       uri: https://git.zby.icdc.io/icdc/networking/traefik-manager-api.git
