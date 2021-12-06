@@ -24,10 +24,10 @@ default: &default
 development:
   <<: *default
   database: traefik_manager_api_development
-  host: 10.254.20.179 #<%= ENV['DB_HOST'] %>
+  host: <%= ENV['DB_HOST'] %>
   post: 5432
-  username: postgres
-  password: B1gb0sss #<%= ENV['DB_PASSWORD'] %>
+  username: <%= ENV['DB_USER'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
 
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
@@ -62,10 +62,10 @@ development:
 test:
   <<: *default
   database: traefik_manager_api_test
-  host: 10.254.20.179 #<%= ENV['DB_HOST'] %>
+  host: <%= ENV['DB_HOST'] %>
   post: 5432
-  username: postgres
-  password: B1gb0sss #<%= ENV['DB_PASSWORD'] %>
+  username: <%= ENV['DB_USER'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
