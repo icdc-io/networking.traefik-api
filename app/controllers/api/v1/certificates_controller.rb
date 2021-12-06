@@ -19,12 +19,21 @@ class Api::V1::CertificatesController < ApplicationController
     render json: certificate, status: :created
   end
 
+  def update
+    @certificate = Certificate.find_by(:id => params[:id])
+    if @certificate&.owner.eql?(@@user_email)
+      render :json =>
+        @certificate.update_content(params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner', 'name')),
+        status: :ok
+    end
+  end
+
   def delete
     @certificate = Certificate.find_by(:id => params[:id])
     raise "You can't delete certificate cause certificate don't have name" unless @certificate.name
     if @certificate&.owner.eql?(@@user_email)
-      @certificate.destroy!
       account_uuid = CloudGateway.find_by(:account => $current_account).uuid
+      @certificate.destroy!
       remove_dir("certificates/#{account_uuid}/#{@certificate.name}")
       render json: @certificate, status: :ok
     else

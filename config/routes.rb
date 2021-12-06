@@ -19,6 +19,7 @@ Rails.application.routes.draw do
       get 'cert-download/:uuid', to: 'certificates#download'
       post 'certificates', to: 'certificates#create'
       delete 'certificates/:id', to: 'certificates#delete'
+      put 'certificates/:id', to: 'certificates#update'
 
       get 'services', to: 'services#index'
 

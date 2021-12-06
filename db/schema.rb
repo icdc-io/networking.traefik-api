@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_01_104911) do
+ActiveRecord::Schema.define(version: 2021_12_06_104049) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(version: 2021_11_01_104911) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "owner"
     t.string "name"
+    t.string "account"
   end
 
   create_table "cloud_gateways", force: :cascade do |t|
