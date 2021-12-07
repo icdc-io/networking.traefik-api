@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  creationTimestamp: null
+  labels:
+    build: traefik-manager-api-prod
+  name: traefik-manager-api-prod
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: {}
+  output:
+    pushSecret:
+      name: registry-zby
+    to:
+      kind: DockerImage
+      name: 'registry.zby.icdc.io/icdc/traefik-manager-api:prod'
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    contextDir: .openshift/images/traefik-manager-api
+    git:
+      ref: prod
+      uri: https://git.zby.icdc.io/icdc/networking/traefik-manager-api.git
+    sourceSecret:
+      name: os-deploy-idc
+    type: Git
+  strategy:
+    dockerStrategy:
+      noCache: true
+      env:
+      - name: RAILS_ENV
+        value: production
+      - name: BUILD_BRANCH
+        value: prod
+      - name: GIT_AUTH
+        valueFrom:
+          secretKeyRef:
+            key: GIT_CRED
+            name: git-cred
+    type: Docker
+  successfulBuildsHistoryLimit: 5
+  triggers: []
+status:
+  lastVersion: 0
