@@ -89,8 +89,8 @@ test:
 #
 production:
   <<: *default
-  database: host: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_NAME'] %>
+  database: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_NAME'] %>
   host: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_HOST'] %>
-  port: host: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_PORT'] %>
+  port: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_PORT'] %>
   username: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_USERNAME'] %>
   password: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_PASSWORD'] %>
