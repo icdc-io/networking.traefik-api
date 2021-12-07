@@ -90,5 +90,5 @@ test:
 production:
   <<: *default
   database: traefik_manager_api_production
-  username: traefik_manager_api
+  username: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_USERNAME'] %>
   password: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_PASSWORD'] %>
