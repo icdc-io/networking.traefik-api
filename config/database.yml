@@ -63,7 +63,7 @@ test:
   <<: *default
   database: traefik_manager_api_test
   host: <%= ENV['DB_HOST'] %>
-  post: 5432
+  port: 5432
   username: <%= ENV['DB_USER'] %>
   password: <%= ENV['DB_PASSWORD'] %>
 
@@ -89,6 +89,8 @@ test:
 #
 production:
   <<: *default
-  database: traefik_manager_api_production
+  database: host: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_NAME'] %>
+  host: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_HOST'] %>
+  port: host: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_PORT'] %>
   username: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_USERNAME'] %>
   password: <%= ENV['TRAEFIK_MANAGER_API_DATABASE_PASSWORD'] %>
