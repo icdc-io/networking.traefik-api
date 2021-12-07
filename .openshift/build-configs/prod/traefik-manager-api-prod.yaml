@@ -27,6 +27,7 @@ spec:
     type: Git
   strategy:
     dockerStrategy:
+      noCache: true
       env:
       - name: RAILS_ENV
         value: production
