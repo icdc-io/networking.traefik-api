@@ -34,6 +34,12 @@ class Api::V1::RoutesController < ApplicationController
 
     if @route&.owner.eql?(@@user_email) # double check
       @route.update((params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner)), services)
+      name = nil
+      services.each do |data|
+        name ||= Haikunator.haikunate
+        RoutesService.create!(:route => @route, :service => Service.find_by(:id => data['id']), :balance_type => :weighted ,:value => data['weight'], :name => name)
+      end if services.count > 1
+      RoutesService.create!(:route => @route, :service => Service.find_by(:id => services.first['id']), :balance_type => :loadbalancer, :value => nil, :name => Service.find_by(:id => services.first['id']).name) if services.count == 1
       render json: @route, status: :ok
     else
       render json: nil, status: :not_found

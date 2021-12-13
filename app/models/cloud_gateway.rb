@@ -139,11 +139,19 @@ class CloudGateway < ApplicationRecord
     case section
     when "http"
       service.addresses(ip_version).split(',').map do |ip|
-        {"url" => "#{schema(route)}://#{ip}:#{route.target_port.to_i}"}
+        if route.target_port
+          {"url" => "#{schema(route)}://#{ip}:#{route.target_port.to_i}"}
+        else
+          {"url" => "#{schema(route)}://#{ip}"}
+        end
       end
     when "tcp"
       service.addresses(ip_version).split(',').map do |ip|
-        {"address" => "#{ip}:#{route.target_port.to_i}"}
+        if route.target_port
+          {"address" => "#{ip}:#{route.target_port.to_i}"}
+        else
+          {"address" => "#{ip}"}
+        end
       end
     end
   end
