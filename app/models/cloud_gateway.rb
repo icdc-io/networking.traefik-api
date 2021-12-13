@@ -4,8 +4,8 @@ class CloudGateway < ApplicationRecord
   def config
     generated_config = {
       "http" => {
-        "routers" => http(routes.where(:tls_termination => ["re-encrypt", "edge"])),
-        "services" => services_section(routes.where(:tls_termination => ["re-encrypt", "edge"]), "http")
+        "routers" => http(routes.where(:tls_termination => ["re-encrypt", "edge", nil])),
+        "services" => services_section(routes.where(:tls_termination => ["re-encrypt", "edge", nil]), "http"),
       },
       "tcp" => {
         "routers" => tcp(routes.where(:tls_termination => ["passthrough"])),
@@ -13,15 +13,42 @@ class CloudGateway < ApplicationRecord
       },
       "tls" => tls
     }
-    generated_config.delete("http") if routes.where(:tls_termination => ["re-encrypt", "edge"]).empty?
+    generated_config["http"].merge!("middlewares" => middlewares_redirects(routes.where(:insecure => "redirect"))) unless routes.where(:insecure => "redirect").empty?
+    generated_config.delete("http") if routes.where(:tls_termination => ["re-encrypt", "edge", nil]).empty?
     generated_config.delete("tcp") if routes.where(:tls_termination => ["passthrough"]).empty?
     generated_config.to_yaml.strip
   end
 
   private
 
+  def middlewares_redirects(routes)
+    routes.map do |route|
+      {
+        "#{route.hostname}-redirect" => {
+          "redirectScheme" => {
+            "scheme" => "https",
+            "permanent" => true
+          }
+        }
+      }
+    end.reduce({}, :merge)
+  end
+
   def entrypoints =  { "entryPoints" => ["web", "websecure"] }
-  
+
+  def entrypoint_web(routers)
+    routers.map do |key, value|
+      { "#{key}-http" => value.merge("entryPoints" => ["web"]) }
+    end
+  end
+
+  def entrypoint_websecure(routers)
+    routers.map do |key, value|
+      value.delete("middlewares")
+      { "#{key}-https" => value.merge("entryPoints" => ["websecure"]).merge!("tls" => {}) }
+    end
+  end
+
   def tls
     {
     "certificates" => Certificate.all.map do |certificate|
@@ -37,21 +64,30 @@ class CloudGateway < ApplicationRecord
     if route.path == "/"
       "Host(`#{route.hostname}`)"
     else
-      "PathPrefix(`#{route.path}`)"
+      "Host(`#{route.hostname}`) && PathPrefix(`#{route.path}`)"
     end
   end
 
   def http(filtered_routes)
     routers = {}
+    middlewares = {}
     filtered_routes.map do |route|
       routers[route.hostname] = {
         "service" => route.routes_services[0].name,
         "rule" => rule(route)
       }
-      routers[route.hostname].merge!(entrypoints)
-      routers[route.hostname]["tls"] = {} if route.insecure == "none"
+      if route.insecure == "redirect"
+        routers[route.hostname].merge!({"middlewares" => ["#{route.hostname}-redirect"]})
+      end
     end
-    routers
+    web = entrypoint_web(routers)
+    websecure = entrypoint_websecure(routers)
+    http_block = {}
+    
+    web.each {|x| http_block.merge!(x)}
+    websecure.each {|x| http_block.merge!(x)}
+
+    http_block 
   end
 
   def tcp(filtered_routes)
@@ -122,8 +158,8 @@ class CloudGateway < ApplicationRecord
   end
 
   def schema(route)
-    return "https" if route.insecure == "none"
-    "https"
+    return "https" if route.tls_termination == "re-encrypt"
+    "http"
   end
 
 end
