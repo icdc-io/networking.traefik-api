@@ -11,7 +11,7 @@ class ApplicationController < ActionController::API
     case auth_method
     when 'Bearer'
       $token = decoded_token token
-      @@user_email = $token.dig('user_id')
+      @@email = $token.dig('user_id')
     when 'Basic'
       login, password = Base64.decode64(token).split(':')
       $token = decoded_token get_jwt_token(login, password)

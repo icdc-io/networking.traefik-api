@@ -14,9 +14,29 @@ class Route < ApplicationRecord
       rs.destroy!
     end
 
-    new_services.each do |data|
-      RoutesService.create!(:route => self, :service => Service.find_by(:id => data['id']), :balance_type => :weighted ,:value => data['weight'])
-    end if new_services.count > 1
-    RoutesService.create!(:route => self, :service => Service.find_by(:id => new_services.first['id']), :balance_type => :loadbalancer, :value => nil) if new_services.count == 1
+    if new_services.count == 1
+      RoutesService.create!(
+        :route => self, 
+        :service => Service.find_by(:id => new_services.first['id']), 
+        :balance_type => :loadbalancer, 
+        :value => nil, 
+        :name => Service.find_by(:id => new_services.first['id']).name
+      )
+    else
+      new_services.each do |data|
+        name = RoutesService.generate_name
+        RoutesService.create!(:route => self, 
+          :service => Service.find_by(:id => data['id']), 
+          :balance_type => :weighted ,
+          :value => data['weight'], 
+          :name => name
+        )
+      end
+    end
+  end
+
+  def self.generate_name
+    name = Haikunator.haikunate
+    return name if RoutesService.where(:name => name).empty?
   end
 end
