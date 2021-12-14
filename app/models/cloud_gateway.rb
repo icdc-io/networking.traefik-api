@@ -38,6 +38,7 @@ class CloudGateway < ApplicationRecord
 
   def entrypoint_web(routers)
     routers.map do |key, value|
+      value.delete("tls")
       { "#{key}-http" => value.merge("entryPoints" => ["web"]) }
     end
   end
@@ -45,7 +46,7 @@ class CloudGateway < ApplicationRecord
   def entrypoint_websecure(routers)
     routers.map do |key, value|
       value.delete("middlewares")
-      { "#{key}-https" => value.merge("entryPoints" => ["websecure"]).merge!("tls" => {}) }
+      { "#{key}-https" => value.merge("entryPoints" => ["websecure"]) }
     end
   end
 
@@ -76,14 +77,23 @@ class CloudGateway < ApplicationRecord
         "service" => route.routes_services[0].name,
         "rule" => rule(route)
       }
+
+      if route.tls_termination == "re-encrypt"
+        if route.certificate
+          routers[route.hostname]["tls"] = {}
+        else
+          routers[route.hostname]["tls"] = {"certResolver" => "default" }
+        end
+      end
+
       if route.insecure == "redirect"
         routers[route.hostname].merge!({"middlewares" => ["#{route.hostname}-redirect"]})
       end
     end
-    web = entrypoint_web(routers)
     websecure = entrypoint_websecure(routers)
+    web = entrypoint_web(routers)
     http_block = {}
-    
+
     web.each {|x| http_block.merge!(x)}
     websecure.each {|x| http_block.merge!(x)}
 
