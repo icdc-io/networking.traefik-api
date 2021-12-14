@@ -29,7 +29,8 @@ class ServicesAccessJob < ApplicationJob
     to_delete << Service.where(:ext_id => services.select{|x| x if x[:retired?]}.collect{|x| x[:ext_id]})
     
     to_delete.flatten.each(&:destroy)
-    find_or_build(services.reject!{|x| x[:retired?]})
+    services.reject!{|x| x[:retired?]}
+    find_or_build(services)
   end
 
   def find_or_build(services_opts)

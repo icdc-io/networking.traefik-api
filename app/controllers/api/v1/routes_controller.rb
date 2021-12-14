@@ -1,7 +1,7 @@
 class Api::V1::RoutesController < ApplicationController
 
   def index
-    @routes = Route.where { |route| route.owner.eql?(@@email) }
+    @routes = Route.where(:owner => @@email)
     render json: @routes, status: :ok
   end
 
