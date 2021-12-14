@@ -17,7 +17,24 @@ class Api::V1::RoutesController < ApplicationController
   def create
     services = params[:route].delete(:services)
     certificate_id = params[:route].delete(:certificate_id)
-    @route = Route.create!((params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels, :cloud_gateway_id, :owner, :source_proto, :destination_proto, :ip_version)))
+    @route = Route.create!(
+      (
+        params.require(:route).permit(
+          :name, 
+          :hostname, 
+          :path, 
+          :target_port, 
+          :insecure, 
+          :tls_termination, 
+          :labels, 
+          :cloud_gateway_id, 
+          :owner, 
+          :source_proto, 
+          :destination_proto, 
+          :ip_version
+        )
+      )
+    )
     @route.update!(:certificate_id => certificate_id) if certificate_id
 
     if services.count == 1
@@ -47,7 +64,25 @@ class Api::V1::RoutesController < ApplicationController
     @route = Route.find_by(:id => params[:id])
 
     if @route&.owner.eql?(@@email) # double check
-      @route.update((params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels, :cloud_gateway_id, :certificate_id, :owner)), services)
+      @route.update(
+        (
+          params.require(:route).permit(
+            :name, 
+            :hostname, 
+            :path, 
+            :target_port, 
+            :insecure, 
+            :tls_termination, 
+            :labels, 
+            :cloud_gateway_id, 
+            :owner, 
+            :source_proto, 
+            :destination_proto, 
+            :ip_version
+          )
+        ), 
+        services
+      )
       render json: @route, status: :ok
     else
       render json: nil, status: :not_found
