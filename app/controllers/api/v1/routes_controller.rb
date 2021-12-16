@@ -83,6 +83,7 @@ class Api::V1::RoutesController < ApplicationController
         ), 
         services
       )
+      @route.update!(:certificate_id => params[:route][:certificate_id]) if params[:route][:certificate_id]
       render json: @route, status: :ok
     else
       render json: nil, status: :not_found
