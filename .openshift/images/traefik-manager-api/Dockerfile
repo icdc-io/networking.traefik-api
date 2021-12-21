@@ -23,4 +23,4 @@ EXPOSE 3000
 COPY container-assets/entrypoint.sh /usr/local/bin
 
 #CMD ["bundle", "exec", "rails", "s", "-b", "0.0.0.0"]
-CMD ["entrypoint.sh"]
+CMD ["bash", "entrypoint.sh"]
