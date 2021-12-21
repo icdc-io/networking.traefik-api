@@ -14,10 +14,8 @@ class Api::V1::GatewaysController < ApplicationController
     end
   end
 
-  def create
-    gw = CloudGateway.create!(params.require(:cloudgw).permit(:name, :account))
-    gw.uuid = SecureRandom.hex
-    gw.save!
+  def create_cloudgw
+    CloudGateway.create!(params.require(:cloudgw).permit(:name, :account, :uuid))
   end
 
   def delete
