@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get 'cloudgw', to: 'gateways#index'
+      post 'cloudgw', to: 'gateways#create_cloudgw'
       get 'config/:uuid', to: 'gateways#traefik_config'
 
       get 'certificates', to: 'certificates#index'
@@ -23,7 +24,7 @@ Rails.application.routes.draw do
 
       get 'services', to: 'services#index'
 
-      resources :routes 
+      resources :routes
     end
   end
 end
