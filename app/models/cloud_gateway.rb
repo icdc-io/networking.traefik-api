@@ -90,8 +90,8 @@ class CloudGateway < ApplicationRecord
         routers[route.hostname].merge!({"middlewares" => ["#{route.hostname}-redirect"]})
       end
     end
-    websecure = entrypoint_websecure(routers)
-    web = entrypoint_web(routers)
+    websecure = entrypoint_websecure(routers.deep_dup)
+    web = entrypoint_web(routers.deep_dup)
     http_block = {}
 
     web.each {|x| http_block.merge!(x)}

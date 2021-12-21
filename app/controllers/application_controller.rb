@@ -3,6 +3,11 @@ require 'json/jwt'
 class ApplicationController < ActionController::API
   include ResponseHelper
   before_action :authorize, :except => [:traefik_config, :download]
+  before_action :authorize_location_admin, :only => [:create_cloudgw]
+
+  def authorize_location_admin
+    forbidden("You don't have access to perform this action") unless $location_admin
+  end
 
   def authorize
     return not_authorized unless auth_header
@@ -12,14 +17,17 @@ class ApplicationController < ActionController::API
     when 'Bearer'
       $token = decoded_token token
       @@email = $token.dig('user_id')
+      $location_admin = ENV['LOCATION_ADMIN_GROUP'].in?($token.dig("groups"))
     when 'Basic'
       login, password = Base64.decode64(token).split(':')
       $token = decoded_token get_jwt_token(login, password)
+      $location_admin = ENV['LOCATION_ADMIN_GROUP'].in?($token.dig("groups"))
     end
     unless validate
       $token = nil
       msg = "You're doesn't have access to #{$current_account} with role admin"
       $current_account = nil
+      $location_admin = false
       forbidden(msg)
     end
   end

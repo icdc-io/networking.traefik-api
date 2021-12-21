@@ -1,16 +1,18 @@
 module Authenticator
-  def config_file
-    File.read File.join(Rails.root, "config/icdc_credentials.json")
+  def config
+    require 'yaml'
+    config_template = ERB.new File.new(File.join(Rails.root, "config/icdc_credentials.yml")).read
+    YAML.load config_template.result(binding)
   rescue Errno::ENOENT
-    raise "File config/icdc_credentials.json didn't created"
+    raise "File config/icdc_credentials.yml didn't created"
   end
 
   def service_creds(service)
-    JSON.parse(config_file).dig("environment", ENV["RAILS_ENV"], service.downcase)
+    config.dig("environment", ENV["RAILS_ENV"], service.downcase)
   end
 
   def basic_token(service)
-    creds = JSON.parse(config_file).dig("environment", ENV["RAILS_ENV"], service.downcase)
+    creds = JSON.parse(config).dig("environment", ENV["RAILS_ENV"], service.downcase)
     creds["token"] ? creds["token"] : Base64.encode64("#{creds["username"]}:#{creds["password"]}").strip!
   end
 end
