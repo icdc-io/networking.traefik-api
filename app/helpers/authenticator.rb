@@ -12,7 +12,7 @@ module Authenticator
   end
 
   def basic_token(service)
-    creds = JSON.parse(config).dig("environment", ENV["RAILS_ENV"], service.downcase)
+    creds = config.dig("environment", ENV["RAILS_ENV"], service.downcase)
     creds["token"] ? creds["token"] : Base64.encode64("#{creds["username"]}:#{creds["password"]}").strip!
   end
 end
