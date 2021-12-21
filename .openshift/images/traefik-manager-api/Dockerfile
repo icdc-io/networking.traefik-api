@@ -20,7 +20,7 @@ RUN chgrp -R 0  /usr/src/app && chmod -R g+rwX /usr/src/app
 
 EXPOSE 3000
 
-COPY container-assets/entrypoint /usr/local/bin
+COPY container-assets/entrypoint.sh /usr/local/bin
 
 #CMD ["bundle", "exec", "rails", "s", "-b", "0.0.0.0"]
-CMD["entrypoint"]
+CMD["exec", "entrypoint.sh"]
