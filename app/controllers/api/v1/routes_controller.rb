@@ -1,13 +1,17 @@
 class Api::V1::RoutesController < ApplicationController
 
   def index
-    @routes = Route.where(:owner => @@email)
+    if $location_admin
+      @routes = Route.all
+    else
+      @routes = Route.where(:owner => @@email)
+    end
     render json: @routes, status: :ok
   end
 
   def show
     @route = Route.find_by(:id => params[:id])
-    if @route&.owner.eql?(@@email)      
+    if @route&.owner.eql?(@@email) || $location_admin
       render json: { route: @route }, status: :ok
     else
       render json: nil, status: :not_found
@@ -63,7 +67,7 @@ class Api::V1::RoutesController < ApplicationController
     services = params[:route].delete(:services)
     @route = Route.find_by(:id => params[:id])
 
-    if @route&.owner.eql?(@@email) # double check
+    if @route&.owner.eql?(@@email) || $location_admin
       @route.update(
         (
           params.require(:route).permit(
@@ -92,7 +96,7 @@ class Api::V1::RoutesController < ApplicationController
 
   def destroy
     @route = Route.find_by(:id => params[:id])
-    if @route&.owner.eql?(@@email)
+    if @route&.owner.eql?(@@email) || $location_admin
       @route.destroy!
       render json: @route, status: :ok
     else

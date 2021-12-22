@@ -1,13 +1,13 @@
 class Api::V1::CertificatesController < ApplicationController
 
   def index
-    @certificates = Certificate.all.select { |cert| cert.owner.eql?(@@email) }
+    @certificates = Certificate.all.select { |cert| cert.owner.eql?(@@email) || $location_admin }
     render json: @certificates, status: :ok
   end
 
   def show
     @certificate = Certificate.find_by(:id => params[:id])
-    if @certificate&.owner.eql?(@@email)
+    if @certificate&.owner.eql?(@@email) || $location_admin
       render json: @certificate, status: :ok
     else
       render json: nil, status: :not_found
@@ -21,7 +21,7 @@ class Api::V1::CertificatesController < ApplicationController
 
   def update
     @certificate = Certificate.find_by(:id => params[:id])
-    if @certificate&.owner.eql?(@@email)
+    if @certificate&.owner.eql?(@@email) || $location_admin
       render :json =>
         @certificate.update_content(params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner', 'name')),
         status: :ok
@@ -31,7 +31,7 @@ class Api::V1::CertificatesController < ApplicationController
   def delete
     @certificate = Certificate.find_by(:id => params[:id])
     raise "You can't delete certificate cause certificate don't have name" unless @certificate.name
-    if @certificate&.owner.eql?(@@email)
+    if @certificate&.owner.eql?(@@email) || $location_admin
       account_uuid = CloudGateway.find_by(:account => $current_account).uuid
       @certificate.destroy!
       remove_dir("certificates/#{account_uuid}/#{@certificate.name}")

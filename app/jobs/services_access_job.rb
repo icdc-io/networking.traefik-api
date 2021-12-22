@@ -16,7 +16,9 @@ class ServicesAccessJob < ApplicationJob
         :name => service["name"],
         :owner => service["evm_owner"]["email"],
         :account => service["tenant"]["name"],
-        :ipaddresses => service["networks"].collect{|network| network["allocations"]}.flatten.collect{|alloc| alloc["ip"]}.flatten.join(','),
+        :ipaddresses => service["networks"].collect{ |network| network["allocations"] }
+                                           .flatten.select{ |alloc| alloc if alloc["type"] == "nic" }
+                                           .collect{ |alloc| alloc["ip"] }.flatten.join(','),
         :retired? => service["retired"]
       }
     end
