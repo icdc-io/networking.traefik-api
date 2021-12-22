@@ -22,6 +22,11 @@ class Api::V1::GatewaysController < ApplicationController
     @gateway.find_by(:uuid => params[:uuid])
     if @gateway
       @gateway.routes.each(&:destroy!)
+      Certificate.where(:account => @gateway.account).each do |certificate|
+        name = certificate.name
+        certificate.destroy!
+        Api::V1::CertificatesController.new.send(:remove_dir, "certificates/#{params[:uuid]}/#{name}")
+      end
       @gateway.destroy!
       render json: @gateway, status: :ok
     else
