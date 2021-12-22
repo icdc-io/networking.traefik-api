@@ -1,7 +1,11 @@
 class Api::V1::CertificatesController < ApplicationController
 
   def index
-    @certificates = Certificate.all.select { |cert| cert.owner.eql?(@@email) || $location_admin }
+    if $location_admin
+      @certificates = Certificate.all
+    else
+      @certificates = Certificate.all.select { |cert| cert.owner.eql?(@@email) }
+    end
     render json: @certificates, status: :ok
   end
 
