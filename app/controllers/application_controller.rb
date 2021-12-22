@@ -3,7 +3,7 @@ require 'json/jwt'
 class ApplicationController < ActionController::API
   include ResponseHelper
   before_action :authorize, :except => [:traefik_config, :download]
-  before_action :authorize_location_admin, :only => [:create_cloudgw]
+  before_action :authorize_location_admin, :only => [:create_cloudgw, :delete_cloudgw]
 
   def authorize_location_admin
     forbidden("You don't have access to perform this action") unless $location_admin

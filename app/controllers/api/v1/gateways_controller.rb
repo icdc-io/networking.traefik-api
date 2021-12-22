@@ -18,9 +18,10 @@ class Api::V1::GatewaysController < ApplicationController
     CloudGateway.create!(params.require(:cloudgw).permit(:name, :account, :uuid))
   end
 
-  def delete
-    @gateway.find_by(:id => params[:id])
+  def delete_cloudgw
+    @gateway.find_by(:uuid => params[:uuid])
     if @gateway
+      @gateway.routes.each(&:destroy!)
       @gateway.destroy!
       render json: @gateway, status: :ok
     else
