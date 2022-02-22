@@ -509,21 +509,35 @@ components:
           description: |
             Account which manages Traefik Gateway
     GatewayConfig:
-      type: object
+      type: string
       description: Traefik YAML config
-      properties:
+      example: |
         http:
-          type: object
-          example: {}
-          readonly: true
-        tcp:
-          type: object
-          example: {}
-          readonly: true
-        tls:
-          type: object
-          example: {}
-          readonly: true
+          routers:
+            SERVICE-http:
+              entryPoints:
+              - web
+              service: SERVICE
+              middlewares: SERVICE-redirect
+              rule: Host(`SERVICE.LOC.icdc.io`)
+            SERVICE-https:
+              entryPoints:
+              - websecure
+              service: SERVICE
+              rule: Host(`SERVICE.LOC.icdc.io`)
+              tls:
+                certResolver: default
+          middlewares:
+            SERVICE-redirect:
+              redirectscheme:
+                scheme: https
+          services:
+            SERVICE:
+              loadBalancer:
+                servers:
+                - url: http://10.254.20.10
+        tcp: {}
+        tls: {}  
     CertificateCollection:
       type: array
       items:
