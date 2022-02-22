@@ -18,8 +18,18 @@ class Api::V1::GatewaysController < ApplicationController
     CloudGateway.create!(params.require(:cloudgw).permit(:name, :account, :uuid))
   end
 
+  def update_cloudgw
+    @gateway = CloudGateway.find_by(:id => params[:id])
+    if @gateway
+      @gateway.update!(params.permit(:name, :account))
+      render json: @gateway, status: :ok
+    else
+      render json: nil, status: :not_found
+    end
+  end
+
   def delete_cloudgw
-    @gateway.find_by(:uuid => params[:uuid])
+    @gateway.find_by(:id => params[:id])
     if @gateway
       @gateway.routes.each(&:destroy!)
       Certificate.where(:account => @gateway.account).each do |certificate|
