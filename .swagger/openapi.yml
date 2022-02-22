@@ -9,13 +9,154 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 tags:
+  - name: Gateways
+    description: Gateways management
   - name: Certificates
     description: Basic info about db certificates
   - name: Routes
     description: Routes
   - name: Services
-    description:  Compute Services
+    description: Compute Services
 paths:
+  /gateways:
+    get:
+      tags:
+        - 'Gateways'
+      summary: List of account's Traefik Gateways
+      security:
+        - JWT: [admin]
+      parameters: 
+        - $ref: '#/components/parameters/Account'
+      responses:
+        '200':
+          description: 'Operation successfull'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayCollection'
+    post:
+      tags:
+        - 'Gateways'
+      summary: Create a new Traefik Gateway (Register)
+      security:
+        - JWT: [location_admin]
+      description: >
+        This endpoint is called from CloudGateway Automation only.
+        So we are not going to provide ability to Account Admins to create new gateways
+      parameters: 
+        - $ref: '#/components/parameters/Account'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: vpn-default
+                cloudgw_id:
+                  type: string
+                  example: a843bf2a-7353-563e-a220-f59949849dba
+                account:
+                  type: string
+                  example: icdc
+      responses:
+        '201':
+          description: 'Created successful'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gateway'
+  /gateways/{id}:
+    get:
+      tags:
+        - 'Gateways'
+      summary: Show a gateway details
+      security:
+        - JWT: [admin]
+      parameters:
+        - $ref: '#/components/parameters/Account'
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1234
+      responses:
+        '200':
+          description: 'Operation successful'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gateway'
+    put:
+      tags:
+        - 'Gateways'
+      summary: Update Traefik Gateway. Usually use to assign Traefik Gateway to account.
+      security:
+        - JWT: [admin]
+      parameters:
+        - $ref: '#/components/parameters/Account'
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1234
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: New Traefik Name
+      responses:
+        '200':
+          description: 'Operation successful'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gateway'
+    delete:
+      tags:
+        - 'Gateways'
+      summary: Remove Traefik Gateway (un-register)
+      security:
+        - JWT: [location_admin]
+      description: >
+        This endpoint is called from CloudGateway Automation only.
+        So we are not going to provide ability to Account Admins to delete gateways
+      parameters:
+      - $ref: '#/components/parameters/Account'
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 1234
+      responses:
+        '204':
+          description: 'No content'
+  /gateways/{uuid}/config:
+    get:
+      tags:
+        - 'Gateways'
+      summary: Return YAML config for Traefik Gateway
+      security:
+        - UUID: [cloud_gateway_id]
+      parameters:
+        - $ref: '#/components/parameters/CloudGatewayId'
+      responses:
+        '200':
+          description: 'Operation successful'
+          content:
+            text/yaml:
+              schema:
+                $ref: '#/components/schemas/GatewayConfig'
   '/api/certificates':
     get:
       tags:
@@ -331,6 +472,58 @@ paths:
           description: No content
 components:
   schemas:
+    GatewayCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Gateway'
+    Gateway:
+      type: object
+      required:
+        - name
+        - cloudgw_id
+      properties:
+        id:
+          type: integer
+          example: 1234
+          readonly: true
+        name:
+          type: string
+          example: vpn-default
+          description: |
+            Name of gateway. No real technical restriction on names Validate: alphanumeric/dash/underscore
+        cloudgw_id:
+          type: string
+          example: a843bf2a-7dac-4256-b048-cc1bc0864ccb
+          description: |
+            UUID of CloudGateway VM on which traefik is deployed.
+            Stored in field 'uuid' in database.
+        cloudgw_instance:
+          type: string
+          example: cloudgw-a843bf2a
+          readonly: true
+          description: |
+            Calculated field: cloudgw-<short_cloudgw_id> shows on which VM this VPN gateway is running
+        account:
+          type: string
+          example: devel
+          description: |
+            Account which manages Traefik Gateway
+    GatewayConfig:
+      type: object
+      description: Traefik YAML config
+      properties:
+        http:
+          type: object
+          example: {}
+          readonly: true
+        tcp:
+          type: object
+          example: {}
+          readonly: true
+        tls:
+          type: object
+          example: {}
+          readonly: true
     CertificateCollection:
       type: array
       items:
@@ -458,3 +651,38 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Service'
+  parameters:
+    Account:
+      name: x-icdc-account
+      in: header
+      description: Name of the account (5-character string)
+      required: true
+      schema:
+        type: string
+        example: acc
+    Role:
+      name: x-icdc-role
+      in: header
+      description: Role name
+      required: true
+      schema:
+        type: string
+        example: admin
+    CloudGatewayId:
+      name: uuid
+      description: |
+        Used for simplified authorization for some internal requests from CloudGateway to config.
+      in: path
+      required: true
+      schema:
+        type: string
+        example: a843bf2a-7353-563e-a220-f59949849dba
+  security:
+    - JWT:
+      - member
+      - manager
+      - billing
+      - admin
+      - location_admin
+    - UUID:
+      - cloud_gateway_id
