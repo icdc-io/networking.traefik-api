@@ -4,26 +4,31 @@ Rails.application.routes.draw do
 
   Sidekiq::Web.use ActionDispatch::Cookies
   Sidekiq::Web.use ActionDispatch::Session::CookieStore, key: "_interslice_session"
-  mount Sidekiq::Web => '/sidekiq'
-
-  mount Rswag::Ui::Engine => '/api-docs'
+  mount Sidekiq::Web       => '/sidekiq'
+  mount Rswag::Ui::Engine  => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
 
   namespace :api do
     namespace :v1 do
-      get 'cloudgw', to: 'gateways#index'
-      post 'cloudgw', to: 'gateways#create_cloudgw'
-      get 'config/:uuid', to: 'gateways#traefik_config'
-      delete 'cloudgw/:uuid', to: 'gateways#delete_cloudgw'
+      # Old-style: remove after 2023
+      get    'config/:uuid',          to: 'gateways#traefik_config'
+      # end
 
-      get 'certificates', to: 'certificates#index'
-      get 'certificates/:id', to: 'certificates#show'
-      get 'cert-download/:uuid', to: 'certificates#download'
-      post 'certificates', to: 'certificates#create'
-      delete 'certificates/:id', to: 'certificates#delete'
-      put 'certificates/:id', to: 'certificates#update'
+      get    'gateways',              to: 'gateways#index'
+      post   'gateways',              to: 'gateways#create_cloudgw'
+      get    'gateways/:uuid/config', to: 'gateways#traefik_config'
+      get    'gateways/:id',          to: 'gateways#show'
+      put    'gateways/:id',          to: 'gateways#update_cloudgw'
+      delete 'gateways/:id',          to: 'gateways#delete_cloudgw'
 
-      get 'services', to: 'services#index'
+      get    'certificates',          to: 'certificates#index'
+      get    'certificates/:id',      to: 'certificates#show'
+      get    'cert-download/:uuid',   to: 'certificates#download'
+      post   'certificates',          to: 'certificates#create'
+      delete 'certificates/:id',      to: 'certificates#delete'
+      put    'certificates/:id',      to: 'certificates#update'
+
+      get    'services',              to: 'services#index'
 
       resources :routes
     end
