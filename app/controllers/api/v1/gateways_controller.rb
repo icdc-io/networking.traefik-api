@@ -39,7 +39,7 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def delete_cloudgw
-    @gateway.find_by(:id => params[:id])
+    @gateway = CloudGateway.find_by(:id => params[:id])
     if @gateway
       @gateway.routes.each(&:destroy!)
       Certificate.where(:account => @gateway.account).each do |certificate|
