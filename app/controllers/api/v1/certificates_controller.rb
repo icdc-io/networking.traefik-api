@@ -36,7 +36,7 @@ class Api::V1::CertificatesController < ApplicationController
     @certificate = Certificate.find_by(:id => params[:id])
     raise "You can't delete certificate cause certificate don't have name" unless @certificate.name
     if @certificate&.owner.eql?(@@email) || $location_admin
-      account_uuid = CloudGateway.find_by(:account => $current_account).uuid
+      account_uuid = CloudGateway.find_by(:account => $current_account).cloudgw_id
       @certificate.destroy!
       remove_dir("certificates/#{account_uuid}/#{@certificate.name}")
       render json: @certificate, status: :ok
@@ -46,11 +46,11 @@ class Api::V1::CertificatesController < ApplicationController
   end
 
   def download
-    @cloudgw = CloudGateway.find_by(:uuid => params[:uuid])
+    @cloudgw = CloudGateway.find_by(:cloudgw_id => params[:cloudgw_id])
     if @cloudgw
       cert_path = ENV['CERT_PATH'] || 'certificates'
       raise json: nil, status: :not_found unless Dir.exists?(cert_path)
-      tarball = ZipFileGenerator.new("#{cert_path}/#{@cloudgw.uuid}", "tmp/#{cert_path}.zip")
+      tarball = ZipFileGenerator.new("#{cert_path}/#{@cloudgw.cloudgw_id}", "tmp/#{cert_path}.zip")
       tarball.write
       send_file "tmp/#{cert_path}.zip"
     else
