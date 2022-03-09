@@ -1,6 +1,6 @@
 class CloudGateway < ApplicationRecord
   has_many :routes
-  validates :uuid, uniqueness: true
+  validates :cloudgw_id, uniqueness: true
 
   def config
     generated_config = {
