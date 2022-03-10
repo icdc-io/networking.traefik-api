@@ -15,7 +15,8 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def create_cloudgw
-    CloudGateway.create!(params.permit(:name, :account, :cloudgw_id))
+    @gateway = CloudGateway.create!(params.permit(:name, :account, :cloudgw_id))
+    render json: @gateway, status: :ok
   end
 
   def update_cloudgw
