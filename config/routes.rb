@@ -16,14 +16,14 @@ Rails.application.routes.draw do
 
       get    'gateways',              to: 'gateways#index'
       post   'gateways',              to: 'gateways#create_cloudgw'
-      get    'gateways/:uuid/config', to: 'gateways#traefik_config'
+      get    'gateways/:cloudgw_id/config', to: 'gateways#traefik_config'
       get    'gateways/:id',          to: 'gateways#show'
       put    'gateways/:id',          to: 'gateways#update_cloudgw'
       delete 'gateways/:id',          to: 'gateways#delete_cloudgw'
 
       get    'certificates',          to: 'certificates#index'
       get    'certificates/:id',      to: 'certificates#show'
-      get    'cert-download/:uuid',   to: 'certificates#download'
+      get    'cert-download/:cloudgw_id',   to: 'certificates#download'
       post   'certificates',          to: 'certificates#create'
       delete 'certificates/:id',      to: 'certificates#delete'
       put    'certificates/:id',      to: 'certificates#update'
