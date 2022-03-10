@@ -34,7 +34,12 @@ gem 'json-jwt'
 gem 'haikunator'
 gem 'rubyzip'
 gem 'fileutils', '>= 1.6.0'
-gem 'net-smtp'
+
+# Remove lines below after fixing mail gem
+# https://stackoverflow.com/questions/70500220/rails-7-ruby-3-1-loaderror-cannot-load-such-file-net-smtp
+gem 'net-smtp', require: false
+gem 'net-imap', require: false
+gem 'net-pop', require: false
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
