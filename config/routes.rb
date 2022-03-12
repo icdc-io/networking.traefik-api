@@ -11,7 +11,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       # Old-style: remove after 2023
-      get    'config/:uuid',          to: 'gateways#traefik_config'
+      get    'config/:cloudgw_id',          to: 'gateways#traefik_config'
       # end
 
       get    'gateways',              to: 'gateways#index'
