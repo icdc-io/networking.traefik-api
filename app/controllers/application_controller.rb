@@ -40,7 +40,7 @@ class ApplicationController < ActionController::API
 
   def validate
     return true if $location_admin
-    $token.dig("external", "accounts", $current_account, "roles").include?("member")
+    $token.dig("external", "accounts", $current_account, "roles").include?("admin")
   rescue => e
     false
   end
