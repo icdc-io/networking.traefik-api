@@ -1,7 +1,7 @@
 class Route < ApplicationRecord
   belongs_to :cloud_gateway
   belongs_to :certificate, optional: true
-  has_many :routes_services
+  has_many :routes_services, dependent: :destroy
   has_many :services, :through => :routes_services
 
   attribute :services
