@@ -1,6 +1,8 @@
 class CloudGateway < ApplicationRecord
-  has_many :routes
+  has_many :routes, dependent: :destroy
   validates :cloudgw_id, uniqueness: true
+
+  before_destroy { Certificate.select{|cert| (cert.cert_path.split('/')[-3] == cloudgw_id) if cert.cert_path}.each &:destroy! } 
 
   def config
     generated_config = {
