@@ -19,7 +19,7 @@ class ServicesAccessJob < ApplicationJob
         :ipaddresses => service["networks"].collect{ |network| network["allocations"] }
                                            .flatten.select{ |alloc| alloc if alloc["type"] == "nic" }
                                            .collect{ |alloc| alloc["ip"] }.flatten.join(','),
-        :retired? => service["retired"]
+        :retired? => service["retired"] || !!service["retirement_state"]
       }
     end
   end
@@ -29,7 +29,7 @@ class ServicesAccessJob < ApplicationJob
     to_delete = []
     to_delete << Service.where.not(:ext_id => services.collect{|x| x[:ext_id]})
     to_delete << Service.where(:ext_id => services.select{|x| x if x[:retired?]}.collect{|x| x[:ext_id]})
-    
+
     to_delete.flatten.each(&:destroy)
     services.reject!{|x| x[:retired?]}
     find_or_build(services)
