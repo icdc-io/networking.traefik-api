@@ -56,11 +56,20 @@ class Certificate < ApplicationRecord
   end
 
   def values
+    cert = OpenSSL::X509::Certificate.new(File.read(cert_path))
+    certprops = OpenSSL::X509::Name.new(cert.issuer).to_a
+    common_name = certprops.find {|name, _, _| name == "CN"}[1]
+    organization = certprops.find {|name, _, _| name == "O"}[1]
+    hostname = routes.collect(&:hostname).uniq
     {
       :cert => File.read(cert_path),
       :key => File.read(key_path),
       :ca => File.read(ca_path),
-      :dest_ca => File.read(dest_ca_path)
+      :dest_ca => File.read(dest_ca_path),
+      :hostnames => hostname,
+      :valid_from => cert.not_before,
+      :valid_until => cert.not_after,
+      :issuer => "#{common_name} / #{organization}"
     }
   rescue => e
     {
