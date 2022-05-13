@@ -55,7 +55,7 @@ class CloudGateway < ApplicationRecord
 
   def tls
     {
-    "certificates" => Certificate.all.map do |certificate|
+    "certificates" => Certificate.where("cert_path LIKE?", "%#{cloudgw_id}%").map do |certificate|
         {
         "certFile" => "#{ENV['TRAEFIK_PATH']}/#{certificate.cert_path}",
         "keyFile" => "#{ENV['TRAEFIK_PATH']}/#{certificate.key_path}"
