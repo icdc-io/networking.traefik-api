@@ -21,6 +21,10 @@ class Api::V1::RoutesController < ApplicationController
   def create
     services = params[:route].delete(:services)
     certificate_id = params[:route].delete(:certificate_id)
+    #### ahrechushkin: DELETE IT AFTER FIXES ON FRONTEND
+    cloudgw_id = CloudGateway.find_by(:account => $current_account).id
+    params[:route][:cloud_gateway_id] = cloudgw_id
+    ### END
     @route = Route.create!(
       (
         params.require(:route).permit(
