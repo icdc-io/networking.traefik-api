@@ -28,23 +28,19 @@ class Api::V1::RoutesController < ApplicationController
     cloudgw_id = CloudGateway.find_by(:account => $current_account).id
     params[:route][:cloud_gateway_id] = cloudgw_id
     ### END
-    @route = Route.create!(
-      (
-        params.require(:route).permit(
-          :name, 
-          :hostname, 
-          :path, 
-          :target_port, 
-          :insecure, 
-          :tls_termination, 
-          :labels, 
-          :cloud_gateway_id, 
-          :owner, 
-          :source_proto, 
-          :destination_proto, 
-          :ip_version
-        )
-      )
+    route_params = params.require(:route).permit(
+      :name,
+      :hostname,
+      :path,
+      :target_port,
+      :insecure,
+      :tls_termination,
+      :labels,
+      :cloud_gateway_id,
+      :owner,
+      :source_proto,
+      :destination_proto,
+      :ip_version
     )
     unless $location_admin
       unless CloudGateway.find_by(:id => route_params[:cloud_gateway_id]).account == $current_account
