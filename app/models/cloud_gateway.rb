@@ -1,4 +1,5 @@
 class CloudGateway < ApplicationRecord
+  attribute :cloudgw_instance, :string
   has_many :routes, dependent: :destroy
   validates :cloudgw_id, uniqueness: true
 
@@ -21,6 +22,10 @@ class CloudGateway < ApplicationRecord
     generated_config.delete("http") if routes.where(:tls_termination => ["re-encrypt", "edge", nil]).empty?
     generated_config.delete("tcp") if routes.where(:tls_termination => ["passthrough"]).empty?
     generated_config.to_yaml.strip
+  end
+
+  def cloudgw_instance
+    "cloudgw-#{cloudgw_id.split('-').first}"
   end
 
   private

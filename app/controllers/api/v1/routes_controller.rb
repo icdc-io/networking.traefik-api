@@ -127,7 +127,7 @@ class Api::V1::RoutesController < ApplicationController
           end
         end
     
-        @route.update!(
+        @route.update(
           (
             params.require(:route).permit(
               :name, 
@@ -143,10 +143,11 @@ class Api::V1::RoutesController < ApplicationController
               :destination_proto, 
               :ip_version
             )
-          )
+          ),
+          services
         )
     
-        return render json: @route, status: :ok
+        return render json: Route.find_by(:id => params[:id]), status: :ok
       end
     end
       render json: nil, status: :not_found 
