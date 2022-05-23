@@ -3,7 +3,7 @@ require 'json/jwt'
 class ApplicationController < ActionController::API
   include ResponseHelper
   before_action :authorize, :except => [:traefik_config, :download]
-  before_action :authorize_location_admin, :only => [:create_cloudgw, :delete_cloudgw]
+  before_action :authorize_location_admin, :only => [:create_cloudgw, :update_cloudgw, :delete_cloudgw]
 
   def authorize_location_admin
     forbidden("You don't have access to perform this action") unless $location_admin
@@ -16,16 +16,15 @@ class ApplicationController < ActionController::API
     case auth_method
     when 'Bearer'
       $token = decoded_token token
-      @@email = $token.dig('user_id')
-      $location_admin = ENV['LOCATION_ADMIN_GROUP'].in?($token.dig("groups"))
     when 'Basic'
       login, password = Base64.decode64(token).split(':')
       $token = decoded_token get_jwt_token(login, password)
-      $location_admin = ENV['LOCATION_ADMIN_GROUP'].in?($token.dig("groups"))
     end
+    @@email = $token.dig('user_id')
+    $location_admin = ENV['LOCATION_ADMIN_GROUP'].in?($token.dig("groups"))
     unless validate
       $token = nil
-      msg = "You're doesn't have access to #{$current_account} with role admin"
+      msg = "You don't have access to account '#{$current_account}'"
       $current_account = nil
       $location_admin = false
       forbidden(msg)
@@ -39,8 +38,12 @@ class ApplicationController < ActionController::API
   end
 
   def validate
-    return true if $location_admin
-    $token.dig("external", "accounts", $current_account, "roles").include?("admin")
+    if $location_admin || $token.dig("external", "accounts", $current_account, "roles").include?("admin")
+      $account_admin = true
+    else
+      $account_admin = false
+      $token.dig("external", "accounts", $current_account, "roles").include?("member")
+    end
   rescue => e
     false
   end
