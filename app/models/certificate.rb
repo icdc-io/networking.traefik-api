@@ -1,10 +1,10 @@
 class Certificate < ApplicationRecord
   has_many :routes
   attribute :values
+  validates :name, uniqueness: {scope: :account}
   after_destroy :remove_dir
 
   def self.store(params)
-    raise "Name of certificate doesn't uniq in this account!" unless Certificate.where(:name => params["name"], :account => $current_account)
     path = "certificates/#{CloudGateway.find_by(:account => $current_account.downcase).cloudgw_id}/#{params["name"]}"
     dir = find_or_build_path(path)
     cert = Certificate.new(:owner => params["owner"], :name => params["name"], :account => $current_account)
@@ -17,10 +17,6 @@ class Certificate < ApplicationRecord
   end
 
   def update_content(params)
-    if name != params["name"] && !Certificate.where(:name => params["name"], :account => $current_account).empty?
-      raise "Name of certificate doesn't uniq in this account!"
-    end
-
     path = "certificates/#{CloudGateway.find_by(:account => $current_account.downcase).cloudgw_id}/#{name}"
     dir = Certificate.find_or_build_path(path)
     
