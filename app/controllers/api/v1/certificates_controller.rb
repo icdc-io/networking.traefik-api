@@ -51,7 +51,6 @@ class Api::V1::CertificatesController < ApplicationController
           (@certificate.account == $current_account && ($account_admin || @certificate.owner == @@email))
         account_uuid = CloudGateway.find_by(:account => $current_account).cloudgw_id
         @certificate.destroy!
-        remove_dir("certificates/#{account_uuid}/#{@certificate.name}")
         return render json: nil, status: :no_content
       end
     end
@@ -69,20 +68,4 @@ class Api::V1::CertificatesController < ApplicationController
       render json: nil, status: :not_found
     end
   end
-
-  private
-
-  def remove_dir(path)
-    if File.directory?(path)
-      Dir.foreach(path) do |file|
-        if ((file.to_s != ".") and (file.to_s != ".."))
-          remove_dir("#{path}/#{file}")
-        end
-      end
-      Dir.delete(path)
-    else
-      File.delete(path)
-    end
-  end
-
 end

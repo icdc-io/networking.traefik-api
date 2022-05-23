@@ -1,6 +1,7 @@
 class Certificate < ApplicationRecord
   has_many :routes
   attribute :values
+  after_destroy :remove_dir
 
   def self.store(params)
     raise "Name of certificate doesn't uniq in this account!" unless Certificate.where(:name => params["name"], :account => $current_account)
@@ -79,4 +80,19 @@ class Certificate < ApplicationRecord
       :dest_ca => File.read(dest_ca_path)
     }
   end
+
+  def remove_dir(path = nil)
+    path ||= "certificates/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}"
+    if File.directory?(path)
+      Dir.foreach(path) do |file|
+        unless file.to_s == "." || file.to_s == ".."
+          remove_dir "#{path}/#{file}"
+        end
+      end
+      Dir.delete(path)
+    elsif File.exist?(path)
+      File.delete(path)
+    end
+  end
+
 end
