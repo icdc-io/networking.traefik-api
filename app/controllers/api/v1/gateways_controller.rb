@@ -20,14 +20,14 @@ class Api::V1::GatewaysController < ApplicationController
 
   def create_cloudgw
     @gateway = CloudGateway.create!(params.permit(:name, :account, :cloudgw_id))
-    render json: @gateway, status: :ok
+    render json: @gateway, status: :created
   end
 
   def update_cloudgw
     @gateway = CloudGateway.find_by(:id => params[:id])
     if @gateway
       @gateway.update!(params.permit(:name, :account))
-      render json: @gateway, status: :created
+      render json: @gateway, status: :ok
     else
       render json: nil, status: :not_found
     end
@@ -50,7 +50,10 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def traefik_config
-    config = CloudGateway.find_by(:cloudgw_id => params[:cloudgw_id])&.config
-    render :json => config, :content_type => 'text/yaml', :status => :ok
+    if gateway = CloudGateway.find_by(:cloudgw_id => params[:cloudgw_id])
+      render :json => gateway.config, :content_type => 'text/yaml', :status => :ok
+    else
+      render :json => nil, :status => :not_found
+    end
   end
 end
