@@ -3,6 +3,7 @@ class CloudGateway < ApplicationRecord
   validates :cloudgw_id, uniqueness: true
 
   before_destroy { Certificate.select{|cert| (cert.cert_path.split('/')[-3] == cloudgw_id) if cert.cert_path}.each &:destroy! } 
+  after_destroy { Dir.delete("certificates/#{cloudgw_id}") if File.exist?("certificates/#{cloudgw_id}") }
 
   def config
     generated_config = {
