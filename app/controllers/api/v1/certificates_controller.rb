@@ -1,4 +1,5 @@
 class Api::V1::CertificatesController < ApplicationController
+  before_action :validate_certificate, only: [:create, :update]
 
   def index
     if $location_admin
@@ -68,4 +69,13 @@ class Api::V1::CertificatesController < ApplicationController
       render json: nil, status: :not_found
     end
   end
+
+  def validate_certificate
+    cert_params = params.require('certificate').permit('cert', 'key')
+    OpenSSL::X509::Certificate.new(cert_params["cert"])
+    raise unless OpenSSL::PKey::RSA.new(cert_params["key"]).private? # maybe can fail in case of passphrase
+  rescue
+    return abort("Invalid certificate")
+  end
+
 end

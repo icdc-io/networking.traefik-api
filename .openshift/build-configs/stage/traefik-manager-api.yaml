@@ -18,7 +18,7 @@ spec:
   source:
     contextDir: .openshift/images/traefik-manager-api
     git:
-      ref: dev
+      ref: master
       uri: https://git.zby.icdc.io/icdc/networking/traefik-manager-api.git
     sourceSecret:
       name: os-deploy-idc
@@ -29,7 +29,7 @@ spec:
       - name: RAILS_ENV
         value: development
       - name: BUILD_BRANCH
-        value: dev
+        value: master
       - name: GIT_AUTH
         valueFrom:
           secretKeyRef:
