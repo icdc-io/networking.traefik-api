@@ -63,8 +63,8 @@ class CloudGateway < ApplicationRecord
     {
     "certificates" => Certificate.where("cert_path LIKE?", "%#{cloudgw_id}%").map do |certificate|
         {
-        "certFile" => "#{ENV['TRAEFIK_PATH']}/#{certificate.cert_path}",
-        "keyFile" => "#{ENV['TRAEFIK_PATH']}/#{certificate.key_path}"
+        "certFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{certificate.cert_path}",
+        "keyFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{certificate.key_path}"
         }
       end
     }
@@ -87,12 +87,10 @@ class CloudGateway < ApplicationRecord
         "rule" => rule(route)
       }
 
-      if route.tls_termination == "re-encrypt"
-        if route.certificate
-          routers[route.hostname]["tls"] = {}
-        else
-          routers[route.hostname]["tls"] = {"certResolver" => "default" }
-        end
+      if route.certificate
+        routers[route.hostname]["tls"] = true
+      else
+        routers[route.hostname]["tls"] = { "certResolver" => "default" }
       end
 
       if route.insecure == "redirect"
