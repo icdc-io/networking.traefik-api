@@ -23,11 +23,6 @@ class Api::V1::RoutesController < ApplicationController
 
   def create
     services = params[:route].delete(:services)
-    certificate_id = params[:route].delete(:certificate_id)
-    #### ahrechushkin: DELETE IT AFTER FIXES ON FRONTEND
-    cloudgw_id = CloudGateway.find_by(:account => $current_account).id
-    params[:route][:cloud_gateway_id] = cloudgw_id
-    ### END
     route_params = params.require(:route).permit(
       :name,
       :hostname,
@@ -40,7 +35,8 @@ class Api::V1::RoutesController < ApplicationController
       :owner,
       :source_proto,
       :destination_proto,
-      :ip_version
+      :ip_version,
+      :certificate_id
     )
     unless $location_admin
       unless CloudGateway.find_by(:id => route_params[:cloud_gateway_id]).account == $current_account
@@ -52,52 +48,44 @@ class Api::V1::RoutesController < ApplicationController
     end
     
     @route = Route.create!(route_params)
-    if certificate_id
-      if certificate = Certificate.find_by(:id => certificate_id)
+    begin
+      if services.count == 1
+        service = Service.find_by(:id => services.first['id'])
         if $location_admin ||
-            (certificate.account == $current_account && ($account_admin || certificate.owner == @@email))
-          @route.update!(:certificate_id => certificate_id)
-        else
-          return not_found("Certificate with id #{certificate_id}")
+          (service.account == $current_account && ($account_admin || service.owner == @@email))
+
+          RoutesService.create!(
+            :route => @route, 
+            :service => service, 
+            :balance_type => :loadbalancer, 
+            :value => nil, 
+            :name => "#{service.ext_id}-#{@route.target_port}"
+            )
+        else 
+          return not_found("Service with id #{services.first['id']}")
         end
-      else
-        return not_found("Certificate with id #{certificate_id}")
+      elsif services.count > 1
+        services.each do |data|
+          name = RoutesService.generate_name
+          service = Service.find_by(:id => data['id'])
+          if $location_admin ||
+            (service.account == $current_account && ($account_admin || service.owner == @@email))
+            RoutesService.create!(
+              :route => @route, 
+              :service => service, 
+              :balance_type => :weighted,
+              :value => data['weight'], 
+              :name => name
+            )
+          else
+            return not_found("Service with id #{data['id']}")
+          end
+        end
       end
+    rescue => err
+      @route.destroy!
+      raise err
     end
-
-
-    if services.count == 1
-      service = Service.find_by(:id => services.first['id'])
-      if $location_admin ||
-        (service.account == $current_account && ($account_admin || service.owner == @@email))
-
-        RoutesService.create!(
-          :route => @route, 
-          :service => service, 
-          :balance_type => :loadbalancer, 
-          :value => nil, 
-          :name => service.name
-          )
-      else 
-        return not_found("Service with id #{services.first['id']}")
-      end
-    elsif services.count > 1
-      service = Service.find_by(:id => data['id'])
-      if $location_admin ||
-        (service.account == $current_account && ($account_admin || service.owner == @@email))
-        name = RoutesService.generate_name
-        RoutesService.create!(
-          :route => @route, 
-          :service => service, 
-          :balance_type => :weighted,
-          :value => data['weight'], 
-          :name => name
-        )
-      else
-        return not_found("Service with id #{data['id']}")
-      end
-    end
-
     render json: @route, status: :created
   end
 

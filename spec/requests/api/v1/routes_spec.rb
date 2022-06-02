@@ -1,6 +1,7 @@
 require 'rails_helper'
 require 'swagger_helper'
 require './spec/factories/certificate_helper.rb'
+require './spec/factories/route_helper.rb'
 
 describe 'Api::V1::RoutesController', type: :request do
   path "/api/v1/routes" do
@@ -32,7 +33,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'test_member@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
 
             # Member's account + other email
             service = FactoryBot.create(:service)
@@ -43,7 +44,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'not_member@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
 
             # Other account + member's email
             service = FactoryBot.create(:service)
@@ -54,7 +55,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'test_member@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
           end
 
           get "/api/v1/routes",
@@ -82,7 +83,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'test_admin@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
 
             # Member's account + other email
             service = FactoryBot.create(:service)
@@ -93,7 +94,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'not_member@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
 
             # Other account + member's email
             service = FactoryBot.create(:service)
@@ -104,7 +105,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'test_admin@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
           end
 
           get "/api/v1/routes",
@@ -131,7 +132,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'test_member@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
 
             # Member's account + other email
             service = FactoryBot.create(:service)
@@ -142,7 +143,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'not_member@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
 
             # Other account + member's email
             service = FactoryBot.create(:service)
@@ -153,7 +154,7 @@ describe 'Api::V1::RoutesController', type: :request do
               :owner => 'test_member@test.com',
               :certificate_id => cert.id
             )
-            FactoryBot.create(:routes_service, :route => route, :service => service)
+            add_routes_services(route, [{:id => service.id}])
           end
 
           get "/api/v1/routes",
@@ -262,7 +263,143 @@ describe 'Api::V1::RoutesController', type: :request do
           generate_docs(example, response)
         end
 
-        pending "needs some examples on creatig route with multiple services"
+        it 'creates a new route with multiple services' do |example|
+          gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
+          services = []
+          test_count = rand(2..7)
+          test_count.times do
+            services << FactoryBot.create(:service)
+          end
+          cert = create_certificate(:account => 'test')
+
+          request_body = { 'route' => $route.attributes.
+            slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
+                  'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels').
+            merge(
+              :cloud_gateway_id => gateway.id,
+              :certificate_id => cert.id,
+              :services => services.map {|service| { :id => service.id, :weight => rand(1..100) }}
+            )
+          }
+          post '/api/v1/routes',
+            :params => request_body,
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :Authorization => JWT_MEMBER
+            }
+          expect(response).to have_http_status(:created)
+          expect(Route.count).to eq(1)
+          expect(RoutesService.count).to eq(test_count)
+          expect(
+            JSON.parse(response.body, symbolize_names: true).
+              except(:id, :created_at, :updated_at, :services, :routes_services)
+          ).to eq(
+            request_body['route'].symbolize_keys.except(:services)
+          )
+          services.each_with_index do |service, index|
+            expect(JSON.parse(response.body)['services'][index].except('created_at', 'updated_at')).to eq(
+              service.attributes.except('created_at', 'updated_at')
+            )
+            expect(JSON.parse(response.body)['routes_services'][index].except('created_at', 'updated_at')).to eq(
+              RoutesService.all[index].attributes.except('created_at', 'updated_at')
+            )
+          end
+        end
+
+        it 'possible to create more than 1 route to service, but with different ports' do |example|
+          gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
+          route = FactoryBot.create(
+            :route,
+            :target_port => 11111,
+            :cloud_gateway_id => gateway.id,
+            :owner => 'test_member@test.com',
+          )
+          service = FactoryBot.create(:service)
+          add_routes_services(route, [{:id => service.id}])
+          request_body = { 'route' => $route.attributes.
+            slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
+                  'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels').
+            merge(
+              'target_port' => 22222,
+              :cloud_gateway_id => gateway.id,
+              :services => [{ :id => service.id }]
+            )
+          }
+          post '/api/v1/routes',
+            :params => request_body,
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :Authorization => JWT_MEMBER
+            }
+          expect(response).to have_http_status(:created)
+        end
+      end
+
+      response(
+        "422",
+        "Invalid request (Route name should be unique per gateway;" +
+        " must be possible to create more than 1 route to service, but with different ports)"
+      ) do
+
+        it 'valdates route name on uniqueness among gateway' do |example|
+          gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
+          service = FactoryBot.create(:service)
+          route = FactoryBot.create(
+            :route,
+            :name => 'test_name',
+            :cloud_gateway_id => gateway.id,
+            :owner => 'test_member@test.com',
+          )
+          request_body = { 'route' => $route.attributes.
+            slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
+                  'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels').
+            merge(
+              'name' => 'test_name',
+              :cloud_gateway_id => gateway.id,
+              :services => [{ :id => service.id }]
+            )
+          }
+          post '/api/v1/routes',
+            :params => request_body,
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :Authorization => JWT_MEMBER
+            }
+          expect(response).to have_http_status(:unprocessable_entity)
+        rescue ActiveRecord::RecordInvalid => e
+          expect(e)
+        end
+
+        it 'can\'t create more than 1 route to one service port' do |example|
+          gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
+          route = FactoryBot.create(
+            :route,
+            :target_port => 11111,
+            :cloud_gateway_id => gateway.id,
+            :owner => 'test_member@test.com',
+          )
+          service = FactoryBot.create(:service)
+          add_routes_services(route, [{:id => service.id}])
+          request_body = { 'route' => $route.attributes.
+            slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
+                  'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels').
+            merge(
+              'target_port' => 11111,
+              :cloud_gateway_id => gateway.id,
+              :services => [{ :id => service.id }]
+            )
+          }
+          post '/api/v1/routes',
+            :params => request_body,
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :Authorization => JWT_MEMBER
+            }
+          expect(response).to have_http_status(:unprocessable_entity)
+        rescue ActiveRecord::RecordInvalid => e
+          expect(e)
+          generate_docs(example, ActionDispatch::Response.new(422, {}, e.to_json))
+        end
       end
     end
   end
@@ -294,7 +431,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           set_request_param(example, :id, route.id)
 
           get "/api/v1/routes/#{route.id}",
@@ -344,7 +481,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           get "/api/v1/routes/#{route.id}",
             :params => nil,
             :headers => {
@@ -364,7 +501,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'not_test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           get "/api/v1/routes/#{route.id}",
             :params => nil,
             :headers => {
@@ -435,7 +572,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
 
           service = FactoryBot.create(:service)
           cert = create_certificate(:account => 'test')
@@ -510,7 +647,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           put "/api/v1/routes/#{route.id}",
             :params => nil,
             :headers => {
@@ -530,7 +667,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'not_test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           put "/api/v1/routes/#{route.id}",
             :params => nil,
             :headers => {
@@ -568,7 +705,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           set_request_param(example, :id, route.id)
           delete "/api/v1/routes/#{route.id}",
             :params => nil,
@@ -610,7 +747,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           delete "/api/v1/routes/#{route.id}",
             :params => nil,
             :headers => {
@@ -630,7 +767,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :owner => 'not_test_member@test.com',
             :certificate_id => cert.id
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, [{:id => service.id}])
           delete "/api/v1/routes/#{route.id}",
             :params => nil,
             :headers => {

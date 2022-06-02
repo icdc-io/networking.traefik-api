@@ -1,7 +1,7 @@
 route_name = "Route-" + rand(165437652).to_s(36)
 FactoryBot.define do
   factory :route do
-    name {route_name}
+    name {rand(165437652).to_s(36)}
     hostname {"#{route_name.downcase}.computedev.zby.icdc.io"}
     target_port {rand(1000..60000)}
     tls_termination {"passthrough"}
