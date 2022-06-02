@@ -442,28 +442,92 @@ describe 'Api::V1::GatewaysController', type: :request do
       ) do
 
         it 'returns config' do |example|
-          gateway = CloudGateway.create!(
-            :name => 'vpn_default',
-            :cloudgw_id => 'a843bf2a-7dac-4256-b048-cc1bc0864ccb',
+          gateway = FactoryBot.create(
+            :cloud_gateway,
             :account => 'test'
           )
-          service = FactoryBot.create(:service)
+          services = 3.times.map { { :service => FactoryBot.create(:service), :weight => rand(1..100).to_f } }
           cert = create_certificate(:account => 'test')
           route = FactoryBot.create(
             :route,
             :cloud_gateway_id => gateway.id,
             :owner => 'test_member@test.com',
-            :certificate_id => cert.id
+            :certificate_id => cert.id,
+            :tls_termination => "passthrough",
+            :insecure => "redirect"
           )
-          routes_service = FactoryBot.create(:routes_service, :route => route, :service => service)
+          routes_service = add_routes_services(route, services.map{ |service| {:id => service[:service].id, :weight => service[:weight]} })
 
           set_request_param(example, :uuid, gateway.cloudgw_id)
           get "/api/v1/gateways/#{gateway.cloudgw_id}/config"
           expect(response).to have_http_status(:ok)
+          yaml = YAML.load(response.body)
+          services_block = {
+            "#{routes_service.first.name}" => {
+              "weighted" => {
+                "services" => services.map do |service|
+                  {"name" => "#{service[:service].ext_id}-#{route.target_port}", "weight" => service[:weight]}
+                end
+              }
+            }
+          }
+          services.each do |service|
+            services_block.merge!("#{service[:service].ext_id}-#{route.target_port}" => {
+                "loadBalancer" => {
+                  "servers" => [{ "address" => "#{service[:service].addresses(4)}:#{route.target_port}" }]
+                }
+              }
+            )
+          end
+          expect(yaml["tcp"]).to eq(
+            {
+              "routers" => {
+                "#{route.name}" => {
+                  "service" => routes_service.first.name,
+                  "rule"    => "HostSNI(`#{route.hostname}`)",
+                  "tls"     => { "passthrough" => true }
+                }
+              },
+              "services" => services_block
+            }
+          )
+          services_block.each do |key, value|
+            if services_block[key]["loadBalancer"]
+              services_block[key]["loadBalancer"]["servers"] = 
+                [{ "url" => "http://#{value["loadBalancer"]["servers"][0]["address"]}" }]
+            end
+          end
+          expect(yaml["http"]).to eq(
+            {
+              "routers" => {
+                "#{route.name}-http" => {
+                  "service"     => routes_service.first.name,
+                  "rule"        => "Host(`#{route.hostname}`)",
+                  "middlewares" => ["#{route.name}-redirect"],
+                  "entryPoints" => ["web"]
+                }
+              },
+              "middlewares" => {
+                "#{route.name}-redirect" => {                                                                              
+                  "redirectScheme" => {
+                    "scheme"    => "https",
+                    "permanent" => true
+                  }                                                                             
+                }
+              },
+              "services" => services_block
+            }
+          )
+          expect(yaml["tls"]).to eq(
+            "certificates" => [
+              {
+                "certFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{cert.cert_path}",
+                "keyFile"  => "#{ENV['TRAEFIK_CERT_PATH']}/#{cert.key_path}"
+              }
+            ]
+          )
           generate_docs(example, response, 'text/yaml')
         end
-
-        pending "needs some examples on config file correctness"
       end
 
       response(
