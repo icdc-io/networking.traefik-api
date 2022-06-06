@@ -113,6 +113,8 @@ class Api::V1::RoutesController < ApplicationController
           else
             return not_found("Certificate with id #{params[:route][:certificate_id]}")
           end
+        else
+          @route.update!(:certificate_id => nil)
         end
     
         @route.update(
