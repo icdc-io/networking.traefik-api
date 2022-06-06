@@ -6,6 +6,9 @@ class Route < ApplicationRecord
 
   attribute :services
   attribute :routes_services
+  attribute :cloud_gateway
+
+  validates :name, uniqueness: { scope: :cloud_gateway }
 
   def update(data, new_services)
     update!(data)

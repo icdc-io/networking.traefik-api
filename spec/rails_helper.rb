@@ -62,3 +62,43 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 end
+
+JWT_MEMBER = "Bearer " + JWT.encode({
+  "external": {
+    "accounts": {
+      "test": {
+        "roles": ["member"]
+      },
+    }
+  },
+  "groups": ["test.member"],
+  "user_id": "test_member@test.com",
+  "name": "Test Member"
+}, nil)
+
+JWT_ADMIN = "Bearer " + JWT.encode({
+  "external": {
+    "accounts": {
+      "test": {
+        "roles": ["admin"]
+      },
+    }
+  },
+  "groups": ["test.admin"],
+  "user_id": "test_admin@test.com",
+  "name": "Test Admin"
+}, nil)
+
+ENV['LOCATION_ADMIN_GROUP'] = 'location.admin'
+JWT_LOCATION_ADMIN = "Bearer " + JWT.encode({
+  "external": {
+    "accounts": {
+      "location": {
+        "roles": ["admin"]
+      },
+    }
+  },
+  "groups": ["location.admin"],
+  "user_id": "test_location_admin@test.com",
+  "name": "Test Loaction Admin"
+}, nil)
