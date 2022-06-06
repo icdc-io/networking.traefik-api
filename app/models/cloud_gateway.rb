@@ -12,10 +12,12 @@ class CloudGateway < ApplicationRecord
                                        routes.find_by(:tls_termination => "passthrough", :insecure => "redirect")
     generated_config["tcp"] = tcp if routes.find_by(:tls_termination => "passthrough")
     if routes.where.not(:tls_termination => nil).find_by(:insecure => "redirect")
-      generated_config["http"]["middlewares"] = middlewares
+      generated_config["http"]["middlewares"] = middlewares unless middlewares.empty?
     end
     generated_config["tls"] = tls if Certificate.find{|cert| (cert.cert_path.split('/')[-3] == cloudgw_id) if cert.cert_path}
-    generated_config.to_yaml.strip
+    generated_config
+      .delete_if { |key, value| value.empty? }
+      .to_yaml.strip
   end
 
   def cloudgw_instance
@@ -28,16 +30,18 @@ class CloudGateway < ApplicationRecord
     http_block = { "routers" => {}, "services" => {} }
 
     routes.where(:tls_termination => ["re-encrypt", "edge", nil]).each do |route|
+      next if route.services.empty?
       http_block["routers"].merge! routers_http(route)
       http_block["services"].merge! services_section(route, :http)
     end
 
     routes.where(:tls_termination => "passthrough", :insecure => "redirect").each do |route|
+      next if route.services.empty?
       http_block["routers"].merge! routers_http(route)
       http_block["services"].merge! services_section(route, :http)
     end
 
-    http_block
+    http_block.delete_if { |key, value| value.empty? }
   end
 
   def routers_http(route)
@@ -67,6 +71,7 @@ class CloudGateway < ApplicationRecord
     tcp_block = { "routers" => {}, "services" => {} }
   
     routes.where(:tls_termination => ["passthrough"]).each do |route|
+      next if route.services.empty?
       tcp_block["routers"][route.name] = {
         "service" => route.routes_services[0].name,
         "rule" => "HostSNI(`#{route.hostname}`)",
@@ -74,10 +79,10 @@ class CloudGateway < ApplicationRecord
           "passthrough" => true
         }
       }
-      tcp_block["services"].merge! services_section(route, :tcp)
+      tcp_block["services"].merge!(services_section(route, :tcp))
     end
 
-    tcp_block
+    tcp_block.delete_if { |key, value| value.empty? }
   end
 
   def services_section(route, section)
@@ -103,7 +108,7 @@ class CloudGateway < ApplicationRecord
         }
       end
     end
-    services
+    services.delete_if { |key, value| value.empty? }
   end
 
   def lb_server(service, section, route)
@@ -145,6 +150,7 @@ class CloudGateway < ApplicationRecord
   def middlewares
     block = {}
     routes.where(:insecure => "redirect").each do |route|
+      next if route.services.empty?
       if route.tls_termination
         block["#{route.name}-redirect"] = {
           "redirectScheme" => {
@@ -154,7 +160,7 @@ class CloudGateway < ApplicationRecord
         }
       end
     end
-    block
+    block.delete_if { |key, value| value.empty? }
   end
 
   def tls
