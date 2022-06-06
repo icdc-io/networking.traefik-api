@@ -40,22 +40,11 @@ class CloudGateway < ApplicationRecord
     http_block
   end
 
-<<<<<<< HEAD
-  def tls
-    {
-    "certificates" => Certificate.where("cert_path LIKE?", "%#{cloudgw_id}%").map do |certificate|
-        {
-        "certFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{certificate.cert_path}",
-        "keyFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{certificate.key_path}"
-        }
-      end
-=======
   def routers_http(route)
     router = {
       "service" => route.routes_services[0].name,
       "rule" => rule(route),
       "tls" => route.certificate ? true : { "certResolver" => "default" }
->>>>>>> master
     }
     if route.insecure == "redirect" && route.tls_termination
       router.merge!(
@@ -74,47 +63,11 @@ class CloudGateway < ApplicationRecord
     route.path == "/" ? "Host(`#{route.hostname}`)" : "Host(`#{route.hostname}`) && PathPrefix(`#{route.path}`)"
   end
 
-<<<<<<< HEAD
-  def http(filtered_routes)
-    routers = {}
-    middlewares = {}
-    filtered_routes.map do |route|
-      routers[route.hostname] = {
-        "service" => route.routes_services[0].name,
-        "rule" => rule(route)
-      }
-
-      if route.certificate
-        routers[route.hostname]["tls"] = true
-      else
-        routers[route.hostname]["tls"] = { "certResolver" => "default" }
-      end
-
-      if route.insecure == "redirect"
-        routers[route.hostname].merge!({"middlewares" => ["#{route.hostname}-redirect"]})
-      end
-    end
-    websecure = entrypoint_websecure(routers.deep_dup)
-    web = entrypoint_web(routers.deep_dup)
-    http_block = {}
-
-    web.each {|x| http_block.merge!(x)}
-    websecure.each {|x| http_block.merge!(x)}
-
-    http_block 
-  end
-
-  def tcp(filtered_routes)
-    routers = {}
-    filtered_routes.map do |route|
-      routers[route.name] = {
-=======
   def tcp
     tcp_block = { "routers" => {}, "services" => {} }
   
     routes.where(:tls_termination => ["passthrough"]).each do |route|
       tcp_block["routers"][route.name] = {
->>>>>>> master
         "service" => route.routes_services[0].name,
         "rule" => "HostSNI(`#{route.hostname}`)",
         "tls" => {
