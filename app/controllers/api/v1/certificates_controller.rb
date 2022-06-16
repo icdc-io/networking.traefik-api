@@ -2,24 +2,15 @@ class Api::V1::CertificatesController < ApplicationController
   before_action :validate_certificate, only: [:create, :update]
 
   def index
-    if $location_admin
-      @certificates = Certificate.all
-    elsif $account_admin
-      @certificates = Certificate.where(:account => $current_account)
-    else
-      @certificates = Certificate.where(:account => $current_account, :owner => @@email)
-    end
-    render json: @certificates, status: :ok
+    render json: Certificate.filtered_list, status: :ok
   end
 
   def show
-    if @certificate = Certificate.find_by(:id => params[:id])
-      if $location_admin ||
-          (@certificate.account == $current_account && ($account_admin || @certificate.owner == @@email))
-        return render json: @certificate, status: :ok
-      end
-    end
+    if @certificate = Certificate.find_by(:id => params[:id])&.rbac
+      render json: @certificate, status: :ok
+    else
       render json: nil, status: :not_found
+    end
   end
 
   def create
@@ -29,33 +20,26 @@ class Api::V1::CertificatesController < ApplicationController
   end
 
   def update
-    if @certificate = Certificate.find_by(:id => params[:id])
-      if $location_admin ||
-          (@certificate.account == $current_account && ($account_admin || @certificate.owner == @@email))
-        if params['certificate']
-        return render :json =>
-          @certificate.update_content(
-            params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner', 'name')
-          ), status: :ok
-        else
-          return render :json => @certificate, status: :ok
-        end
+    if @certificate = Certificate.find_by(:id => params[:id])&.rbac
+      if params['certificate']
+        @certificate.update_content(
+          params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner', 'name')
+        )
       end
+      render json: @certificate, status: :ok
+    else
+      render json: nil, status: :not_found
     end
-    render json: nil, status: :not_found
   end
 
   def delete
-    if @certificate = Certificate.find_by(:id => params[:id])
+    if @certificate = Certificate.find_by(:id => params[:id])&.rbac
       raise "You can't delete certificate cause certificate don't have name" unless @certificate.name
-      if $location_admin ||                                                                                              
-          (@certificate.account == $current_account && ($account_admin || @certificate.owner == @@email))
-        account_uuid = CloudGateway.find_by(:account => $current_account).cloudgw_id
-        @certificate.destroy!
-        return render json: nil, status: :no_content
-      end
+      @certificate.destroy!
+      render json: nil, status: :no_content
+    else
+      render json: nil, status: :not_found
     end
-    render json: nil, status: :not_found
   end
 
   def download
