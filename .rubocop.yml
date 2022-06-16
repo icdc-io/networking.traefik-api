@@ -1,0 +1,4 @@
+require: rubocop-rails
+
+GlobalVars:
+  AllowedVariables: [$role, $current_account, $email]

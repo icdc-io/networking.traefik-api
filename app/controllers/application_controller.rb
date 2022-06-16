@@ -20,7 +20,7 @@ class ApplicationController < ActionController::API
       login, password = Base64.decode64(token).split(':')
       $token = decoded_token get_jwt_token(login, password)
     end
-    @@email = $token.dig('user_id')
+    $email = $token.dig('user_id')
     $location_admin = ENV['LOCATION_ADMIN_GROUP'].in?($token.dig("groups"))
     unless validate
       $token = nil
@@ -29,6 +29,7 @@ class ApplicationController < ActionController::API
       $location_admin = false
       forbidden(msg)
     end
+    set_role
   end
 
   private
@@ -87,5 +88,17 @@ class ApplicationController < ActionController::API
       return JSON::JWK.new(key).to_key
     end
     nil
+  end
+
+  def set_role
+    if $location_admin
+      $role = :location_admin
+    elsif $account_admin
+      $role = :admin
+    elsif $current_account
+      $role = :member
+    else
+      $role = nil
+    end
   end
 end
