@@ -101,7 +101,7 @@ class Certificate < ApplicationRecord
   end
 
   def recreate_tarball(cloudgw_id)
-    tarball = ZipFileGenerator.new("tmp/certificates/#{@cloudgw.cloudgw_id}", "#{ENV['DOWNLOAD_CERT_PATH']}/#{cloudgw_id}.zip")
+    tarball = ZipFileGenerator.new("tmp/certificates/#{cloudgw_id}", "#{ENV['DOWNLOAD_CERT_PATH']}/#{cloudgw_id}.zip")
     tarball.write
   end
 end
