@@ -2,7 +2,8 @@ class Certificate < ApplicationRecord
   has_many :routes
   attribute :values
   validates :name, uniqueness: {scope: :account}
-  after_destroy :remove_dir
+  after_destroy :remove_cert_files
+  after_create :prepare_to_downloading
 
   def self.store(params)
     path = "certificates/#{CloudGateway.find_by(:account => $current_account.downcase).cloudgw_id}/#{params["name"]}"
@@ -35,7 +36,24 @@ class Certificate < ApplicationRecord
       end
 
     end
+    FileUtils.rm_rf( "tmp/certificates/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}")
+    prepare_to_downloading
     self    
+  end
+
+  def prepare_to_downloading
+    CloudGateway.where(:account => $current_account.downcase).each do |cloudgw|
+      path = "tmp/certificates/#{cloudgw.cloudgw_id}"
+      FileUtils.mkdir_p(path) unless Dir.exists?(path)
+      FileUtils.cp_r("#{ENV['CERT_PATH']}/#{cloudgw.cloudgw_id}/#{name}", "#{path}/#{name}")
+      input = File.open("#{path}/#{name}/ca")
+      ca = input.read()
+      output = File.open("#{path}/#{name}/cert", "a")
+      output.write("\n#{ca}")
+      output.close()
+      input.close()
+      recreate_tarball(cloudgw.cloudgw_id)
+    end
   end
 
   private
@@ -77,18 +95,13 @@ class Certificate < ApplicationRecord
     }
   end
 
-  def remove_dir(path = nil)
-    path ||= "certificates/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}"
-    if File.directory?(path)
-      Dir.foreach(path) do |file|
-        unless file.to_s == "." || file.to_s == ".."
-          remove_dir "#{path}/#{file}"
-        end
-      end
-      Dir.delete(path)
-    elsif File.exist?(path)
-      File.delete(path)
-    end
+  def remove_cert_files
+    FileUtils.rm_rf( "#{ENV['CERT_PATH']}/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}")
+    FileUtils.rm_rf( "tmp/certificates/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}")
   end
 
+  def recreate_tarball(cloudgw_id)
+    tarball = ZipFileGenerator.new("tmp/certificates/#{@cloudgw.cloudgw_id}", "#{ENV['DOWNLOAD_CERT_PATH']}/#{cloudgw_id}.zip")
+    tarball.write
+  end
 end
