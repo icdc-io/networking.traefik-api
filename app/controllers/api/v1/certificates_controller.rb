@@ -44,11 +44,7 @@ class Api::V1::CertificatesController < ApplicationController
 
   def download
     if @cloudgw = CloudGateway.find_by(:cloudgw_id => params[:cloudgw_id])
-      cert_path = ENV['CERT_PATH'] || 'certificates'
-      raise json: nil, status: :not_found unless Dir.exists?(cert_path)
-      tarball = ZipFileGenerator.new("#{cert_path}/#{@cloudgw.cloudgw_id}", "tmp/#{cert_path}.zip")
-      tarball.write
-      send_file "tmp/#{cert_path}.zip"
+      send_file "#{ENV['DOWNLOAD_CERT_PATH']}/#{@cloudgw.cloudgw_id}.zip"
     else
       render json: nil, status: :not_found
     end
@@ -61,5 +57,4 @@ class Api::V1::CertificatesController < ApplicationController
   rescue
     return abort("Invalid certificate")
   end
-
 end
