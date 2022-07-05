@@ -14,7 +14,6 @@ module Rbac
       @@rbac_owner   = params[:owner]   || $email                # rubocop:disable Style/ClassVars
       @role          = params[:role]    || $role
 
-      @@rbac_no_owner      = params[:no_owner]                   # rubocop:disable Style/ClassVars
       @admin_only          = params[:admin_only]
       @location_admin_only = params[:location_admin_only]
     end
@@ -24,7 +23,7 @@ module Rbac
     end
 
     def match_owner?
-      account == @@rbac_account && (@@rbac_no_owner || owner == @@rbac_owner)
+      account == @@rbac_account && owner == @@rbac_owner
     end
 
     def accessible?
@@ -52,7 +51,11 @@ module Rbac
       when :admin
         select(&:match_account?)
       when :member
-        select(&:match_owner?)
+        if params[:no_owner]
+          select(&:match_account?)
+        else
+          select(&:match_owner?)
+        end
       end
     end
   end
@@ -70,7 +73,11 @@ module Rbac
       when :admin
         self if match_account?
       when :member
-        self if match_owner?
+        if params[:no_owner]
+          self if match_account?
+        elsif match_owner?
+          self
+        end
       end
     end
   end
