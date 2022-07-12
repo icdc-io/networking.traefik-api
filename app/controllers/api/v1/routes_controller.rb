@@ -42,12 +42,15 @@ class Api::V1::RoutesController < ApplicationController
     begin
       if services.count == 1
         if service = Service.find_by(:id => services.first['id'])&.rbac
+          name = "#{service.ext_id}-#{@route.target_port}"
+          number_of_routes = RoutesService.where("name like ?", "#{name}%").collect { |record| record.name.split('-').last.to_i }
+          query = ((1..number_of_routes.count + 1).to_a - number_of_routes).first
           RoutesService.create!(
             :route => @route, 
             :service => service, 
             :balance_type => :loadbalancer, 
             :value => nil, 
-            :name => "#{service.ext_id}-#{@route.target_port}"
+            :name => "#{name}-#{query}"
             )
         else 
           return not_found("Service with id #{services.first['id']}")
