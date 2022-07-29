@@ -37,4 +37,8 @@ class Route < ApplicationRecord
       end
     end
   end
+
+  def account
+    cloud_gateway.account
+  end
 end

@@ -1,17 +1,11 @@
 class Api::V1::GatewaysController < ApplicationController
 
   def index
-    if $location_admin
-      @gateways = CloudGateway.all
-    else
-      @gateways = CloudGateway.where(:account => $current_account)
-    end
-    render json: @gateways, status: :ok
+    render json: CloudGateway.filtered_list(no_owner: true), status: :ok
   end
 
   def show
-    @gateway = CloudGateway.find_by(:id => params[:id])
-    if @gateway && ( $location_admin || @gateway.account == $current_account )
+    if @gateway = CloudGateway.find_by(:id => params[:id])&.rbac(no_owner: true)
       render json: @gateway, status: :ok
     else
       render json: nil, status: :not_found
