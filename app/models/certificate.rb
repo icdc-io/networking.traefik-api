@@ -6,9 +6,9 @@ class Certificate < ApplicationRecord
   after_create :prepare_to_downloading
 
   def self.store(params)
-    path = "certificates/#{CloudGateway.find_by(:account => $current_account.downcase).cloudgw_id}/#{params["name"]}"
+    path = "certificates/#{CloudGateway.find_by(:account => User.current_user.account.downcase).cloudgw_id}/#{params["name"]}"
     dir = find_or_build_path(path)
-    cert = Certificate.new(:owner => params["owner"], :name => params["name"], :account => $current_account)
+    cert = Certificate.new(:owner => params["owner"], :name => params["name"], :account => User.current_user.account)
     ["cert", "key", "ca", "dest_ca"].each do |file|
       File.write("#{dir}/#{file}", params[file])
       cert.send(:"#{file}_path=", "#{path}/#{file}")
@@ -18,7 +18,7 @@ class Certificate < ApplicationRecord
   end
 
   def update_content(params)
-    path = "certificates/#{CloudGateway.find_by(:account => $current_account.downcase).cloudgw_id}/#{name}"
+    path = "certificates/#{CloudGateway.find_by(:account => User.current_user.account.downcase).cloudgw_id}/#{name}"
     dir = Certificate.find_or_build_path(path)
     
     ["cert", "key", "ca", "dest_ca"].each do |file|
@@ -27,7 +27,7 @@ class Certificate < ApplicationRecord
 
     unless params["name"] == name
       update!(:name => params["name"])
-      new_path = "certificates/#{CloudGateway.find_by(:account => $current_account.downcase).cloudgw_id}/#{params["name"]}"
+      new_path = "certificates/#{CloudGateway.find_by(:account => User.current_user.account.downcase).cloudgw_id}/#{params["name"]}"
       FileUtils.mv(path, new_path)
 
       ["cert", "key", "ca", "dest_ca"].each do |file|
@@ -42,7 +42,7 @@ class Certificate < ApplicationRecord
   end
 
   def prepare_to_downloading
-    CloudGateway.where(:account => $current_account.downcase).each do |cloudgw|
+    CloudGateway.where(:account => User.current_user.account.downcase).each do |cloudgw|
       path = "tmp/certificates/#{cloudgw.cloudgw_id}"
       FileUtils.mkdir_p(path) unless Dir.exists?(path)
       FileUtils.cp_r("#{ENV['CERT_PATH']}/#{cloudgw.cloudgw_id}/#{name}", "#{path}/#{name}")

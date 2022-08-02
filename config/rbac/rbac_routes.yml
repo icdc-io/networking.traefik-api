@@ -1,0 +1,69 @@
+---
+role_header: x-icdc-role
+features:
+  api/v1/certificates:
+    index:
+      - admin
+      - location_admin
+      - member
+    show:
+      - admin
+      - location_admin
+      - member
+    create:
+      - admin
+      - location_admin
+      - member
+    update:
+      - admin
+      - location_admin
+      - member
+    delete:
+      - admin
+      - location_admin
+      - member
+    download:
+      - admin
+      - location_admin
+      - member
+  api/v1/gateways:
+    index:
+      - admin
+      - location_admin
+      - member
+    show:
+      - admin
+      - location_admin
+      - member
+    create_cloudgw:
+      - location_admin
+    update_cloudgw:
+      - location_admin
+    delete_cloudgw:
+      - location_admin
+  api/v1/routes:
+    index:
+      - admin
+      - location_admin
+      - member
+    show:
+      - admin
+      - location_admin
+      - member
+    create:
+      - admin
+      - location_admin
+      - member
+    update:
+      - admin
+      - location_admin
+      - member
+    destroy:
+      - admin
+      - location_admin
+      - member
+  api/v1/services:  
+    index:
+      - admin
+      - location_admin
+      - member

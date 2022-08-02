@@ -1,11 +1,11 @@
 class Api::V1::RoutesController < ApplicationController
 
   def index
-    render json: Route.filtered_list, status: :ok
+    render json: Route.filtered, status: :ok
   end
 
   def show
-    if @route = Route.find_by(:id => params[:id])&.rbac
+    if @route = Route.filtered.find_by(:id => params[:id])
       render json: { route: @route }, status: :ok
     else
       render json: nil, status: :not_found
@@ -29,19 +29,16 @@ class Api::V1::RoutesController < ApplicationController
       :ip_version,
       :certificate_id
     )
-    unless $location_admin
-      unless CloudGateway.find_by(:id => route_params[:cloud_gateway_id])&.rbac(no_owner: true)
-        return not_found("Cloud Gateway with id #{route_params[:cloud_gateway_id]}")
-      end
-      unless $account_admin
-        route_params[:owner] = $email
-      end
+    unless CloudGateway.filtered.find_by(:id => route_params[:cloud_gateway_id])
+      return not_found("Cloud Gateway with id #{route_params[:cloud_gateway_id]}")
     end
+
+    route_params[:owner] = User.current_user.userid if User.current_user.role == "member"
     
     @route = Route.create!(route_params)
     begin
       if services.count == 1
-        if service = Service.find_by(:id => services.first['id'])&.rbac
+        if service = Service.filtered.find_by(:id => services.first['id'])
           name = "#{service.ext_id}-#{@route.target_port}"
           number_of_routes = RoutesService.where("name like ?", "#{name}%").collect { |record| record.name.split('-').last.to_i }
           query = ((1..number_of_routes.count + 1).to_a - number_of_routes).first
@@ -58,7 +55,7 @@ class Api::V1::RoutesController < ApplicationController
       elsif services.count > 1
         services.each do |data|
           name = RoutesService.generate_name
-          if service = Service.find_by(:id => data['id'])&.rbac
+          if service = Service.filtered.find_by(:id => data['id'])
             RoutesService.create!(
               :route => @route, 
               :service => service, 
@@ -79,20 +76,18 @@ class Api::V1::RoutesController < ApplicationController
   end
 
   def update
-    if @route = Route.find_by(:id => params[:id])&.rbac
+    if @route = Route.filtered.find_by(:id => params[:id])
       return render :json => @route unless params[:route]
 
       services = params[:route].delete(:services)
 
-      unless $location_admin
-        if params[:route][:cloud_gateway_id] &&
-            !CloudGateway.find_by(:id => params[:route][:cloud_gateway_id])&.rbac(no_owner: true)
-          return not_found("Cloud Gateway with id #{params[:route][:cloud_gateway_id]}")
-        end
+      if params[:route][:cloud_gateway_id] &&
+          !CloudGateway.filtered.find_by(:id => params[:route][:cloud_gateway_id])
+        return not_found("Cloud Gateway with id #{params[:route][:cloud_gateway_id]}")
       end
 
       if params[:route][:certificate_id]
-        if certificate = Certificate.find_by(:id => params[:route][:certificate_id])&.rbac
+        if certificate = Certificate.filtered.find_by(:id => params[:route][:certificate_id])
           @route.update!(:certificate_id => params[:route][:certificate_id])
         else
           return not_found("Certificate with id #{params[:route][:certificate_id]}")
@@ -127,7 +122,7 @@ class Api::V1::RoutesController < ApplicationController
   end
 
   def destroy
-    if @route = Route.find_by(:id => params[:id])&.rbac
+    if @route = Route.filtered.find_by(:id => params[:id])
       @route.destroy!
       return render json: nil, status: :no_content
     end
