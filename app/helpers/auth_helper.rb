@@ -1,38 +1,32 @@
+# frozen_string_literal: true
+
+# AuthHelper
 module AuthHelper
   def get_jwt_token(login, password)
     response = RestClient::Request.execute(
-      :method => :post,
-      :url => "#{config_n[:url]}/auth/realms/#{config_n[:realm]}/protocol/openid-connect/token",
-      :payload => {
-        :username   => login,
-        :password   => password,
-        :grant_type => "password",
-        :client_id  => config_n[:client_id]
-      }
+      method: :post,
+      url: "#{config_n[:url]}/auth/realms/#{config_n[:realm]}/protocol/openid-connect/token",
+      payload: request_payload(login, password)
     )
-    JSON.parse(response.body)["access_token"]
+    JSON.parse(response.body)['access_token']
+  end
+
+  def request_payload(login, password)
+    {
+      username: login,
+      password: password,
+      grant_type: 'password',
+      client_id: config_n[:client_id]
+    }
   end
 
   def config_n
-    YAML.load_file(File.join(Rails.root, "config", "keycloak.yml"))
+    YAML.load_file Rails.root.join('config/keycloak.yml')
   end
 
   def decoded_token(token = nil)
-    @@public_key ||= public_key
-    JWT.decode(token, @@public_key, false, algorithm: 'RS256')[0]
+    JWT.decode(token, Rails.application.config.sso_public_key, false, algorithm: 'RS256')[0]
   rescue JWT::DecodeError
     abort("Unauthorized! Can't decode JWT token!")
-  end
-
-  def public_key
-    response = RestClient::Request.execute(
-      :method => :get,
-      :url => "#{config_n[:url]}/auth/realms/#{config_n[:realm]}/protocol/openid-connect/certs"
-    )
-    JSON.parse(response.body)["keys"].map do |key|
-      next unless key["alg"] == "RS256"
-      return JSON::JWK.new(key).to_key
-    end
-    nil
   end
 end
