@@ -1,11 +1,11 @@
 class Api::V1::GatewaysController < ApplicationController
 
   def index
-    render json: CloudGateway.filtered_list(no_owner: true), status: :ok
+    render json: CloudGateway.filtered, status: :ok
   end
 
   def show
-    if @gateway = CloudGateway.find_by(:id => params[:id])&.rbac(no_owner: true)
+    if @gateway = CloudGateway.filtered.find_by(:id => params[:id])
       render json: @gateway, status: :ok
     else
       render json: nil, status: :not_found
@@ -18,7 +18,7 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def update_cloudgw
-    @gateway = CloudGateway.find_by(:id => params[:id])
+    @gateway = CloudGateway.filtered.find_by(:id => params[:id])
     if @gateway
       @gateway.update!(params.permit(:name, :account))
       render json: @gateway, status: :ok
@@ -28,7 +28,7 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def delete_cloudgw
-    @gateway = CloudGateway.find_by(:id => params[:id])
+    @gateway = CloudGateway.filtered.find_by(:id => params[:id])
     if @gateway
       @gateway.routes.each(&:destroy!)
       Certificate.where(:account => @gateway.account).each do |certificate|

@@ -2,11 +2,11 @@ class Api::V1::CertificatesController < ApplicationController
   before_action :validate_certificate, only: [:create, :update]
 
   def index
-    render json: Certificate.filtered_list, status: :ok
+    render json: Certificate.filtered, status: :ok
   end
 
   def show
-    if @certificate = Certificate.find_by(:id => params[:id])&.rbac
+    if @certificate = Certificate.filtered.find_by(:id => params[:id])
       render json: @certificate, status: :ok
     else
       render json: nil, status: :not_found
@@ -20,7 +20,7 @@ class Api::V1::CertificatesController < ApplicationController
   end
 
   def update
-    if @certificate = Certificate.find_by(:id => params[:id])&.rbac
+    if @certificate = Certificate.filtered.find_by(:id => params[:id])
       if params['certificate']
         @certificate.update_content(
           params.require('certificate').permit('cert', 'key', 'ca', 'dest_ca', 'owner', 'name')
@@ -33,7 +33,7 @@ class Api::V1::CertificatesController < ApplicationController
   end
 
   def delete
-    if @certificate = Certificate.find_by(:id => params[:id])&.rbac
+    if @certificate = Certificate.filtered.find_by(:id => params[:id])
       raise "You can't delete certificate cause certificate don't have name" unless @certificate.name
       @certificate.destroy!
       render json: nil, status: :no_content

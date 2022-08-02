@@ -1,0 +1,43 @@
+---
+Certificate:
+  location_admin:
+    scope:
+      all
+  admin:
+    filters:
+      account: account
+  member:
+    filters:
+      account: account
+      owner: userid
+CloudGateway:
+  location_admin:
+    scope:
+      all
+  admin:
+    filters:
+      account: account
+  member:
+    filters:
+      account: account
+Route:
+  location_admin:
+    scope:
+      all
+  admin:
+    parent: CloudGateway
+  member:
+    parent: CloudGateway
+    filters:
+      owner: userid
+Service:
+  location_admin:
+    scope:
+      all
+  admin:
+    filters:
+      account: account
+  member:
+    filters:
+      account: account
+      owner: userid
