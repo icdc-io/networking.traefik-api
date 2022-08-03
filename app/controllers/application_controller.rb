@@ -16,7 +16,6 @@ class ApplicationController < ActionController::API
     when 'Basic'
       basic_auth(token)
     end
-    set_role
   end
 
   def authorize_action
