@@ -2,103 +2,60 @@ require 'json/jwt'
 
 class ApplicationController < ActionController::API
   include ResponseHelper
-  before_action :authorize, :except => [:traefik_config, :download]
-  before_action :authorize_location_admin, :only => [:create_cloudgw, :update_cloudgw, :delete_cloudgw]
+  include AuthHelper
+  include Rbac
 
-  def authorize_location_admin
-    forbidden("You don't have access to perform this action") unless $location_admin
-  end
+  before_action :authorize, :authorize_action, except: [:traefik_config, :download]
 
   def authorize
-    return not_authorized unless auth_header
-    auth_method, token = auth_header.split(' ')
-    identification_headers
+    return not_authorized unless request.authorization
+    auth_method, token = request.authorization.split(' ')
     case auth_method
     when 'Bearer'
-      $token = decoded_token token
+      bearer_auth(token)
     when 'Basic'
-      login, password = Base64.decode64(token).split(':')
-      $token = decoded_token get_jwt_token(login, password)
-    end
-    $email = $token.dig('user_id')
-    $location_admin = ENV['LOCATION_ADMIN_GROUP'].in?($token.dig("groups"))
-    unless validate
-      $token = nil
-      msg = "You don't have access to account '#{$current_account}'"
-      $current_account = nil
-      $location_admin = false
-      forbidden(msg)
+      basic_auth(token)
     end
     set_role
   end
 
+  def authorize_action
+    forbidden("You are not authorized to perform this action.") unless Rbac::Authorizer.new('./config/rbac/rbac_routes.yml').role_allows?(request)
+  end
+
+  def bearer_auth(pure_token)
+    token = decoded_token pure_token
+    role = request.headers['x-icdc-role']
+    account = request.headers['x-icdc-account']
+    return not_authorized unless validate(token, account, role)
+
+    User.current_user = User.new(userid: token['email'], token: pure_token, account: account, role: setup_role(account, role))
+  end
+
+  def basic_auth(token)
+    login, password = Base64.decode64(token).split(':')
+    role = request.headers['x-icdc-role']
+    account = request.headers['x-icdc-account']
+    pure_token = get_jwt_token(login, password)
+    token = decoded_token pure_token
+    return not_authorized unless validate(token, account, role)
+
+    User.current_user = User.new(userid: token['email'], token: pure_token, account: account, role: setup_role(account, role))
+  end
+
   private
 
-  def auth_header
-    request.headers['Authorization']
+  def setup_role(account, role)
+    if ENV['LOCATION_ADMIN_GROUP'] == "#{account}.#{role}"
+      "location_admin"
+    else 
+      role
+    end
   end
 
-  def validate
-    if $location_admin || $token.dig("external", "accounts", $current_account, "roles").include?("admin")
-      $account_admin = true
-    else
-      $account_admin = false
-      $token.dig("external", "accounts", $current_account, "roles").include?("member")
-    end
-  rescue => e
+  def validate(token, account, role)
+    token.dig('external', 'accounts', account, 'roles').include?(role)
+  rescue StandardError
     false
-  end
-
-  def identification_headers
-    $current_account = request.headers['x-icdc-account']
-  end
-
-  def get_jwt_token(login, password)
-    response = RestClient::Request.execute(
-      :method => :post,
-      :url => "#{config_n[:url]}/auth/realms/#{config_n[:realm]}/protocol/openid-connect/token",
-      :payload => {
-        :username   => login,
-        :password   => password,
-        :grant_type => "password",
-        :client_id  => config_n[:client_id]
-      }
-    )
-    JSON.parse(response.body)["access_token"]
-  end
-
-  def config_n
-    YAML.load_file(File.join(Rails.root, "config", "keycloak.yml"))
-  end
-
-  def decoded_token(token = nil)
-    @@public_key ||= public_key
-    JWT.decode(token, @@public_key, false, algorithm: 'RS256')[0]
-  rescue JWT::DecodeError
-    abort("Unauthorized! Can't decode JWT token!")
-  end
-
-  def public_key
-    response = RestClient::Request.execute(
-      :method => :get,
-      :url => "#{config_n[:url]}/auth/realms/#{config_n[:realm]}/protocol/openid-connect/certs"
-    )
-    JSON.parse(response.body)["keys"].map do |key|
-      next unless key["alg"] == "RS256"
-      return JSON::JWK.new(key).to_key
-    end
-    nil
-  end
-
-  def set_role
-    if $location_admin
-      $role = :location_admin
-    elsif $account_admin
-      $role = :admin
-    elsif $current_account
-      $role = :member
-    else
-      $role = nil
-    end
   end
 end
