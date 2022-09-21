@@ -34,7 +34,7 @@ gem 'json-jwt'
 gem 'haikunator'
 gem 'rubyzip'
 gem 'fileutils', '>= 1.6.0'
-gem 'rbac', :git => 'https://github.com/icdc-io/rbac-ruby.git', :branch => 'master'
+gem 'rbac-ruby'
 
 # Remove lines below after fixing mail gem
 # https://stackoverflow.com/questions/70500220/rails-7-ruby-3-1-loaderror-cannot-load-such-file-net-smtp

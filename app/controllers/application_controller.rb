@@ -1,4 +1,5 @@
 require 'json/jwt'
+require 'rbac'
 
 class ApplicationController < ActionController::API
   include ResponseHelper
