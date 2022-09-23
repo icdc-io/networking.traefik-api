@@ -45,7 +45,7 @@ class Certificate < ApplicationRecord
     CloudGateway.where(:account => User.current_user.account.downcase).each do |cloudgw|
       path = "tmp/certificates/#{cloudgw.cloudgw_id}"
       FileUtils.mkdir_p(path) unless Dir.exists?(path)
-      FileUtils.cp_r("#{ENV['CERT_PATH']}/#{cloudgw.cloudgw_id}/#{name}", "#{path}/#{name}")
+      FileUtils.cp_r("#{ENV['USERS_CERT_PATH']}/#{cloudgw.cloudgw_id}/#{name}", "#{path}/#{name}")
       input = File.open("#{path}/#{name}/ca")
       ca = input.read()
       output = File.open("#{path}/#{name}/cert", "a")
@@ -96,12 +96,12 @@ class Certificate < ApplicationRecord
   end
 
   def remove_cert_files
-    FileUtils.rm_rf( "#{ENV['CERT_PATH']}/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}")
+    FileUtils.rm_rf( "#{ENV['USERS_CERT_PATH']}/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}")
     FileUtils.rm_rf( "tmp/certificates/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}")
   end
 
   def recreate_tarball(cloudgw_id)
-    tarball = ZipFileGenerator.new("tmp/certificates/#{cloudgw_id}", "#{ENV['DOWNLOAD_CERT_PATH']}/#{cloudgw_id}.zip")
+    tarball = ZipFileGenerator.new("tmp/certificates/#{cloudgw_id}", "#{ENV['USERS_CERT_PATH_ARCH']}/#{cloudgw_id}.zip")
     tarball.write
   end
 end
