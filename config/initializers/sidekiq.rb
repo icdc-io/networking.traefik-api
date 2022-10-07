@@ -14,3 +14,5 @@ jobs = {
     'args' => []
   }
 }
+
+Sidekiq::Cron::Job.load_from_hash jobs
