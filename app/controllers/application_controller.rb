@@ -25,8 +25,8 @@ class ApplicationController < ActionController::API
 
   def bearer_auth(pure_token)
     token = decoded_token pure_token
-    role = request.headers['x-#{ENV['CPV_NAME']}-role']
-    account = request.headers['x-#{ENV['CPV_NAME']}-account']
+    role = request.headers["x-#{ENV['CPV_NAME']}-role"]
+    account = request.headers["x-#{ENV['CPV_NAME']}-account"]
     return not_authorized unless validate(token, account, role)
 
     User.current_user = User.new(userid: token['email'], token: pure_token, account: account, role: setup_role(account, role))
@@ -34,8 +34,8 @@ class ApplicationController < ActionController::API
 
   def basic_auth(token)
     login, password = Base64.decode64(token).split(':')
-    role = request.headers['x-#{ENV['CPV_NAME']}-role']
-    account = request.headers['x-#{ENV['CPV_NAME']}-account']
+    role = request.headers["x-#{ENV['CPV_NAME']}-role"]
+    account = request.headers["x-#{ENV['CPV_NAME']}-account"]
     pure_token = get_jwt_token(login, password)
     token = decoded_token pure_token
     return not_authorized unless validate(token, account, role)
