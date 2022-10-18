@@ -21,7 +21,8 @@ module AuthHelper
   end
 
   def config_n
-    YAML.load_file Rails.root.join('config/keycloak.yml')
+    config_template = ERB.new File.new(File.join(Rails.root, "config", "keycloak.yml")).read
+    YAML.load config_template.result(binding)
   end
 
   def decoded_token(token = nil)
