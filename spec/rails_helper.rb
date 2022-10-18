@@ -90,6 +90,7 @@ JWT_ADMIN = "Bearer " + JWT.encode({
 }, nil)
 
 ENV['LOCATION_ADMIN_GROUP'] = 'location.admin'
+ENV['CPV_NAME'] = 'icdc'
 JWT_LOCATION_ADMIN = "Bearer " + JWT.encode({
   "external": {
     "accounts": {
