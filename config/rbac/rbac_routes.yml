@@ -1,5 +1,5 @@
 ---
-role_header: x-<%= ENV['CPV_NAME'] %>-role
+role_header: <%= ENV['ROLE_HEADER'] %>
 features:
   api/v1/certificates:
     index:
