@@ -11,6 +11,8 @@ describe 'Api::V1::RoutesController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_MEMBER }
 
@@ -62,6 +64,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:ok)
@@ -112,6 +115,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           expect(response).to have_http_status(:ok)
@@ -160,7 +164,8 @@ describe 'Api::V1::RoutesController', type: :request do
           get "/api/v1/routes",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:ok)
@@ -175,6 +180,8 @@ describe 'Api::V1::RoutesController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_MEMBER }
       parameter name: :request_body, in: :body, required: true,
@@ -243,6 +250,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:created)
@@ -285,6 +293,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:created)
@@ -329,6 +338,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:created)
@@ -363,6 +373,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:unprocessable_entity)
@@ -380,7 +391,7 @@ describe 'Api::V1::RoutesController', type: :request do
           )
           service = FactoryBot.create(:service)
           add_routes_services(route, [{:id => service.id}])
-          request_body = { 'route' => $route.attributes.
+          request_body = { 'route' => route.attributes.
             slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
                   'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels').
             merge(
@@ -393,6 +404,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:unprocessable_entity)
@@ -411,6 +423,8 @@ describe 'Api::V1::RoutesController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_MEMBER }
       parameter name: :id, in: :path, required: true,
@@ -438,6 +452,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:ok)
@@ -464,7 +479,8 @@ describe 'Api::V1::RoutesController', type: :request do
           get "/api/v1/routes/#{rand{1..100}}",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:not_found)
@@ -486,6 +502,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           expect(response).to have_http_status(:not_found)
@@ -506,6 +523,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:not_found)
@@ -519,6 +537,8 @@ describe 'Api::V1::RoutesController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_MEMBER }
       parameter name: :id, in: :path, required: true,
@@ -600,6 +620,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
 
@@ -630,7 +651,8 @@ describe 'Api::V1::RoutesController', type: :request do
           put "/api/v1/routes/#{rand{1..100}}",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:not_found)
@@ -652,6 +674,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           expect(response).to have_http_status(:not_found)
@@ -672,6 +695,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:not_found)
@@ -685,6 +709,8 @@ describe 'Api::V1::RoutesController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_MEMBER }
       parameter name: :id, in: :path, required: true,
@@ -711,6 +737,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:no_content)
@@ -730,7 +757,8 @@ describe 'Api::V1::RoutesController', type: :request do
           delete "/api/v1/routes/#{rand{1..100}}",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:not_found)
@@ -752,6 +780,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           expect(response).to have_http_status(:not_found)
@@ -772,6 +801,7 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:not_found)

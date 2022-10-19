@@ -25,6 +25,7 @@ RSpec.configure do |config|
   # document below. You can override this behavior by adding a swagger_doc tag to the
   # the root example_group in your specs, e.g. describe '...', swagger_doc: 'v2/swagger.json'
   
+  User.current_user = User.new(userid: 'test_member@test.com', token: nil, account: 'test', role: 'member')
   $gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
   $certificate = create_certificate(:account => 'test')
   $certificate_values = $certificate.send(:values)

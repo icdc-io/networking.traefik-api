@@ -9,6 +9,8 @@ describe 'Api::V1::GatewaysController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_ADMIN }
 
@@ -30,6 +32,7 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           )
@@ -48,7 +51,8 @@ describe 'Api::V1::GatewaysController', type: :request do
           get "/api/v1/gateways",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:ok)
@@ -66,6 +70,8 @@ describe 'Api::V1::GatewaysController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_LOCATION_ADMIN }
       parameter name: :request_body, in: :body, required: true,
@@ -89,7 +95,8 @@ describe 'Api::V1::GatewaysController', type: :request do
           post '/api/v1/gateways',
             :params => request_body,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:created)
@@ -109,6 +116,7 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           expect(response).to have_http_status(:forbidden)
@@ -120,7 +128,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           request_body = get_request_body(example)
           post '/api/v1/gateways',
             :params => request_body,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_MEMBER}
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
+              :Authorization => JWT_MEMBER
+            }
           expect(response).to have_http_status(:forbidden)
           expect(CloudGateway.count).to eq(0)
         end
@@ -135,6 +147,8 @@ describe 'Api::V1::GatewaysController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_ADMIN }
       parameter name: :id, in: :path, required: true,
@@ -157,7 +171,8 @@ describe 'Api::V1::GatewaysController', type: :request do
           get "/api/v1/gateways/#{gateway.id}",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:ok)
@@ -174,7 +189,11 @@ describe 'Api::V1::GatewaysController', type: :request do
 
           get "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_ADMIN }
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
+              :Authorization => JWT_ADMIN
+            }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).except('created_at', 'updated_at')).to eq(
             gateway.attributes.
@@ -188,7 +207,11 @@ describe 'Api::V1::GatewaysController', type: :request do
 
           get "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_MEMBER }
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
+              :Authorization => JWT_MEMBER
+            }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).except('created_at', 'updated_at')).to eq(
             gateway.attributes.
@@ -208,6 +231,7 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           expect(response).to have_http_status(:not_found)
@@ -218,7 +242,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           gateway = FactoryBot.create(:cloud_gateway, :account => 'not_test')
           get "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_ADMIN}
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
+              :Authorization => JWT_ADMIN
+            }
           expect(response).to have_http_status(:not_found)
         end
 
@@ -226,7 +254,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           gateway = FactoryBot.create(:cloud_gateway, :account => 'not_test')
           get "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_MEMBER}
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
+              :Authorization => JWT_MEMBER
+            }
           expect(response).to have_http_status(:not_found)
         end
       end
@@ -239,6 +271,8 @@ describe 'Api::V1::GatewaysController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_LOCATION_ADMIN }
       parameter name: :id, in: :path, required: true,
@@ -265,7 +299,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             put "/api/v1/gateways/#{gateway.id}",
               :params => request_body,
               :headers => {
-                :'x-icdc-account' => 'test',
+                :'x-icdc-account' => 'location',
+                :'x-icdc-role' => 'admin',
                 :Authorization => JWT_LOCATION_ADMIN
               }
             expect(response).to have_http_status(:ok)
@@ -290,7 +325,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           }
           put "/api/v1/gateways/#{gateway.id}",
             :params => request_body,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_LOCATION_ADMIN}
+            :headers => {
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
+              :Authorization => JWT_LOCATION_ADMIN
+            }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).except('created_at', 'updated_at')).to eq(
             gateway.attributes.
@@ -313,7 +352,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
           put "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_MEMBER}
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
+              :Authorization => JWT_MEMBER
+            }
           expect(response).to have_http_status(:forbidden)
           generate_docs(example, response)
         end
@@ -322,7 +365,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
           put "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_ADMIN}
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
+              :Authorization => JWT_ADMIN
+            }
           expect(response).to have_http_status(:forbidden)
           generate_docs(example, response)
         end
@@ -336,7 +383,11 @@ describe 'Api::V1::GatewaysController', type: :request do
         it 'returns \'404\' if gateway doesn\'t exists' do |example|
           put "/api/v1/gateways/#{rand(1..500)}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_LOCATION_ADMIN}
+            :headers => {
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
+              :Authorization => JWT_LOCATION_ADMIN
+            }
           expect(response).to have_http_status(:not_found)
           generate_docs(example, response)
         end
@@ -352,6 +403,8 @@ describe 'Api::V1::GatewaysController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_LOCATION_ADMIN }
       parameter name: :id, in: :path, required: true,
@@ -370,7 +423,8 @@ describe 'Api::V1::GatewaysController', type: :request do
           delete "/api/v1/gateways/#{gateway.id}",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:no_content)
@@ -388,7 +442,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
           delete "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_ADMIN}
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
+              :Authorization => JWT_ADMIN
+            }
           expect(response).to have_http_status(:forbidden)
           expect(CloudGateway.count).to eq(1)
           generate_docs(example, response)
@@ -399,7 +457,11 @@ describe 'Api::V1::GatewaysController', type: :request do
 
           delete "/api/v1/gateways/#{gateway.id}",
             :params => nil,
-            :headers => {:'x-icdc-account' => 'test', :Authorization => JWT_MEMBER}
+            :headers => {
+              :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
+              :Authorization => JWT_MEMBER
+            }
           expect(response).to have_http_status(:forbidden)
           expect(CloudGateway.count).to eq(1)
         end
@@ -414,7 +476,8 @@ describe 'Api::V1::GatewaysController', type: :request do
           delete "/api/v1/gateways/#{rand(1..500)}",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:not_found)
