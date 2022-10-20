@@ -1,10 +1,10 @@
 module Authenticator
   def config
     require 'yaml'
-    config_template = ERB.new File.new(File.join(Rails.root, "config/icdc_credentials.yml")).read
+    config_template = ERB.new File.read(File.join(Rails.root, "config/icdc_credentials.yml.erb"))
     YAML.load config_template.result(binding)
   rescue Errno::ENOENT
-    raise "File config/icdc_credentials.yml didn't created"
+    raise "File config/icdc_credentials.yml.erb didn't created"
   end
 
   def service_creds(service)

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 def config_n
-  config_template = ERB.new File.new(File.join(Rails.root, "config", "keycloak.yml")).read
+  config_template = ERB.new File.read(File.join(Rails.root, "config", "keycloak.yml.erb"))
   YAML.load config_template.result(binding)
 end
 
