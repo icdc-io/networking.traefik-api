@@ -26,7 +26,7 @@ gem 'bootsnap', '>= 1.4.4', require: false
 gem 'rack-cors'
 gem 'rswag'
 gem 'json2yaml'
-gem 'sidekiq'
+gem 'sidekiq', '= 6.2.2'
 gem 'sidekiq-cron'
 gem 'rest-client'
 gem 'jwt'
