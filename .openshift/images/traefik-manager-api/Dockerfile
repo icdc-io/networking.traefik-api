@@ -14,7 +14,7 @@ RUN git clone -b ${BUILD_BRANCH} https://${GIT_AUTH}/icdc/networking/traefik-man
 WORKDIR /usr/src/app
 
 RUN git log -n 1
-#RUN RAILS_ENV=${RAILS_ENV} bundle update
+RUN RAILS_ENV=${RAILS_ENV} bundle update
 RUN RAILS_ENV=${RAILS_ENV} bundle install
 RUN chgrp -R 0  /usr/src/app && chmod -R g+rwX /usr/src/app
 
