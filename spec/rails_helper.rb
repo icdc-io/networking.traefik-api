@@ -73,6 +73,7 @@ JWT_MEMBER = "Bearer " + JWT.encode({
   },
   "groups": ["test.member"],
   "user_id": "test_member@test.com",
+  "email": 'test_member@test.com',
   "name": "Test Member"
 }, nil)
 
@@ -86,6 +87,7 @@ JWT_ADMIN = "Bearer " + JWT.encode({
   },
   "groups": ["test.admin"],
   "user_id": "test_admin@test.com",
+  "email": 'test_admin@test.com',
   "name": "Test Admin"
 }, nil)
 
@@ -100,5 +102,6 @@ JWT_LOCATION_ADMIN = "Bearer " + JWT.encode({
   },
   "groups": ["location.admin"],
   "user_id": "test_location_admin@test.com",
-  "name": "Test Loaction Admin"
+  "email": "test_location_admin@test.com",
+  "name": "Test Location Admin"
 }, nil)

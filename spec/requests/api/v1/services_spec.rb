@@ -10,6 +10,8 @@ describe 'Api::V1::ServicesController', type: :request do
       consumes "application/json"
       parameter name: 'x-icdc-account', description: "Name of account",
         in: :header, required: true, schema: { type: :string, example: "test" }
+      parameter name: 'x-icdc-role', description: "Role of account",
+        in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
         schema: { type: :string, example: JWT_MEMBER }
 
@@ -29,6 +31,7 @@ describe 'Api::V1::ServicesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'member',
               :Authorization => JWT_MEMBER
             }
           expect(response).to have_http_status(:ok)
@@ -47,6 +50,7 @@ describe 'Api::V1::ServicesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'test',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_ADMIN
             }
           expect(response).to have_http_status(:ok)
@@ -63,7 +67,8 @@ describe 'Api::V1::ServicesController', type: :request do
           get "/api/v1/services",
             :params => nil,
             :headers => {
-              :'x-icdc-account' => 'test',
+              :'x-icdc-account' => 'location',
+              :'x-icdc-role' => 'admin',
               :Authorization => JWT_LOCATION_ADMIN
             }
           expect(response).to have_http_status(:ok)
