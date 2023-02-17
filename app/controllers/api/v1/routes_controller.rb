@@ -14,6 +14,14 @@ class Api::V1::RoutesController < ApplicationController
 
   def create
     services = params[:route].delete(:services)
+    
+    healthcheck = nil
+    healthcheck_enabled = params[:route].delete(:healthcheck_enabled)
+
+    if healthcheck_enabled
+      healthcheck = params[:route].delete(:healthcheck)
+    end
+    
     route_params = params.require(:route).permit(
       :name,
       :hostname,
@@ -27,7 +35,8 @@ class Api::V1::RoutesController < ApplicationController
       :source_proto,
       :destination_proto,
       :ip_version,
-      :certificate_id
+      :certificate_id,
+      :healthcheck_enabled
     )
     unless CloudGateway.filtered.find_by(:id => route_params[:cloud_gateway_id])
       return not_found("Cloud Gateway with id #{route_params[:cloud_gateway_id]}")
@@ -36,6 +45,7 @@ class Api::V1::RoutesController < ApplicationController
     route_params[:owner] = User.current_user.userid if User.current_user.role == "member"
     
     @route = Route.create!(route_params)
+    @route.create_healthcheck!(healthcheck) if healthcheck_enabled
     begin
       if services.count == 1
         if service = Service.filtered.find_by(:id => services.first['id'])
