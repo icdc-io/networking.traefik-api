@@ -44,7 +44,7 @@ class Api::V1::RoutesController < ApplicationController
     route_params[:owner] = User.current_user.userid if User.current_user.role == "member"
     @route = Route.create!(route_params)
 
-    @route.create_healthcheck!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :headers, :method, :follow_redirects)) if @route.healthcheck_enabled
+    @route.create_healthcheck!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :headers, :method, :follow_redirects)) if @route.healthcheck_enabled
 
     begin
       if services.count == 1
@@ -131,8 +131,8 @@ class Api::V1::RoutesController < ApplicationController
       unless @route.healthcheck_enabled
         @route.healthcheck&.destroy!
       else
-        @route.healthcheck ? @route.healthcheck.update!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :headers, :method, :follow_redirects)) 
-                           : @route.create_healthcheck!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :headers, :method, :follow_redirects))
+        @route.healthcheck ? @route.healthcheck.update!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :headers, :method, :follow_redirects)) 
+                           : @route.create_healthcheck!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :headers, :method, :follow_redirects))
       end
       return render json: Route.find_by(:id => params[:id]), status: :ok
     end

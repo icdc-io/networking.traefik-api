@@ -5,6 +5,7 @@ class CreateHealthchecks < ActiveRecord::Migration[6.1]
       t.string :scheme
       t.integer :port
       t.integer :interval, default: 30
+      t.integer :timeout, default: 3
       t.string :hostname
       t.jsonb :headers
       t.string :method, default: 'GET'

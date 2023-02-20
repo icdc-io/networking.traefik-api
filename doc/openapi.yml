@@ -388,6 +388,9 @@ paths:
                         interval:
                           type: integer
                           example: 15
+                        timeout:
+                          type: integer
+                          example: 3
                         headers:
                           type: string
                           example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
