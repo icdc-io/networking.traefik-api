@@ -1,7 +1,7 @@
 class Route < ApplicationRecord
   belongs_to :cloud_gateway
   belongs_to :certificate, optional: true
-  has_one :healthcheck
+  has_one :healthcheck, dependent: :destroy
 
   has_many :routes_services, dependent: :destroy
   has_many :services, :through => :routes_services
@@ -9,6 +9,7 @@ class Route < ApplicationRecord
   attribute :services
   attribute :routes_services
   attribute :cloud_gateway
+  attribute :healthcheck
 
   alias_attribute :cloudgateway, :cloud_gateway
 
