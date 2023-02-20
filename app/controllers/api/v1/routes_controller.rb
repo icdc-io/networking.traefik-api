@@ -14,6 +14,13 @@ class Api::V1::RoutesController < ApplicationController
 
   def create
     services = params[:route].delete(:services)
+    
+    healthcheck_params = nil
+
+    if params[:route][:healthcheck_enabled]
+      healthcheck_params = params[:route].delete(:healthcheck)
+    end
+    
     route_params = params.require(:route).permit(
       :name,
       :hostname,
@@ -27,15 +34,18 @@ class Api::V1::RoutesController < ApplicationController
       :source_proto,
       :destination_proto,
       :ip_version,
-      :certificate_id
+      :certificate_id,
+      :healthcheck_enabled
     )
     unless CloudGateway.filtered.find_by(:id => route_params[:cloud_gateway_id])
       return not_found("Cloud Gateway with id #{route_params[:cloud_gateway_id]}")
     end
 
     route_params[:owner] = User.current_user.userid if User.current_user.role == "member"
-    
     @route = Route.create!(route_params)
+
+    @route.create_healthcheck!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :headers, :method, :follow_redirects)) if @route.healthcheck_enabled
+
     begin
       if services.count == 1
         if service = Service.filtered.find_by(:id => services.first['id'])
@@ -80,6 +90,7 @@ class Api::V1::RoutesController < ApplicationController
       return render :json => @route unless params[:route]
 
       services = params[:route].delete(:services)
+      healthcheck_params = params[:route].delete(:healthcheck)
 
       if params[:route][:cloud_gateway_id] &&
           !CloudGateway.filtered.find_by(:id => params[:route][:cloud_gateway_id])
@@ -110,12 +121,19 @@ class Api::V1::RoutesController < ApplicationController
             :owner,
             :source_proto,
             :destination_proto,
-            :ip_version
+            :ip_version,
+            :healthcheck_enabled
           )
         ),
         services
       )
 
+      unless @route.healthcheck_enabled
+        @route.healthcheck&.destroy!
+      else
+        @route.healthcheck ? @route.healthcheck.update!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :headers, :method, :follow_redirects)) 
+                           : @route.create_healthcheck!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :headers, :method, :follow_redirects))
+      end
       return render json: Route.find_by(:id => params[:id]), status: :ok
     end
     render json: nil, status: :not_found

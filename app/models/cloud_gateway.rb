@@ -109,6 +109,26 @@ class CloudGateway < ApplicationRecord
       end
     end
     services.delete_if { |key, value| value.empty? }
+    healthcheck_section(services, route.healthcheck) if route.healthcheck_enabled
+    services
+  end
+
+  def healthcheck_section(lb_config, healthcheck)
+    healthcheck = healthcheck.attributes.except("id", "created_at", "updated_at").compact
+    healthcheck["interval"] = healthcheck["interval"].to_s + "s" if healthcheck["interval"]
+    healthcheck["timeout"] = healthcheck["timeout"].to_s + "s" if healthcheck["timeout"]
+    
+    lb_config.each do |_, lb|
+      if lb["loadBalancer"]
+        lb["loadBalancer"].merge!(
+          "healthCheck" => healthcheck
+        )
+      elsif lb["weighted"]
+        lb["weighted"].merge!(
+          "healthcheck" => {}
+        )
+      end
+    end
   end
 
   def lb_server(service, section, route)
