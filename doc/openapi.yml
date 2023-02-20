@@ -394,7 +394,7 @@ paths:
                         method:
                           type: string
                           example: POST
-                        follow_redirect:
+                        follow_redirects:
                           type: boolean
                           example: true
       responses:
@@ -512,7 +512,7 @@ paths:
                         method:
                           type: string
                           example: POST
-                        follow_redirect:
+                        follow_redirects:
                           type: boolean
                           example: true                      
       responses:
@@ -771,7 +771,7 @@ components:
             method:
               type: string
               example: POST
-            follow_redirect:
+            follow_redirects:
               type: boolean
               example: true            
   parameters:
