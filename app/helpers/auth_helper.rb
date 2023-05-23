@@ -5,7 +5,7 @@ module AuthHelper
   def get_jwt_token(login, password)
     response = RestClient::Request.execute(
       method: :post,
-      url: "#{config_n[:url]}/auth/realms/#{config_n[:realm]}/protocol/openid-connect/token",
+      url: "#{ENV['SSO_URL']}/auth/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/token",
       payload: request_payload(login, password)
     )
     JSON.parse(response.body)['access_token']
@@ -16,13 +16,8 @@ module AuthHelper
       username: login,
       password: password,
       grant_type: 'password',
-      client_id: config_n[:client_id]
+      client_id: ENV['SSO_CLIENT_ID']
     }
-  end
-
-  def config_n
-    config_template = ERB.new File.read(File.join(Rails.root, "config", "keycloak.yml.erb"))
-    YAML.load config_template.result(binding)
   end
 
   def decoded_token(token = nil)

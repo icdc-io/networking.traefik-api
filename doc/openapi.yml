@@ -367,6 +367,39 @@ paths:
                     insecure:
                       type: string
                       example: 'none'
+                    healthcheck_enabled:
+                      type: boolean
+                      example: true
+                    healthcheck:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          example: '/'
+                        scheme:
+                          type: string
+                          example: https
+                        hostname:
+                          type: string
+                          example: check-cors.zby.icdc.io
+                        port:
+                          type: integer
+                          example: 8080
+                        interval:
+                          type: integer
+                          example: 15
+                        timeout:
+                          type: integer
+                          example: 3
+                        headers:
+                          type: string
+                          example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
+                        method:
+                          type: string
+                          example: POST
+                        follow_redirects:
+                          type: boolean
+                          example: true
       responses:
         '200':
           description: Operation successful
@@ -455,6 +488,39 @@ paths:
                     insecure:
                       type: string
                       example: 'none'
+                    healthcheck_enabled:
+                      type: boolean
+                      example: true
+                    healthcheck:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          example: '/'
+                        scheme:
+                          type: string
+                          example: https
+                        hostname:
+                          type: string
+                          example: check-cors.zby.icdc.io
+                        port:
+                          type: integer
+                          example: 8080
+                        interval:
+                          type: integer
+                          example: 15
+                        timeout:
+                          type: integer
+                          example: 3
+                        headers:
+                          type: string
+                          example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
+                        method:
+                          type: string
+                          example: POST
+                        follow_redirects:
+                          type: boolean
+                          example: true                      
       responses:
         '200':
           description: 'Operation successful'
@@ -491,7 +557,7 @@ components:
         id:
           type: integer
           example: 1234
-          readonly: true
+          readOnly: true
         name:
           type: string
           example: vpn-default
@@ -506,7 +572,7 @@ components:
         cloudgw_instance:
           type: string
           example: cloudgw-a843bf2a
-          readonly: true
+          readOnly: true
           description: |
             Calculated field: cloudgw-<short_cloudgw_id> shows on which VM this VPN gateway is running
         account:
@@ -684,6 +750,39 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Service'
+        healthcheck_enabled:
+          type: boolean
+          example: true
+        healthcheck:
+          type: object
+          properties:
+            path:
+              type: string
+              example: '/'
+            scheme:
+              type: string
+              example: https
+            hostname:
+              type: string
+              example: check-cors.zby.icdc.io
+            port:
+              type: integer
+              example: 8080
+            interval:
+              type: integer
+              example: 15
+            timeout:
+              type: integer
+              example: 3
+            headers:
+              type: string
+              example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
+            method:
+              type: string
+              example: POST
+            follow_redirects:
+              type: boolean
+              example: true            
   parameters:
     Account:
       name: x-icdc-account
