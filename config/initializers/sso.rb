@@ -3,7 +3,8 @@
 def set_public_key
   response = RestClient::Request.execute(
     method: :get,
-    url: "#{ENV['SSO_URL']}/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/certs"
+    url: "#{ENV['SSO_URL']}/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/certs",
+    verify_ssl: ENV["RAILS_ENV"] == "production"
   )
   JSON.parse(response.body)['keys'].map do |key|
     next unless key['alg'] == 'RS256'
