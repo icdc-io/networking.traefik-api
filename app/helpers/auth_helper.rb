@@ -5,7 +5,7 @@ module AuthHelper
   def get_jwt_token(login, password)
     response = RestClient::Request.execute(
       method: :post,
-      url: "#{ENV['SSO_URL']}/auth/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/token",
+      url: "#{ENV['SSO_URL']}/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/token",
       payload: request_payload(login, password)
     )
     JSON.parse(response.body)['access_token']
