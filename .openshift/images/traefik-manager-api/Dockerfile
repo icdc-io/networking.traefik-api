@@ -1,4 +1,6 @@
-FROM ruby:latest
+FROM ruby:latest-bullseye
+# bookworm (debian 12) release does not build in Openshift 3.x
+# so fix image to bullseye (Debian 11)
 
 LABEL AUTHOR, tmatlash@ibagroup.eu
 
