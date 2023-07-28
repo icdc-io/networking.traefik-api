@@ -6,7 +6,8 @@ module AuthHelper
     response = RestClient::Request.execute(
       method: :post,
       url: "#{ENV['SSO_URL']}/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/token",
-      payload: request_payload(login, password)
+      payload: request_payload(login, password),
+      verify_ssl: ENV["RAILS_ENV"] == "production"
     )
     JSON.parse(response.body)['access_token']
   end
