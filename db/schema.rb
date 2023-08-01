@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_03_09_134736) do
+ActiveRecord::Schema.define(version: 2023_02_17_124807) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -35,6 +35,21 @@ ActiveRecord::Schema.define(version: 2022_03_09_134736) do
     t.string "cloudgw_id"
   end
 
+  create_table "healthchecks", force: :cascade do |t|
+    t.string "path", default: "/"
+    t.string "scheme"
+    t.integer "port"
+    t.integer "interval", default: 30
+    t.string "hostname"
+    t.jsonb "headers"
+    t.string "method", default: "GET"
+    t.boolean "follow_redirects", default: true
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.bigint "route_id"
+    t.index ["route_id"], name: "index_healthchecks_on_route_id"
+  end
+
   create_table "routes", force: :cascade do |t|
     t.string "name"
     t.string "hostname"
@@ -51,6 +66,7 @@ ActiveRecord::Schema.define(version: 2022_03_09_134736) do
     t.string "source_proto"
     t.string "destination_proto"
     t.string "ip_version"
+    t.boolean "healthcheck_enabled", default: false
     t.index ["certificate_id"], name: "index_routes_on_certificate_id"
     t.index ["cloud_gateway_id"], name: "index_routes_on_cloud_gateway_id"
   end
@@ -87,6 +103,7 @@ ActiveRecord::Schema.define(version: 2022_03_09_134736) do
     t.index ["service_id"], name: "index_weights_on_service_id"
   end
 
+  add_foreign_key "healthchecks", "routes"
   add_foreign_key "routes", "certificates"
   add_foreign_key "routes", "cloud_gateways"
 end

@@ -14,7 +14,7 @@ class ServicesAccessJob < ApplicationJob
       {
         :ext_id => service["id"],
         :name => service["name"],
-        :owner => service["evm_owner"]["email"],
+        :owner => service.dig("evm_owner","email"),
         :account => service["tenant"]["name"],
         :ipaddresses => service["networks"].collect{ |network| network["allocations"] }
                                            .flatten.select{ |alloc| alloc if alloc["type"] == "nic" }

@@ -1,14 +1,9 @@
 # frozen_string_literal: true
 
-def config_n
-  config_template = ERB.new File.read(File.join(Rails.root, "config", "keycloak.yml.erb"))
-  YAML.load config_template.result(binding)
-end
-
 def set_public_key
   response = RestClient::Request.execute(
     method: :get,
-    url: "#{config_n[:url]}/auth/realms/#{config_n[:realm]}/protocol/openid-connect/certs"
+    url: "#{ENV['SSO_URL']}/auth/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/certs"
   )
   JSON.parse(response.body)['keys'].map do |key|
     next unless key['alg'] == 'RS256'
