@@ -117,7 +117,8 @@ class CloudGateway < ApplicationRecord
     healthcheck = healthcheck.attributes.except("id", "route_id", "created_at", "updated_at").compact
     healthcheck["interval"] = healthcheck["interval"].to_s + "s" if healthcheck["interval"]
     healthcheck["timeout"] = healthcheck["timeout"].to_s + "s" if healthcheck["timeout"]
-    
+    healthcheck["followRedirects"] = healthcheck.delete("follow_redirects") if healthcheck["follow_redirects"]
+    healthcheck.delete("headers") if healthcheck["headers"].empty?
     lb_config.each do |_, lb|
       if lb["loadBalancer"]
         lb["loadBalancer"].merge!(
