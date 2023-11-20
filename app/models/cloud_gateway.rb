@@ -114,7 +114,7 @@ class CloudGateway < ApplicationRecord
   end
 
   def healthcheck_section(lb_config, healthcheck)
-    healthcheck = healthcheck.attributes.except("id", "created_at", "updated_at").compact
+    healthcheck = healthcheck.attributes.except("id", "route_id", "created_at", "updated_at").compact
     healthcheck["interval"] = healthcheck["interval"].to_s + "s" if healthcheck["interval"]
     healthcheck["timeout"] = healthcheck["timeout"].to_s + "s" if healthcheck["timeout"]
     
