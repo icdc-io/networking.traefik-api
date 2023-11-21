@@ -119,7 +119,7 @@ class CloudGateway < ApplicationRecord
     healthcheck['timeout'] = "#{healthcheck['timeout']}s" if healthcheck['timeout']
     healthcheck['followRedirects'] = healthcheck.delete('follow_redirects')
 
-    healthcheck.compact!.delete_if { |_, v| v == '' }
+    healthcheck = healthcheck.compact.delete_if { |_, v| ['', {}].include? v }
 
     lb_config.each do |_, lb|
       if lb['loadBalancer']
