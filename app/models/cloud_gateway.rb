@@ -108,25 +108,27 @@ class CloudGateway < ApplicationRecord
         }
       end
     end
-    services.delete_if { |key, value| value.empty? }
+    services.delete_if { |_, value| value.empty? }
     healthcheck_section(services, route.healthcheck) if route.healthcheck_enabled
     services
   end
 
   def healthcheck_section(lb_config, healthcheck)
-    healthcheck = healthcheck.attributes.except("id", "route_id", "created_at", "updated_at").compact
-    healthcheck["interval"] = healthcheck["interval"].to_s + "s" if healthcheck["interval"]
-    healthcheck["timeout"] = healthcheck["timeout"].to_s + "s" if healthcheck["timeout"]
-    healthcheck["followRedirects"] = healthcheck.delete("follow_redirects") if healthcheck["follow_redirects"]
-    healthcheck.delete("headers") if healthcheck["headers"].empty?
+    healthcheck = healthcheck.attributes.except('id', 'route_id', 'created_at', 'updated_at').compact
+    healthcheck['interval'] = "#{healthcheck['interval']}s" if healthcheck['interval']
+    healthcheck['timeout'] = "#{healthcheck['timeout']}s" if healthcheck['timeout']
+    healthcheck['followRedirects'] = healthcheck.delete('follow_redirects')
+
+    healthcheck.compact!.delete_if { |_, v| v == '' }
+
     lb_config.each do |_, lb|
-      if lb["loadBalancer"]
-        lb["loadBalancer"].merge!(
-          "healthCheck" => healthcheck
+      if lb['loadBalancer']
+        lb['loadBalancer'].merge!(
+          'healthCheck' => healthcheck
         )
-      elsif lb["weighted"]
-        lb["weighted"].merge!(
-          "healthcheck" => {}
+      elsif lb['weighted']
+        lb['weighted'].merge!(
+          'healthcheck' => {}
         )
       end
     end
