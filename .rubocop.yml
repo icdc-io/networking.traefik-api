@@ -1,4 +1,61 @@
-require: rubocop-rails
+---
+require:
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-performance
+  - rubocop-factory_bot
 
-GlobalVars:
-  AllowedVariables: [$role, $current_account, $email]
+AllCops:
+  Include:
+    - app/**/*.rb
+    - spec/**/*.rb
+    - config/**/*.rb
+  NewCops: enable
+
+Style/Documentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 125
+
+Metrics/MethodLength:
+  Max: 25
+
+Metrics/AbcSize:
+  Max: 30
+  
+Metrics/PerceivedComplexity:
+  Max: 15
+
+Metrics/CyclomaticComplexity:
+  Max: 15
+
+Metrics/ClassLength:
+  Max: 125
+
+Metrics/BlockLength:
+  Max: 45
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: false
+
+Rails/HasAndBelongsToMany:
+  Enabled: false
+
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+Rails/SkipsModelValidations:
+  Enabled: false
+
+RSpec/NamedSubject:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/NestedGroups:
+  Max: 6
+
+RSpec/AnyInstance:
+  Enabled: false

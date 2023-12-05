@@ -47,14 +47,15 @@ group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails'
   gem 'rswag-specs'
-  gem 'rubocop'
-  gem 'rubocop-rails'
 end
 
 group :development do
   gem 'listen', '~> 3.3'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
+  gem "rubocop-rails", "~> 2.19"
+  gem "rubocop-rspec", "~> 2.25"
+  gem "rubocop-performance", "~> 1.19"
 end
 
 group :test do
