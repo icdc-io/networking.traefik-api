@@ -44,7 +44,7 @@ class Certificate < ApplicationRecord
   def prepare_to_downloading
     CloudGateway.where(:account => User.current_user.account.downcase).each do |cloudgw|
       path = "tmp/certificates/#{cloudgw.cloudgw_id}"
-      FileUtils.mkdir_p(path) unless Dir.exists?(path)
+      FileUtils.mkdir_p(path) unless Dir.exist?(path)
       FileUtils.cp_r("#{ENV['USERS_CERT_PATH']}/#{cloudgw.cloudgw_id}/#{name}", "#{path}/#{name}")
       input = File.open("#{path}/#{name}/ca")
       ca = input.read()
@@ -62,7 +62,7 @@ class Certificate < ApplicationRecord
     start_path = Dir.pwd
     parts = path.split('/').compact
     parts.each do |directory|
-      Dir.mkdir(directory) unless Dir.exists?(directory)
+      Dir.mkdir(directory) unless Dir.exist?(directory)
       Dir.chdir(directory)
     end
     final_path = Dir.pwd
