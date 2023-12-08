@@ -76,29 +76,33 @@ paths:
         - ALB Gateways
       summary: List of ALB Gateways
       description: >
-        By sending request to this endpoint you can get list of ALB Gateways which are currently attached to account infrastructure (VPC).
+        By sending request to this endpoint you can get list of ALB Gateways which are currently attached to account network infrastructure (VPC).
+        
+
+        Role-based access:
+          - `admin` role in `operator` account see all gateways of all accounts
+          - `manager`,`admin`,`billing`,`member` roles see gateways in attached to account
       security:
-        - JWT: [admin]
-      parameters: 
-        - $ref: '#/components/parameters/Account'
+         - JWT: [admin]
+           Account: []
+           Role: []
+         - basicAuth: []
+           Account: []
+           Role: []
       responses:
         '200':
           $ref: '#/components/responses/alb_list'
         '401':
           $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/access_denied'
         '500':
           $ref: '#/components/responses/server_error'
-        default:
-          $ref: '#/components/responses/unexpected_error'
       x-codeSamples:
         - lang: cURL
           source: |-
             curl -X GET \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
-              "https://api.loc.icdc.io/api/traefik_manager/v1/gateways"
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways
     post:
       operationId: alb_attach
       tags:
@@ -107,11 +111,17 @@ paths:
       summary: Attach new ALB Gateway to account infrastructure
       security:
         - JWT: [location_admin]
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       description: >
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to create new gateways
-      parameters: 
-        - $ref: '#/components/parameters/Account'
+
+
+        Role-based access:
       requestBody:
         required: true
         content:
@@ -129,27 +139,32 @@ paths:
                   type: string
                   example: acc
       responses:
-        '201':
-          description: 'Created successful'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Gateway'
+        '200':
+          $ref: '#/components/responses/alb_list'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '405':
+          $ref: '#/components/responses/apigw_not_allowed'
       x-codeSamples:
         - lang: cURL
           source: |-
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
-              -d '{"account":"acc", "name": "alb-default", "cloudgw_id": "a843bf2a-7353-563e-a220-f59949849dba"}'
-              "https://api.loc.icdc.io/api/traefik_manager/v1/gateways"
+              -H "x-icdc-account: $OPERATOR" \
+              -H "x-icdc-role: admin" \
+              -d '{"account":"acc", "name": "alb-default", "cloudgw_id": "a843bf2a-7353-563e-a220-f59949849dba"}' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways
   /gateways/{id}:
     get:
+      operationId: alb_show
       tags:
         - ALB Gateways
-      summary: Show a gateway details
+      summary: Display ALB gateway details
       security:
         - JWT: [admin]
+      description: >
+        
       parameters:
         - $ref: '#/components/parameters/Account'
         - name: id
@@ -166,6 +181,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Gateway'
     put:
+      operationId: alb_modify
       tags:
         - ALB Gateways
       summary: Update Traefik Gateway. Usually use to assign Traefik Gateway to account.
@@ -628,11 +644,45 @@ components:
     JWT:
       type: openIdConnect
       openIdConnectUrl: https://login.icdc.io/auth/realms/master/.well-known/openid-configuration
+    basicAuth:
+      type: http
+      scheme: basic
+    Account:
+      type: apiKey
+      in: header
+      #TODO: [DS] rename to x-auth-account
+      name: x-icdc-account
+    Role:
+      type: apiKey
+      in: header
+      #TODO: [DS] rename to x-auth-role
+      name: x-icdc-role
     CloudGatewayUUID:
       type: apiKey
       in: path
       name: UUID
+    
   schemas:
+    error:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          # TODO: may be use integer for status
+          type: string
+          example: "500"
+          description: HTTP code
+          readOnly: true
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Server error
+              description: Error message description. Shown in UI as is, so make sure it understandable by ordinary user.
+              readOnly: true
     GatewayCollection:
       type: array
       items:
@@ -644,7 +694,7 @@ components:
         - cloudgw_id
       properties:
         id:
-          type: integer
+          type: string
           example: 1234
           readOnly: true
         name:
@@ -668,7 +718,15 @@ components:
           type: string
           example: devel
           description: |
-            Account which manages Traefik Gateway
+            Account the ALB Gateway is attached
+        created_at:
+          type: string
+          example: "2023-10-23T12:00:00.136Z"
+          description: Timestamp object created
+        updated_at:
+          type: string
+          example: "2023-11-23T18:00:01.555Z"
+          description: Timestamp object updated
     GatewayConfig:
       type: string
       description: Traefik YAML config
@@ -873,6 +931,13 @@ components:
               type: boolean
               example: true
   responses:
+    apigw_not_allowed:
+      description: This API gateway error means selected operation is not supported
+      content:
+        application/json:
+          schema:
+            type: string
+          example: "405 method not allowed"
     server_error:
       description: Server error.
       content:
@@ -880,15 +945,39 @@ components:
           schema:
             $ref: '#/components/schemas/error'
           example:
-            id: server_error
-            message: Unexpected server-side error
+            status: "500"
+            data:
+              message: Unexpected server-side error
+    unauthorized:
+      description: >
+        Request is not authorized, usually because of:
+        bad credentials, expired JWT token, account role is not assigned to authenticated user.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            status: "401"
+            data:
+              message: You're not authorized.
+    not_found:
+      description: >
+        Requested object is not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            status: "404"
+            data:
+              #TODO: [DS] maybe rename message as bad request is a 400 code, means that object attributes are malformed or can not be applied
+              message: Bad request, not found {object}
     alb_list:
       description: A list of ALB Gateways attached to account's infrastructure
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/GatewayCollection'
-        
   parameters:
     Account:
       name: x-icdc-account
@@ -915,11 +1004,16 @@ components:
       schema:
         type: string
         example: a843bf2a-7353-563e-a220-f59949849dba
-  security:
-    - OpenID:
-      - location_admin
-      - admin
-      - manager
-      - billing
-      - member
-    - CloudGatewayUUID: []
+security:
+  - JWT:
+    - location_admin
+    - admin
+    - manager
+    - billing
+    - member
+    Account: []
+    Role: []
+  - basicAuth: []
+    Account: []
+    Role: []
+  # - CloudGatewayUUID: []
