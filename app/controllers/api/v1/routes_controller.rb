@@ -87,17 +87,22 @@ class Api::V1::RoutesController < ApplicationController
 
   def update
     services = @route_params.delete(:services)
-    @route.update(sanitize_params, services)
-    if @route.healthcheck_enabled
-      if @route.healthcheck
-        @route.healthcheck.update!(healthcheck_params)
+    Route.transaction do
+      update_certificate
+      @route.update(sanitize_params, services)
+      if @route.healthcheck_enabled
+        if @route.healthcheck
+          @route.healthcheck.update!(healthcheck_params)
+        else
+          @route.create_healthcheck!(healthcheck_params)
+        end
       else
-        @route.create_healthcheck!(healthcheck_params)
+        @route.healthcheck&.destroy!
       end
-    else
-      @route.healthcheck&.destroy!
     end
-    render json: Route.find_by(id: params[:id]), status: :ok
+    render json: @route, status: :ok
+  rescue StandardError => e
+    render json: { message: e }, status: :bad_request
   end
 
   def destroy
@@ -120,17 +125,15 @@ class Api::V1::RoutesController < ApplicationController
     return render json: @route unless @route_params
 
     cloud_gateway_id = @route_params[:cloud_gateway_id]
-    if cloud_gateway_id && !CloudGateway.filtered.find_by(id: cloud_gateway_id)
-      return not_found("Cloud Gateway with id #{cloud_gateway_id}")
-    end
+    return unless cloud_gateway_id && !CloudGateway.filtered.find_by(id: cloud_gateway_id)
 
-    update_certificate
+    not_found("Cloud Gateway with id #{cloud_gateway_id}")
   end
 
   def update_certificate
     certificate_id = @route_params[:certificate_id]
     if certificate_id
-      return not_found("Certificate with id #{certificate_id}") unless Certificate.filtered.find_by(id: certificate_id)
+      raise "Certificate with id #{certificate_id} not found" unless Certificate.filtered.find_by(id: certificate_id)
 
       @route.update!(certificate_id:)
     else
