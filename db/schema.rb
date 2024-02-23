@@ -40,6 +40,7 @@ ActiveRecord::Schema.define(version: 2023_02_17_124807) do
     t.string "scheme"
     t.integer "port"
     t.integer "interval", default: 30
+    t.integer "timeout", default: 3
     t.string "hostname"
     t.jsonb "headers"
     t.string "method", default: "GET"

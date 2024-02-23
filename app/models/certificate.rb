@@ -20,7 +20,7 @@ class Certificate < ApplicationRecord
   def update_content(params)
     path = "certificates/#{CloudGateway.find_by(:account => User.current_user.account.downcase).cloudgw_id}/#{name}"
     dir = Certificate.find_or_build_path(path)
-    
+
     ["cert", "key", "ca", "dest_ca"].each do |file|
       File.write("#{dir}/#{file}", params[file])
     end
@@ -38,7 +38,7 @@ class Certificate < ApplicationRecord
     end
     FileUtils.rm_rf( "tmp/certificates/#{CloudGateway.find_by(:account => account).cloudgw_id}/#{name}")
     prepare_to_downloading
-    self    
+    self
   end
 
   def prepare_to_downloading

@@ -8,7 +8,7 @@ class CloudGateway < ApplicationRecord
 
   def config
     generated_config = {}
-    generated_config["http"] = http if routes.find_by(:tls_termination => ["re-encrypt", "edge", nil]) || 
+    generated_config["http"] = http if routes.find_by(:tls_termination => ["re-encrypt", "edge", nil]) ||
                                        routes.find_by(:tls_termination => "passthrough", :insecure => "redirect")
     generated_config["tcp"] = tcp if routes.find_by(:tls_termination => "passthrough")
     if routes.where.not(:tls_termination => nil).find_by(:insecure => "redirect")
@@ -69,7 +69,7 @@ class CloudGateway < ApplicationRecord
 
   def tcp
     tcp_block = { "routers" => {}, "services" => {} }
-  
+
     routes.where(:tls_termination => ["passthrough"]).each do |route|
       next if route.services.empty?
       tcp_block["routers"][route.name] = {
