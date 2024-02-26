@@ -198,22 +198,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Gateway'
         '401':
-          $ref: '#/components/schemas/unauthorized'
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
         '404':
-          $ref: '#/components/schemas/not_found'
+          $ref: '#/components/responses/not_found'
         '500':
-          $ref: '#/components/schemas/server_error'
+          $ref: '#/components/responses/server_error'
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $OPERATOR" \
+              -H "x-icdc-role: admin" \
+              -d '{"account":"devel", "name": "alb-special"}' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
     delete:
       tags:
         - ALB Gateways
       summary: Remove Traefik Gateway (un-register)
       security:
-        - JWT: [location_admin]
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       description: >
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to delete gateways
+
+        Role-based access:
+          - `operator` role can send requests to the endpoint
+          - other roles does have to access the endpoint
       parameters:
-      - $ref: '#/components/parameters/Account'
       - name: id
         in: path
         required: true
@@ -223,6 +243,23 @@ paths:
       responses:
         '204':
           description: 'No content'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '500':
+          $ref: '#/components/responses/server_error'
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X DELETE \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $OPERATOR" \
+              -H "x-icdc-role: admin" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
   /gateways/{uuid}/config:
     get:
       tags:
@@ -960,6 +997,17 @@ components:
             status: "401"
             data:
               message: You're not authorized.
+    forbidden:
+      description: >
+        Request authorized, but current user doesn't have access rights to perform action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            status: "403"
+            data:
+              message: You're doesn't have permissions to perform the action.
     not_found:
       description: >
         Requested object is not found
