@@ -128,7 +128,7 @@ class CloudGateway < ApplicationRecord
         )
       elsif lb['weighted']
         lb['weighted'].merge!(
-          'healthcheck' => {}
+          'healthCheck' => {}
         )
       end
     end
