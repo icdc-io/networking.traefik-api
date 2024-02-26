@@ -188,7 +188,8 @@ paths:
         required: true
         content:
           application/json:
-            $ref: '#/components/schemas/Gateway_PUT'
+            schema:
+              $ref: '#/components/schemas/Gateway_PUT'
       responses:
         '200':
           description: 'Operation successful'
