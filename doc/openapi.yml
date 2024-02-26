@@ -4,25 +4,25 @@ info:
   title: ICDC Appication LoadBalancer API1
   description: >
     # Introduction
-    
+
     The `Traefik Manager` subsystem provides easy HTTP API to manage **Application LoadBalancer** functionality of ICDC Cloud Platform.
-    
+
     Using this API you can script the complex actions that are required for your business case.
-    
+
     The API documentation starting from general overview and followed by reference information on specific endpoints.
 
     ## Application LoadBalancer
-    
+
     **Application LoadBalancer (ALB)** is a technology based on OpenSource `Traefik` reverse-proxy.
-    
+
     This functionality allows to accept HTTP and HTTPS traffic coming to public IP address on ports 80/tcp and 443/tcp, differentiate requests by target website hostname and send requests to specific virtual machine or group of virtual machines located in `Instance Group` (previously named as `Service`) of *ICDC Compute*.
-    
-    
+
+
     In case of using multiple virtual machines in the `Instance Group` by default all requests are balanced by round-robin algorithm:
       - first request goes to first instance;
       - second request goes to second instance;
       - so on until we reach end of the list of the `Instance Group` then starting again with the first instance.
-    
+
     By default requests are sent to all members of `Instance Group` until health-check configured, then requests are sent only to live members of `Instance Group` (ALB actively monitors liveness of target ports).
 
     ## Web-routes
@@ -35,7 +35,7 @@ info:
     ## Cloud Gateways
 
     **Application LoadBalancer** software installed on an instance of **CloudGateway** which is a special-purposed small multi-functional virtual machine attached to account's network.
-    
+
     By default each organizational account has at least one `Cloud Gateway`.
   contact:
     email: support@icdc.io
@@ -65,9 +65,13 @@ tags:
       Long-term certificates for your domains can be purchased from vendors.
       Sending requests to the `/certificates` endpoint, you can list uploaded certificates, upload new one or delete.
   - name: Routes
-    description: Routes
+    description: >
+      **Routes** allow to create a public HTTP route to a sites or web-applications deployed on virtual machines. **Routes** allow to configure tls termination, healthchecks and load-balancing between **Services** using weights.
+      Sending requests to the `/routes` endpoint, you can list created routes, retrieve details, update existed or create a new routes.
   - name: Services
-    description: Compute Services
+    description: >
+      **Services** functionality allows to see configuration of owned services/instange groups deployed into Compute application.
+      Sending requests to the `/services` endpoints, you can list owned services.
 paths:
   /gateways:
     get:
@@ -77,13 +81,13 @@ paths:
       summary: List of ALB Gateways
       description: >
         By sending request to this endpoint you can get list of ALB Gateways which are currently attached to account network infrastructure (VPC).
-        
+
 
         Role-based access:
           - `admin` role in `operator` account see all gateways of all accounts
           - `manager`,`admin`,`billing`,`member` roles see gateways in attached to account
       security:
-         - JWT: [admin]
+         - JWT: [openid, profile]
            Account: []
            Role: []
          - basicAuth: []
@@ -110,7 +114,7 @@ paths:
         - Private
       summary: Attach new ALB Gateway to account infrastructure
       security:
-        - JWT: [location_admin]
+        - JWT: []
           Account: []
           Role: []
         - basicAuth: []
@@ -120,8 +124,9 @@ paths:
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to create new gateways
 
-
         Role-based access:
+          - `operator` role can send requests to the endpoint
+          - other roles does have to access the endpoint
       requestBody:
         required: true
         content:
@@ -156,39 +161,23 @@ paths:
               -d '{"account":"acc", "name": "alb-default", "cloudgw_id": "a843bf2a-7353-563e-a220-f59949849dba"}' \
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways
   /gateways/{id}:
-    get:
-      operationId: alb_show
-      tags:
-        - ALB Gateways
-      summary: Display ALB gateway details
-      security:
-        - JWT: [admin]
-      description: >
-        
-      parameters:
-        - $ref: '#/components/parameters/Account'
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            example: 1234
-      responses:
-        '200':
-          description: 'Operation successful'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Gateway'
     put:
       operationId: alb_modify
       tags:
         - ALB Gateways
       summary: Update Traefik Gateway. Usually use to assign Traefik Gateway to account.
+      description: >
+        Role-based access:
+          - `operator` role can send requests to the endpoint
+          - other roles does have to access the endpoint
       security:
-        - JWT: [admin]
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
-        - $ref: '#/components/parameters/Account'
         - name: id
           in: path
           required: true
@@ -199,12 +188,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: New Traefik Name
+            $ref: '#/components/schemas/Gateway_PUT'
       responses:
         '200':
           description: 'Operation successful'
@@ -212,6 +196,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Gateway'
+        '401':
+          $ref: '#/components/schemas/unauthorized'
+        '404':
+          $ref: '#/components/schemas/not_found'
+        '500':
+          $ref: '#/components/schemas/server_error'
     delete:
       tags:
         - ALB Gateways
@@ -616,14 +606,14 @@ paths:
                           example: POST
                         follow_redirects:
                           type: boolean
-                          example: true                      
+                          example: true
       responses:
         '200':
           description: 'Operation successful'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route' 
+                $ref: '#/components/schemas/Route'
     delete:
       tags:
         - Routes
@@ -661,7 +651,7 @@ components:
       type: apiKey
       in: path
       name: UUID
-    
+
   schemas:
     error:
       type: object
@@ -727,6 +717,15 @@ components:
           type: string
           example: "2023-11-23T18:00:01.555Z"
           description: Timestamp object updated
+    Gateway_PUT:
+      type: object
+      properties:
+        name:
+          type: string
+          example: alb-special
+        account:
+          type: string
+          example: devel
     GatewayConfig:
       type: string
       description: Traefik YAML config
@@ -756,7 +755,7 @@ components:
                 servers:
                 - url: http://10.254.20.10
         tcp: {}
-        tls: {}  
+        tls: {}
     CertificateCollection:
       type: array
       items:
@@ -781,7 +780,7 @@ components:
           example: test
         ca_path:
           type: string
-          example: 
+          example:
         dest_ca_path:
           type: string
           example: test
@@ -1004,16 +1003,3 @@ components:
       schema:
         type: string
         example: a843bf2a-7353-563e-a220-f59949849dba
-security:
-  - JWT:
-    - location_admin
-    - admin
-    - manager
-    - billing
-    - member
-    Account: []
-    Role: []
-  - basicAuth: []
-    Account: []
-    Role: []
-  # - CloudGatewayUUID: []
