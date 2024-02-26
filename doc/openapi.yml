@@ -264,9 +264,11 @@ paths:
     get:
       tags:
         - ALB Gateways
+        - Private
       summary: Return YAML config for Traefik Gateway
-      security:
-        - CloudGatewayUUID: [cloud_gateway_id]
+      description: >
+        This endpoint is called from CloudGateway Automation only.
+        So we are not going to provide ability to Account Admins to see a Gateway Config
       parameters:
         - $ref: '#/components/parameters/CloudGatewayId'
       responses:
@@ -276,6 +278,10 @@ paths:
             text/yaml:
               schema:
                 $ref: '#/components/schemas/GatewayConfig'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '500':
+          $ref: '#components/responses/server_error'
   /api/certificates:
     get:
       tags:
