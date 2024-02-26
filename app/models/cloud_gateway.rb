@@ -122,7 +122,7 @@ class CloudGateway < ApplicationRecord
       if lb['loadBalancer']
         lb['loadBalancer']['healthCheck'] = healthcheck
       elsif lb['weighted']
-        lb['weighted']['healthcheck'] = {}
+        lb['weighted']['healthCheck'] = {}
       end
     end
   end
