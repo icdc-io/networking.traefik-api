@@ -1229,6 +1229,8 @@ components:
             $ref: '#/components/schemas/error'
           example:
             status: "422"
+            data:
+              message: Bad request, unprocessable entity
     alb_list:
       description: A list of ALB Gateways attached to account's infrastructure
       content:
