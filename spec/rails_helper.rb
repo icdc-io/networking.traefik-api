@@ -35,7 +35,7 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{Rails.root}/spec/fixtures"
+  config.fixture_path = Rails.root.join('spec/fixtures')
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
@@ -64,47 +64,51 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
-end
 
-JWT_MEMBER = 'Bearer ' + JWT.encode({
-                                      external: {
-                                        accounts: {
-                                          test: {
-                                            roles: ['member']
+  private_key = OpenSSL::PKey::RSA.generate 2048
+  Rails.application.secrets.sso_private_key = private_key
+  Rails.application.secrets.sso_public_key = private_key.public_key
+
+  JWT_MEMBER = 'Bearer ' + JWT.encode({
+                                        external: {
+                                          accounts: {
+                                            test: {
+                                              roles: ['member']
+                                            }
                                           }
-                                        }
-                                      },
-                                      groups: ['test.member'],
-                                      user_id: 'test_member@test.com',
-                                      email: 'test_member@test.com',
-                                      name: 'Test Member'
-                                    }, nil)
+                                        },
+                                        groups: ['test.member'],
+                                        user_id: 'test_member@test.com',
+                                        email: 'test_member@test.com',
+                                        name: 'Test Member'
+                                      }, private_key, 'RS256')
 
-JWT_ADMIN = 'Bearer ' + JWT.encode({
-                                     external: {
-                                       accounts: {
-                                         test: {
-                                           roles: ['admin']
+  JWT_ADMIN = 'Bearer ' + JWT.encode({
+                                       external: {
+                                         accounts: {
+                                           test: {
+                                             roles: ['admin']
+                                           }
                                          }
-                                       }
-                                     },
-                                     groups: ['test.admin'],
-                                     user_id: 'test_admin@test.com',
-                                     email: 'test_admin@test.com',
-                                     name: 'Test Admin'
-                                   }, nil)
+                                       },
+                                       groups: ['test.admin'],
+                                       user_id: 'test_admin@test.com',
+                                       email: 'test_admin@test.com',
+                                       name: 'Test Admin'
+                                     }, private_key, 'RS256')
 
-ENV['LOCATION_ADMIN_GROUP'] = 'location.admin'
-JWT_LOCATION_ADMIN = 'Bearer ' + JWT.encode({
-                                              external: {
-                                                accounts: {
-                                                  location: {
-                                                    roles: ['admin']
+  ENV['LOCATION_ADMIN_GROUP'] = 'location.admin'
+  JWT_LOCATION_ADMIN = 'Bearer ' + JWT.encode({
+                                                external: {
+                                                  accounts: {
+                                                    location: {
+                                                      roles: ['admin']
+                                                    }
                                                   }
-                                                }
-                                              },
-                                              groups: ['location.admin'],
-                                              user_id: 'test_location_admin@test.com',
-                                              email: 'test_location_admin@test.com',
-                                              name: 'Test Location Admin'
-                                            }, nil)
+                                                },
+                                                groups: ['location.admin'],
+                                                user_id: 'test_location_admin@test.com',
+                                                email: 'test_location_admin@test.com',
+                                                name: 'Test Location Admin'
+                                              }, private_key, 'RS256')
+end

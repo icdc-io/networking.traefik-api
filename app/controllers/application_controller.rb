@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json/jwt'
 require 'rbac'
 
@@ -6,11 +8,12 @@ class ApplicationController < ActionController::API
   include AuthHelper
   include Rbac
 
-  before_action :authorize, :authorize_action, except: [:traefik_config, :download]
+  before_action :authorize, :authorize_action, except: %i[traefik_config download]
 
   def authorize
     return not_authorized unless request.authorization
-    auth_method, token = request.authorization.split(' ')
+
+    auth_method, token = request.authorization.split
     case auth_method
     when 'Bearer'
       bearer_auth(token)
@@ -20,7 +23,9 @@ class ApplicationController < ActionController::API
   end
 
   def authorize_action
-    forbidden("You are not authorized to perform this action.") unless Rbac::Authorizer.new('./config/rbac/rbac_routes.yml').role_allows?(request)
+    return if Rbac::Authorizer.new('./config/rbac/rbac_routes.yml').role_allows?(request)
+
+    forbidden('You are not authorized to perform this action.')
   end
 
   def bearer_auth(pure_token)
@@ -29,7 +34,9 @@ class ApplicationController < ActionController::API
     account = fetch_account
     return not_authorized unless validate(token, account, role)
 
-    User.current_user = User.new(userid: token['email'], token: pure_token, account: account, role: setup_role(account, role))
+    User.current_user = User.new(userid: token['email'], token: pure_token, account:, role: setup_role(account, role))
+  rescue JWT::DecodeError
+    not_authorized
   end
 
   def basic_auth(token)
@@ -40,23 +47,25 @@ class ApplicationController < ActionController::API
     token = decoded_token pure_token
     return not_authorized unless validate(token, account, role)
 
-    User.current_user = User.new(userid: token['email'], token: pure_token, account: account, role: setup_role(account, role))
+    User.current_user = User.new(userid: token['email'], token: pure_token, account:, role: setup_role(account, role))
+  rescue JWT::DecodeError
+    not_authorized
   end
 
   private
 
   def fetch_account
-    request.headers[ENV['ACCOUNT_HEADER']]
+    request.headers[ENV.fetch('ACCOUNT_HEADER')]
   end
 
   def fetch_role
-    role = request.headers[ENV['ROLE_HEADER']]
+    request.headers[ENV.fetch('ROLE_HEADER')]
   end
 
   def setup_role(account, role)
-    if ENV['LOCATION_ADMIN_GROUP'] == "#{account}.#{role}"
-      "location_admin"
-    else 
+    if ENV.fetch('LOCATION_ADMIN_GROUP') == "#{account}.#{role}"
+      'location_admin'
+    else
       role
     end
   end

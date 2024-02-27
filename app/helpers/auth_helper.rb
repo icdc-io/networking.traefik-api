@@ -5,25 +5,23 @@ module AuthHelper
   def get_jwt_token(login, password)
     response = RestClient::Request.execute(
       method: :post,
-      url: "#{ENV['SSO_URL']}/realms/#{ENV['SSO_REALM']}/protocol/openid-connect/token",
+      url: "#{ENV.fetch('SSO_URL')}/realms/#{ENV.fetch('SSO_REALM')}/protocol/openid-connect/token",
       payload: request_payload(login, password),
-      verify_ssl: ENV["RAILS_ENV"] == "production"
+      verify_ssl: Rails.env.production?
     )
     JSON.parse(response.body)['access_token']
   end
 
-  def request_payload(login, password)
+  def request_payload(username, password)
     {
-      username: login,
-      password: password,
+      username:,
+      password:,
       grant_type: 'password',
-      client_id: ENV['SSO_CLIENT_ID']
+      client_id: ENV.fetch('SSO_CLIENT_ID')
     }
   end
 
   def decoded_token(token = nil)
-    JWT.decode(token, Rails.application.config.sso_public_key, false, algorithm: 'RS256')[0]
-  rescue JWT::DecodeError
-    abort("Unauthorized! Can't decode JWT token!")
+    JWT.decode(token, Rails.application.secrets.sso_public_key, true, algorithm: 'RS256')[0]
   end
 end
