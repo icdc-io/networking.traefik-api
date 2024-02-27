@@ -91,7 +91,7 @@ describe 'Api::V1::GatewaysController', type: :request do
       ) do
 
         it 'creates a new Traefik Gateway' do |example|
-          request_body = get_request_body(example) 
+          request_body = get_request_body(example)
           post '/api/v1/gateways',
             :params => request_body,
             :headers => {
@@ -317,7 +317,7 @@ describe 'Api::V1::GatewaysController', type: :request do
           end
 
         it 'updates Traefik Gateway (for Location Admin)' do |example|
-          gateway = FactoryBot.create(:cloud_gateway, :account => 'test') 
+          gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
           request_body = {
             :name => 'not-vpn-default',
             :cloudgw_id => 'b954cg3b-8464-674f-b331-g60050950ecb',
@@ -556,7 +556,7 @@ describe 'Api::V1::GatewaysController', type: :request do
           )
           services_block.each do |key, value|
             if services_block[key]["loadBalancer"]
-              services_block[key]["loadBalancer"]["servers"] = 
+              services_block[key]["loadBalancer"]["servers"] =
                 [{ "url" => "http://#{value["loadBalancer"]["servers"][0]["address"]}" }]
             end
           end
@@ -571,11 +571,11 @@ describe 'Api::V1::GatewaysController', type: :request do
                 }
               },
               "middlewares" => {
-                "#{route.name}-redirect" => {                                                                              
+                "#{route.name}-redirect" => {
                   "redirectScheme" => {
                     "scheme"    => "https",
                     "permanent" => true
-                  }                                                                             
+                  }
                 }
               },
               "services" => services_block
@@ -584,8 +584,8 @@ describe 'Api::V1::GatewaysController', type: :request do
           expect(yaml["tls"]).to eq(
             "certificates" => [
               {
-                "certFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{cert.cert_path}",
-                "keyFile"  => "#{ENV['TRAEFIK_CERT_PATH']}/#{cert.key_path}"
+                "certFile" => "#{ENV['TRAEFIK_CERT_PATH']}/certificates/#{gateway.cloudgw_id}/#{cert.name}/#{cert.cert_path.split('/').last}",
+                "keyFile" => "#{ENV['TRAEFIK_CERT_PATH']}/certificates/#{gateway.cloudgw_id}/#{cert.name}/#{cert.key_path.split('/').last}"
               }
             ]
           )
