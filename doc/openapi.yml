@@ -150,6 +150,8 @@ paths:
           $ref: '#/components/responses/unauthorized'
         '405':
           $ref: '#/components/responses/apigw_not_allowed'
+        '422':
+          $ref: '#/components/responses/unprocessable_entity'
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -203,6 +205,8 @@ paths:
           $ref: '#/components/responses/forbidden'
         '404':
           $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/unprocessable_entity'
         '500':
           $ref: '#/components/responses/server_error'
       x-codeSamples:
@@ -356,6 +360,8 @@ paths:
           $ref: '#/components/responses/unauthorized'
         '403':
           $ref: '#/components/responses/forbidden'
+        '422':
+          $ref: '#/components/responses/unprocessable_entity'
         '500':
           $ref: '#/components/responses/server_error'
 
@@ -466,6 +472,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Certificate'
+        '422':
+          $ref: '#/components/responses/unprocessable_entity'
         '401':
           $ref: '#/components/responses/unauthorized'
         '403':
@@ -624,6 +632,8 @@ paths:
                 $ref: '#/components/schemas/Route'
         '401':
           $ref: '#/components/responses/unauthorized'
+        '422':
+          $ref: '#/components/responses/unprocessable_entity'
         '500':
           $ref: '#/components/responses/server_error'
 
@@ -747,6 +757,8 @@ paths:
           $ref: '#/components/responses/forbidden'
         '404':
           $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/unprocessable_entity'
         '500':
           $ref: '#/components/responses/server_error'
 
@@ -1208,6 +1220,15 @@ components:
             data:
               #TODO: [DS] maybe rename message as bad request is a 400 code, means that object attributes are malformed or can not be applied
               message: Bad request, not found {object}
+    unprocessable_entity:
+      description: >
+        Unprocessable entity.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            status: "422"
     alb_list:
       description: A list of ALB Gateways attached to account's infrastructure
       content:
