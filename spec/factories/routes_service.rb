@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :routes_service do
-    name {rand(39284024).to_s(36)}
-    balance_type {:loadbalancer}
-    value {nil}
-    #route
-    #service
+    route
+    service
+    name         { rand(39_284_024).to_s(36) }
+    balance_type { :loadbalancer }
+    value        { nil }
   end
 end

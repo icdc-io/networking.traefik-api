@@ -1,23 +1,21 @@
+# frozen_string_literal: true
+
 class CloudGateway < ApplicationRecord
   attribute :cloudgw_instance, :string
   has_many :routes, dependent: :destroy
   validates :cloudgw_id, uniqueness: true
 
-  before_destroy { Certificate.select{|cert| (cert.cert_path.split('/')[-3] == cloudgw_id) if cert.cert_path}.each &:destroy! }
-  after_destroy { Dir.delete("certificates/#{cloudgw_id}") if File.exist?("certificates/#{cloudgw_id}") }
+  after_destroy { FileUtils.rm_f("#{ENV.fetch('USERS_CERT_PATH_ARCH')}/#{cloudgw_id}.zip") }
 
   def config
     generated_config = {}
-    generated_config["http"] = http if routes.find_by(:tls_termination => ["re-encrypt", "edge", nil]) ||
-                                       routes.find_by(:tls_termination => "passthrough", :insecure => "redirect")
-    generated_config["tcp"] = tcp if routes.find_by(:tls_termination => "passthrough")
-    if routes.where.not(:tls_termination => nil).find_by(:insecure => "redirect")
-      generated_config["http"]["middlewares"] = middlewares unless middlewares.empty?
-    end
-    generated_config["tls"] = tls if Certificate.find{|cert| (cert.cert_path.split('/')[-3] == cloudgw_id) if cert.cert_path}
-    generated_config
-      .delete_if { |key, value| value.empty? }
-      .to_yaml.strip
+    generated_config['http'] = http if routes.where(tls_termination: ['re-encrypt', 'edge', nil])
+                                             .or(routes.where(tls_termination: 'passthrough', insecure: 'redirect')).any?
+    generated_config['tcp'] = tcp if routes.where(tls_termination: 'passthrough').any?
+    mw = routes.where(insecure: 'redirect').where.not(tls_termination: nil).any? ? middlewares : []
+    generated_config['http']['middlewares'] = mw unless mw.empty?
+    generated_config['tls'] = tls if Certificate.where(account:).any?
+    generated_config.delete_if { |_key, value| value.empty? }.to_yaml.strip
   end
 
   def cloudgw_instance
@@ -27,88 +25,87 @@ class CloudGateway < ApplicationRecord
   private
 
   def http
-    http_block = { "routers" => {}, "services" => {} }
+    http_block = { 'routers' => {}, 'services' => {} }
 
-    routes.where(:tls_termination => ["re-encrypt", "edge", nil]).each do |route|
+    routes.where(tls_termination: ['re-encrypt', 'edge', nil]).find_each do |route|
       next if route.services.empty?
-      http_block["routers"].merge! routers_http(route)
-      http_block["services"].merge! services_section(route, :http)
+
+      http_block['routers'].merge! routers_http(route)
+      http_block['services'].merge! services_section(route, :http)
     end
 
-    routes.where(:tls_termination => "passthrough", :insecure => "redirect").each do |route|
+    routes.where(tls_termination: 'passthrough', insecure: 'redirect').find_each do |route|
       next if route.services.empty?
-      http_block["routers"].merge! routers_http(route)
-      http_block["services"].merge! services_section(route, :http)
+
+      http_block['routers'].merge! routers_http(route)
+      http_block['services'].merge! services_section(route, :http)
     end
 
-    http_block.delete_if { |key, value| value.empty? }
+    http_block.delete_if { |_key, value| value.empty? }
   end
 
   def routers_http(route)
     router = {
-      "service" => route.routes_services[0].name,
-      "rule" => rule(route),
-      "tls" => route.certificate ? true : { "certResolver" => "default" }
+      'service' => route.routes_services.first.name,
+      'rule' => rule(route),
+      'tls' => route.certificate ? true : { 'certResolver' => 'default' }
     }
-    if route.insecure == "redirect" && route.tls_termination
-      router.merge!(
-        { "middlewares" => [ "#{route.name}-redirect" ] }
-      )
-    end
+    router['middlewares'] = ["#{route.name}-redirect"] if route.insecure == 'redirect' && route.tls_termination
 
-    outp = { "#{route.name}-http" => router.except("tls").merge("entryPoints" => ["web"]) }
-    if route.tls_termination.in? ["re-encrypt", "edge"]
-      outp.merge!( "#{route.name}-https" => router.except("middlewares").merge("entryPoints" => ["websecure"]) )
+    outp = { "#{route.name}-http" => router.except('tls').merge('entryPoints' => ['web']) }
+    if route.tls_termination.in? %w[re-encrypt edge]
+      outp["#{route.name}-https"] = router.except('middlewares').merge('entryPoints' => ['websecure'])
     end
     outp
   end
 
   def rule(route)
-    route.path == "/" ? "Host(`#{route.hostname}`)" : "Host(`#{route.hostname}`) && PathPrefix(`#{route.path}`)"
+    route.path == '/' ? "Host(`#{route.hostname}`)" : "Host(`#{route.hostname}`) && PathPrefix(`#{route.path}`)"
   end
 
   def tcp
-    tcp_block = { "routers" => {}, "services" => {} }
+    tcp_block = { 'routers' => {}, 'services' => {} }
 
-    routes.where(:tls_termination => ["passthrough"]).each do |route|
+    routes.where(tls_termination: ['passthrough']).find_each do |route|
       next if route.services.empty?
-      tcp_block["routers"][route.name] = {
-        "service" => route.routes_services[0].name,
-        "rule" => "HostSNI(`#{route.hostname}`)",
-        "tls" => {
-          "passthrough" => true
+
+      tcp_block['routers'][route.name] = {
+        'service' => route.routes_services.first.name,
+        'rule' => "HostSNI(`#{route.hostname}`)",
+        'tls' => {
+          'passthrough' => true
         }
       }
-      tcp_block["services"].merge!(services_section(route, :tcp))
+      tcp_block['services'].merge!(services_section(route, :tcp))
     end
 
-    tcp_block.delete_if { |key, value| value.empty? }
+    tcp_block.delete_if { |_key, value| value.empty? }
   end
 
   def services_section(route, section)
     services = {}
     route_service = route.routes_services.first
-    if route_service.balance_type == "loadbalancer"
+    if route_service.balance_type == 'loadbalancer'
       services[route_service.name] = {
-        "loadBalancer" => {
-          "servers" =>  lb_server(route_service.service, section, route)
+        'loadBalancer' => {
+          'servers' => lb_server(route_service.service, section, route)
         }
       }
     else
       services[route_service.name] = {
-        "weighted" => {
-          "services" => weighted(RoutesService.where(:route_id => route.id), section, route)
+        'weighted' => {
+          'services' => weighted(route.routes_services, section, route)
         }
       }
-      RoutesService.where(:route_id => route.id).collect(&:service).each do |service|
+      route.services.each do |service|
         services["#{service.ext_id}-#{route.target_port}"] = {
-          "loadBalancer" => {
-            "servers" => lb_server(service, section, route)
+          'loadBalancer' => {
+            'servers' => lb_server(service, section, route)
           }
         }
       end
     end
-    services.delete_if { |_, value| value.empty? }
+    services.delete_if { |_key, value| value.empty? }
     healthcheck_section(services, route.healthcheck) if route.healthcheck_enabled
     services
   end
@@ -123,13 +120,9 @@ class CloudGateway < ApplicationRecord
 
     lb_config.each do |_, lb|
       if lb['loadBalancer']
-        lb['loadBalancer'].merge!(
-          'healthCheck' => healthcheck
-        )
+        lb['loadBalancer']['healthCheck'] = healthcheck
       elsif lb['weighted']
-        lb['weighted'].merge!(
-          'healthCheck' => {}
-        )
+        lb['weighted']['healthCheck'] = {}
       end
     end
   end
@@ -138,63 +131,64 @@ class CloudGateway < ApplicationRecord
     ip_version = route.ip_version || 4
     case section
     when :http
+      schema = schema(route)
       service.addresses(ip_version).split(',').map do |ip|
         if route.target_port
-          {"url" => "#{schema(route)}://#{ip}:#{route.target_port.to_i}"}
+          { 'url' => "#{schema}://#{ip}:#{route.target_port.to_i}" }
         else
-          {"url" => "#{schema(route)}://#{ip}"}
+          { 'url' => "#{schema}://#{ip}" }
         end
       end
     when :tcp
       service.addresses(ip_version).split(',').map do |ip|
         if route.target_port
-          {"address" => "#{ip}:#{route.target_port.to_i}"}
+          { 'address' => "#{ip}:#{route.target_port.to_i}" }
         else
-          {"address" => "#{ip}"}
+          { 'address' => ip.to_s }
         end
       end
     end
   end
 
-  def weighted(route_services, section, route)
+  def weighted(route_services, _section, route)
     route_services.map do |route_service|
       {
-        "name" => "#{route_service.service.ext_id}-#{route.target_port}",
-        "weight" => route_service.value
+        'name' => "#{route_service.service.ext_id}-#{route.target_port}",
+        'weight' => route_service.value
       }
     end
   end
 
   def schema(route)
-    return "https" if route.tls_termination == "re-encrypt"
-    "http"
+    return 'https' if route.tls_termination == 're-encrypt'
+
+    'http'
   end
 
   def middlewares
     block = {}
-    routes.where(:insecure => "redirect").each do |route|
-      next if route.services.empty?
-      if route.tls_termination
-        block["#{route.name}-redirect"] = {
-          "redirectScheme" => {
-              "scheme" => "https",
-              "permanent" => true
-            }
+    routes.where(insecure: 'redirect').find_each do |route|
+      next if route.services.empty? || !route.tls_termination
+
+      block["#{route.name}-redirect"] = {
+        'redirectScheme' => {
+          'scheme' => 'https',
+          'permanent' => true
         }
-      end
+      }
     end
-    block.delete_if { |key, value| value.empty? }
+    block.delete_if { |_key, value| value.empty? }
   end
 
   def tls
+    certificates_path = "#{ENV.fetch('TRAEFIK_CERT_PATH')}/certificates/#{cloudgw_id}/"
     {
-      "certificates" => Certificate.select{|cert| (cert.cert_path.split('/')[-3] == cloudgw_id) if cert.cert_path}
-        .map do |certificate|
-          {
-            "certFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{certificate.cert_path}",
-            "keyFile" => "#{ENV['TRAEFIK_CERT_PATH']}/#{certificate.key_path}"
-          }
-        end
+      'certificates' => Certificate.where(account:).map do |certificate|
+        {
+          'certFile' => "#{certificates_path}#{certificate.name}/#{certificate.cert_path.split('/').last}",
+          'keyFile' => "#{certificates_path}#{certificate.name}/#{certificate.key_path.split('/').last}"
+        }
+      end
     }
   end
 end

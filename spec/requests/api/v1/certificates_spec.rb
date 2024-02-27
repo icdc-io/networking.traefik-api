@@ -60,7 +60,7 @@ describe 'Api::V1::CertificatesController', type: :request do
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).size).to eq(test_count * 2)
         end
-      
+
         it 'shows all account\'s certificates' do |example|
           FactoryBot.create(:cloud_gateway, :account => 'test')
           FactoryBot.create(:cloud_gateway, :account => 'icdc')
@@ -70,7 +70,7 @@ describe 'Api::V1::CertificatesController', type: :request do
             create_certificate(:account => 'test', :owner => "not_test_member@test.com")
             create_certificate(:account => 'icdc')
           end
-      
+
           get "/api/v1/certificates",
             :params => nil,
             :headers => {
@@ -118,7 +118,7 @@ describe 'Api::V1::CertificatesController', type: :request do
 
         it 'creates a new Certificate' do |example|
           gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
-          request_body = { 
+          request_body = {
             'certificate' => {
               'name' => "alb.computedev.zby.icdc.io",
               'owner' => "test_member@test.com"
@@ -134,7 +134,7 @@ describe 'Api::V1::CertificatesController', type: :request do
           expect(response).to have_http_status(:created)
           expect(Certificate.count).to eq(1)
           response_body = JSON.parse(response.body, symbolize_names: true)
-          path = "certificates/#{gateway.cloudgw_id}/#{request_body['certificate']['name']}/"
+          path = "#{ENV.fetch('USERS_CERT_PATH')}/#{gateway.account}/#{request_body['certificate']['name']}/"
           expect(response_body.except(:created_at, :updated_at, :id, :values)).to eq(
             request_body['certificate'].symbolize_keys.except(:cert, :key, :ca, :dest_ca).merge(
               :account => 'test',
@@ -298,7 +298,7 @@ describe 'Api::V1::CertificatesController', type: :request do
             }
           expect(response).to have_http_status(:ok)
           response_body = JSON.parse(response.body, symbolize_names: true)
-          path = "certificates/#{gateway.cloudgw_id}/#{request_body['certificate']['name']}/"
+          path = "#{ENV.fetch('USERS_CERT_PATH')}/#{gateway.account}/#{request_body['certificate']['name']}/"
           expect(response_body.except(:created_at, :updated_at, :id, :values)).to eq(
             request_body['certificate'].symbolize_keys.
               except(:cert, :key, :ca, :dest_ca).
@@ -338,7 +338,7 @@ describe 'Api::V1::CertificatesController', type: :request do
             }
           expect(response).to have_http_status(:ok)
           response_body = JSON.parse(response.body, symbolize_names: true)
-          path = "certificates/#{gateway.cloudgw_id}/#{request_body['certificate']['name']}/"
+          path = "#{ENV.fetch('USERS_CERT_PATH')}/#{gateway.account}/#{request_body['certificate']['name']}/"
           expect(response_body.except(:created_at, :updated_at, :id, :values)).to eq(
             request_body['certificate'].symbolize_keys.except(:cert, :key, :ca, :dest_ca).merge(
               :account => 'test',
@@ -365,7 +365,7 @@ describe 'Api::V1::CertificatesController', type: :request do
         "404",
         "Not found"
       ) do
-        
+
         it 'returns \'404\' if certificate doesn\'t exist' do |example|
           gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
           request_body = {
@@ -409,7 +409,7 @@ describe 'Api::V1::CertificatesController', type: :request do
             'certificate' => {
               'name' => "new-lb.computedev.zby.icdc.io",
             }.merge($certificate_values.stringify_keys.slice('cert', 'key', 'ca', 'dest_ca'))
-          }        
+          }
           put "/api/v1/certificates/#{certificate.id}",
             :params => request_body,
             :headers => {
@@ -534,7 +534,9 @@ describe 'Api::V1::CertificatesController', type: :request do
 
         it 'returns certificate' do |example|
           gateway = FactoryBot.create(:cloud_gateway, :account => 'test')
-          certificate = create_certificate
+          Sidekiq::Testing.inline! do
+            certificate = create_certificate
+          end
           set_request_param(example, :uuid, gateway.cloudgw_id)
           get "/api/v1/cert-download/#{gateway.cloudgw_id}"
           expect(response).to have_http_status(:ok)
