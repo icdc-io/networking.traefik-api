@@ -82,6 +82,7 @@ class Certificate < ApplicationRecord
   def remove_cert_files
     FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH')}/#{account}/#{name}")
 
+    # TODO: Remove lines below
     cloudgw_id = CloudGateway.find_by(account:).cloudgw_id
     FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH')}/#{cloudgw_id}/#{name}")
     FileUtils.rm_rf("certificates/#{cloudgw_id}/#{name}")
