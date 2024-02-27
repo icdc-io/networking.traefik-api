@@ -83,12 +83,11 @@ paths:
       description: >
         By sending request to this endpoint you can get list of ALB Gateways which are currently attached to account network infrastructure (VPC).
 
-
         Role-based access:
-          - `admin` role in `operator` account see all gateways of all accounts
-          - `manager`,`admin`,`billing`,`member` roles see gateways in attached to account
+          - `admin` role in`operator` account see all gateways of all accounts
+          - `admin`/`owner`, `member` roles see gateways in attached to account
       security:
-         - JWT: [openid, profile]
+         - JWT: []
            Account: []
            Role: []
          - basicAuth: []
@@ -224,6 +223,7 @@ paths:
       operationId: alb_unregister
       tags:
         - ALB Gateways
+        - Private
       summary: Remove Traefik Gateway (un-register)
       security:
         - JWT: []
@@ -288,7 +288,7 @@ paths:
           $ref: '#/components/responses/not_found'
         '500':
           $ref: '#components/responses/server_error'
-  /api/certificates:
+  /certificates:
     get:
       operationId: certificates_list
       tags:
@@ -299,7 +299,7 @@ paths:
 
         Role-based access:
           - `operator` role can see all certificates in location
-          - `admin` role can see all certificates in account
+          - `admin`/`owner` role can see all certificates in account
           - `member` role can see only own certificates
       security:
         - JWT: []
@@ -345,11 +345,16 @@ paths:
         This endpoint is used for creating a new SSL certificate and uploading it to a **CloudGateway**.
         The server automatically checks the validity of the uploaded certificate.
         After the certificate has been successfully uploaded via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
+
+        Role-based access:
+          - `operator` role can create certificate in any account per location
+          - `admin`/`owner` role can create certificate only in the account space
+          - `member` role can create certificate only in the account space
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Certificate_POST'
+              $ref: '#/components/schemas/Certificate'
       responses:
         '201':
           description: created
@@ -399,7 +404,7 @@ paths:
 
         Role-based access:
           - `operator` role can see all certificates in location
-          - `admin` role can see all certificates in account
+          - `admin`/`owner` role can see all certificates in account
           - `member` role can see only own certificates
       parameters:
         - name: id
@@ -451,7 +456,7 @@ paths:
 
         Role-based access:
           - `operator` role can manage all certificates in location
-          - `admin` role can manage all certificates in account
+          - `admin`/`owner` role can manage all certificates in account
           - `member` role can manage only own certificates
       parameters:
         - name: id
@@ -517,7 +522,7 @@ paths:
 
         Role-based access:
           - `operator` role can manage all certificates in location
-          - `admin` role can manage all certificates in account
+          - `admin`/`owner` role can manage all certificates in account
           - `member` role can manage only own certificates
       parameters:
         - name: id
@@ -550,7 +555,7 @@ paths:
     operationId: services_list
     get:
       tags:
-        - Service
+        - Services
       summary: Show all existing certificates
       description: >
         This endpoint is called to retrieve the list of services along with information about VMs' IP addresses.
@@ -559,7 +564,7 @@ paths:
 
         Role-based access:
           - `operator` role can see all services in the location
-          - `admin` role can see all services in account
+          - `admin`/`owner` role can see all services in account
           - `member` role can see only own services
       security:
         - JWT: []
@@ -596,7 +601,7 @@ paths:
       description: >
         Role-based access:
           - `operator` role can see all routes in the location
-          - `admin` role can see all routes in account
+          - `admin`/`owner` role can see all routes in account
           - `member` role can see only own routes
       security:
         - JWT: []
@@ -631,7 +636,7 @@ paths:
       description: >
         Role-based access:
           - `operator` role can create routes in any account per location
-          - `admin` role can create route only in the account space
+          - `admin`/`owner` role can create route only in the account space
           - `member` role can create route only in the account space
       security:
         - JWT: []
@@ -712,7 +717,7 @@ paths:
       description: >
         Role-based access:
           - `operator` role can see all routes in the location
-          - `admin` role can see all routes in account
+          - `admin`/`owner` role can see all routes in account
           - `member` role can see only own routes
 
       security:
@@ -760,7 +765,7 @@ paths:
       description: >
         Role-based access:
           - `operator` role can modify all routes in the location
-          - `admin` role can  modify routes in the account space
+          - `admin`/`owner` role can  modify routes in the account space
           - `member` role can modify only own routes
 
       security:
@@ -852,7 +857,7 @@ paths:
       description: >
         Role-based access:
           - `operator` role can delete each route in the location
-          - `admin` role can delete routes only in the account space
+          - `admin`/`owner` role can delete routes only in the account space
           - `member` role can delete only own routes
 
       security:
