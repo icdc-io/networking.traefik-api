@@ -544,6 +544,7 @@ paths:
       summary: Show all existing certificates
       description: >
         This endpoints called for retrieving the list of services with information about vms ip adreeses.
+        Usually used for fetching service_id in case when users create route using API.
         Infromation sync with application Compute every 15 minutes automatically
 
         Role-based access:
@@ -561,6 +562,14 @@ paths:
           $ref: '#/components/responses/unauthorized'
         '500':
           $ref: '#/components/responses/server_error'
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/services
   /routes:
     get:
       operationId: routes_list
@@ -568,7 +577,10 @@ paths:
         - Routes
       summary: Get info about existing routes
       description: >
-
+        Role-based access:
+          - `operator` role can see all routes in the location
+          - `admin` role can see all routes in account
+          - `member` role can see only own routes
       responses:
         '200':
           description: Operation successful
@@ -576,13 +588,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RouteCollection'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '500':
+          $ref: '#/components/responses/server_error'
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes
     post:
       operationId: route_create
       tags:
         - Routes
       summary: Create a new route
       description: >
-
+        Role-based access:
+          - `operator` role can create routes in any account per location
+          - `admin` role can create route only in the account space
+          - `member` role can create route only in the account space
       requestBody:
         required: true
         content:
@@ -596,12 +622,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Route'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '500':
+          $ref: '#/components/responses/server_error'
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -d '{
+                "route": {
+                  "name": "route_name",
+                  "hostname": "acc.vpn.loc.icdc.io",
+                  "target_port": "443",
+                  "tls_termination": "re-encrypt",
+                  "owner": " user@example.com",
+                  "cloud_gateway_id": "1",
+                  "path": "/",
+                  "source_proto": "tcp",
+                  "destination_proto": "tcp",
+                  "ip_version": "4",
+                  "services": [
+                    {
+                      "id": "1"
+                    }
+                  ],
+                  "healthcheck_enabled": true,
+                  "healthcheck": {
+                    "path": "/",
+                    "scheme": "http",
+                    "hostname": "check-cors.loc.icdc.io",
+                    "port": 8080,
+                    "interval": 15,
+                    "timeout": 3,
+                    "headers": {
+                      "x-request-id": "123-456-789"
+                    },
+                    "method": "GET",
+                    "follow_redirects": true
+                  },
+                  "certificate_id": "1",
+                  "insecure": "redirect"
+                }
+              }' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes
+
   /routes/{id}:
     operationId: route_show
     get:
       tags:
         - Routes
       summary: Show info about selected route
+      description: >
+        Role-based access:
+          - `operator` role can see all routes in the location
+          - `admin` role can see all routes in account
+          - `member` role can see only own routes
       parameters:
         - name: id
           in: path
@@ -616,11 +695,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Route'
+      '401':
+        $ref: '#/components/responses/unauthorized'
+      '403':
+        $ref: '#/components/responses/forbidden'
+      '404':
+        $ref: '#/components/responses/not_found'
+      '500':
+        $ref: '#/components/responses/server_error'
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
     put:
       operationId: route_update
       tags:
         - Routes
       summary: Add routes
+      description: >
+        Role-based access:
+          - `operator` role can modify all routes in the location
+          - `admin` role can  modify routes in the account space
+          - `member` role can modify only own routes
       parameters:
         - name: id
           in: path
@@ -641,11 +741,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Route'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '500':
+          $ref: '#/components/responses/server_error'
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -d '{
+                "route": {
+                  "name": "route_name",
+                  "hostname": "acc.vpn.loc.icdc.io",
+                  "target_port": "443",
+                  "tls_termination": "re-encrypt",
+                  "owner": " user@example.com",
+                  "cloud_gateway_id": "1",
+                  "path": "/",
+                  "source_proto": "tcp",
+                  "destination_proto": "tcp",
+                  "ip_version": "4",
+                  "services": [
+                    {
+                      "id": "1"
+                    }
+                  ],
+                  "healthcheck_enabled": true,
+                  "healthcheck": {
+                    "path": "/",
+                    "scheme": "http",
+                    "hostname": "check-cors.loc.icdc.io",
+                    "port": 8080,
+                    "interval": 15,
+                    "timeout": 3,
+                    "headers": {
+                      "x-request-id": "123-456-789"
+                    },
+                    "method": "GET",
+                    "follow_redirects": true
+                  },
+                  "certificate_id": "1",
+                  "insecure": "redirect"
+                }
+              }' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
+
     delete:
       operationId: route_delete
       tags:
         - Routes
       summary: Delete route
+      description: >
+        Role-based access:
+          - `operator` role can delete each route in the location
+          - `admin` role can delete routes only in the account space
+          - `member` role can delete only own routes
       parameters:
         - name: id
           in: path
@@ -657,6 +814,22 @@ paths:
       responses:
         '204':
           description: No content
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '500':
+          $ref: '#/components/responses/server_error'
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X DELETE \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
 components:
   securitySchemes:
     JWT:
