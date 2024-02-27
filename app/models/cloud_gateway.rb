@@ -168,9 +168,7 @@ class CloudGateway < ApplicationRecord
   def middlewares
     block = {}
     routes.where(insecure: 'redirect').find_each do |route|
-      next if route.services.empty?
-
-      next unless route.tls_termination
+      next if route.services.empty? || !route.tls_termination
 
       block["#{route.name}-redirect"] = {
         'redirectScheme' => {

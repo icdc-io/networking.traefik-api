@@ -80,17 +80,11 @@ class Certificate < ApplicationRecord
   end
 
   def remove_cert_files
-    FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH', nil)}/#{account}/#{name}")
+    FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH')}/#{account}/#{name}")
 
     cloudgw_id = CloudGateway.find_by(account:).cloudgw_id
-    FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH', nil)}/#{cloudgw_id}/#{name}")
+    FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH')}/#{cloudgw_id}/#{name}")
     FileUtils.rm_rf("certificates/#{cloudgw_id}/#{name}")
     FileUtils.rm_rf("tmp/certificates/#{cloudgw_id}/#{name}")
-  end
-
-  def recreate_tarball(cloudgw_id)
-    tarball = ZipFileGenerator.new("tmp/certificates/#{cloudgw_id}",
-                                   "#{ENV.fetch('USERS_CERT_PATH_ARCH', nil)}/#{cloudgw_id}.zip")
-    tarball.write
   end
 end
