@@ -561,6 +561,13 @@ paths:
           - `operator` role can see all services in the location
           - `admin` role can see all services in account
           - `member` role can see only own services
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       responses:
         '200':
           description: Operation successful
@@ -591,6 +598,13 @@ paths:
           - `operator` role can see all routes in the location
           - `admin` role can see all routes in account
           - `member` role can see only own routes
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       responses:
         '200':
           description: Operation successful
@@ -619,6 +633,13 @@ paths:
           - `operator` role can create routes in any account per location
           - `admin` role can create route only in the account space
           - `member` role can create route only in the account space
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       requestBody:
         required: true
         content:
@@ -693,6 +714,14 @@ paths:
           - `operator` role can see all routes in the location
           - `admin` role can see all routes in account
           - `member` role can see only own routes
+
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
         - name: id
           in: path
@@ -733,6 +762,14 @@ paths:
           - `operator` role can modify all routes in the location
           - `admin` role can  modify routes in the account space
           - `member` role can modify only own routes
+
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
         - name: id
           in: path
@@ -817,6 +854,14 @@ paths:
           - `operator` role can delete each route in the location
           - `admin` role can delete routes only in the account space
           - `member` role can delete only own routes
+
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
         - name: id
           in: path
