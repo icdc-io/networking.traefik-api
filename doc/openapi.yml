@@ -66,12 +66,13 @@ tags:
       Sending requests to the `/certificates` endpoint, you can list uploaded certificates, upload new one or delete.
   - name: Routes
     description: >
-      **Routes** allow to create a public HTTP route to a sites or web-applications deployed on virtual machines. **Routes** allow to configure tls termination, healthchecks and load-balancing between **Services** using weights.
-      Sending requests to the `/routes` endpoint, you can list created routes, retrieve details, update existed or create a new routes.
+      **Routes** enable the creation of public HTTP routes for sites or web applications deployed on virtual machines.
+      Routes also facilitate TLS termination, health checks, and load balancing between **Instance Groups (Services)** using weights.
+      Sending requests to the /routes endpoint, you can list created routes, retrieve details, update existing ones, or create new routes.
   - name: Services
     description: >
-      **Services** functionality allows to see configuration of owned services/instange groups deployed into Compute application.
-      Sending requests to the `/services` endpoints, you can list owned services.
+      The **Services** functionality enables users to view configurations of owned services/instance groups deployed within the Compute application.
+      Sending requests to the /services endpoint, you can list owned services.
 paths:
   /gateways:
     get:
@@ -294,7 +295,7 @@ paths:
         - Certificates
       summary: List of certificates attached to an account gateways
       description: >
-        This endpoint is called for retrives the list of certificates attached to an account gateways.
+        This endpoint is called to retrieve the list of certificates attached to an account's gateways.
 
         Role-based access:
           - `operator` role can see all certificates in location
@@ -341,9 +342,9 @@ paths:
           Role: []
       summary: Create a new certificate
       description: >
-        This endpoint uses for creating a new SSL certificate and uploading this one to a CloudGateway.
-        The server automatically check the validity of uploaded certificate.
-        After certificate was successfully upload via API, CloudGateway Automation automatically download and applied it to a route defined in `hostnames` field
+        This endpoint is used for creating a new SSL certificate and uploading it to a **CloudGateway**.
+        The server automatically checks the validity of the uploaded certificate.
+        After the certificate has been successfully uploaded via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
       requestBody:
         content:
           application/json:
@@ -394,7 +395,8 @@ paths:
           Role: []
       summary: Show certificate record
       description: >
-        This endpoint uses for explore a certificate details.
+        This endpoint is used to explore the details of a certificate.
+
         Role-based access:
           - `operator` role can see all certificates in location
           - `admin` role can see all certificates in account
@@ -443,9 +445,9 @@ paths:
           Role: []
       summary: update cert
       description: >
-        The endpoint called for updating certificate.
-        The server automatically check the validity of updated certificate.
-        After certificate was successfully updated via API, CloudGateway Automation automatically download and applied it to a route defined in `hostnames` field
+        The endpoint is called for updating a certificate.
+        The server automatically checks the validity of the updated certificate.
+        After the certificate has been successfully updated via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
 
         Role-based access:
           - `operator` role can manage all certificates in location
@@ -511,7 +513,7 @@ paths:
           Role: []
       summary: Delete certificate
       description: >
-        The endpoint called for a delete certificate from the system.
+        The endpoint is called to delete a certificate from the system.
 
         Role-based access:
           - `operator` role can manage all certificates in location
@@ -551,9 +553,9 @@ paths:
         - Service
       summary: Show all existing certificates
       description: >
-        This endpoints called for retrieving the list of services with information about vms ip adreeses.
-        Usually used for fetching service_id in case when users create route using API.
-        Infromation sync with application Compute every 15 minutes automatically
+        This endpoint is called to retrieve the list of services along with information about VMs' IP addresses.
+        It is typically used for fetching the service_id when users create routes using the API.
+        The information is synchronized with the Compute application automatically every 15 minutes.
 
         Role-based access:
           - `operator` role can see all services in the location
