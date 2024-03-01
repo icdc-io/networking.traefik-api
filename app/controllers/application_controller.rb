@@ -35,7 +35,8 @@ class ApplicationController < ActionController::API
     return not_authorized unless validate(token, account, role)
 
     User.current_user = User.new(userid: token['email'], token: pure_token, account:, role: setup_role(account, role))
-  rescue JWT::DecodeError
+  rescue JWT::DecodeError => e
+    Rails.logger.warn "Unauthorized! Can't decode JWT token! #{e.message}"
     not_authorized
   end
 
@@ -48,7 +49,8 @@ class ApplicationController < ActionController::API
     return not_authorized unless validate(token, account, role)
 
     User.current_user = User.new(userid: token['email'], token: pure_token, account:, role: setup_role(account, role))
-  rescue JWT::DecodeError
+  rescue JWT::DecodeError => e
+    Rails.logger.warn "Unauthorized! Can't decode JWT token! #{e.message}"
     not_authorized
   end
 
