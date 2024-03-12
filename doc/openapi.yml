@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: '1.0'
+  version: "1.0"
   title: ICDC Appication LoadBalancer API1
   description: >
     # Introduction
@@ -87,19 +87,19 @@ paths:
           - `admin` role in`operator` account see all gateways of all accounts
           - `admin`/`owner`, `member` roles see gateways in attached to account
       security:
-         - JWT: []
-           Account: []
-           Role: []
-         - basicAuth: []
-           Account: []
-           Role: []
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       responses:
-        '200':
-          $ref: '#/components/responses/alb_list'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '500':
-          $ref: '#/components/responses/server_error'
+        "200":
+          $ref: "#/components/responses/alb_list"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/server_error"
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -144,14 +144,14 @@ paths:
                   type: string
                   example: acc
       responses:
-        '200':
-          $ref: '#/components/responses/alb_list'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '405':
-          $ref: '#/components/responses/apigw_not_allowed'
-        '422':
-          $ref: '#/components/responses/unprocessable_entity'
+        "200":
+          $ref: "#/components/responses/alb_list"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "405":
+          $ref: "#/components/responses/apigw_not_allowed"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -163,10 +163,59 @@ paths:
               -d '{"account":"acc", "name": "alb-default", "cloudgw_id": "a843bf2a-7353-563e-a220-f59949849dba"}' \
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways
   /gateways/{id}:
+    get:
+      operationId: alb_show
+      tags:
+        - ALB Gateways
+      summary: Display ALB gateway details
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
+      description: >
+        Role-based access:
+          - `admin` role in`operator` account see all gateways of all accounts
+          - `admin`/`owner`, `member` roles see gateways in attached to account
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1234
+      responses:
+        "200":
+          description: "Operation successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gateway"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
     put:
       operationId: alb_modify
       tags:
         - ALB Gateways
+        - Private
       summary: Update Traefik Gateway. Usually use to assign Traefik Gateway to account.
       description: >
         Role-based access:
@@ -191,24 +240,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Gateway_PUT'
+              $ref: "#/components/schemas/Gateway_PUT"
       responses:
-        '200':
-          description: 'Operation successful'
+        "200":
+          description: "Operation successful"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Gateway'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '422':
-          $ref: '#/components/responses/unprocessable_entity'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/Gateway"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -240,23 +289,23 @@ paths:
           - `operator` role can send requests to the endpoint
           - other roles does have to access the endpoint
       parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          example: 1234
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1234
       responses:
-        '204':
-          description: 'No content'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '500':
-          $ref: '#/components/responses/server_error'
+        "204":
+          description: "No content"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -276,18 +325,18 @@ paths:
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to see a Gateway Config
       parameters:
-        - $ref: '#/components/parameters/CloudGatewayId'
+        - $ref: "#/components/parameters/CloudGatewayId"
       responses:
-        '200':
-          description: 'Operation successful'
+        "200":
+          description: "Operation successful"
           content:
             text/yaml:
               schema:
-                $ref: '#/components/schemas/GatewayConfig'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '500':
-          $ref: '#components/responses/server_error'
+                $ref: "#/components/schemas/GatewayConfig"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#components/responses/server_error"
   /certificates:
     get:
       operationId: certificates_list
@@ -309,18 +358,18 @@ paths:
           Account: []
           Role: []
       responses:
-        '200':
+        "200":
           description: operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CertificateCollection'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/CertificateCollection"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -328,6 +377,8 @@ paths:
             curl -X GET \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates
     post:
       operationId: certificates_create
@@ -354,22 +405,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Certificate_POST'
+              $ref: "#/components/schemas/Certificate_POST"
       responses:
-        '201':
+        "201":
           description: created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certificate'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '422':
-          $ref: '#/components/responses/unprocessable_entity'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/Certificate"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -377,6 +428,8 @@ paths:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               -d '{
                 "name": "lb.computedev.loc.icdc.io",
                 "cert": "-----BEGIN CERTIFICATE----- MIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL BQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu c2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv bXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp bkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL MAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG A1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl di56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls LmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz WF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I QSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF xb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj z6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0 7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh 1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP d5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG 8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn +IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ vTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0 ZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww HQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg qlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD ggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p B32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67 vfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU oDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx 7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin CcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi Q+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO 1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM DqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf yUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH Uwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n -----END CERTIFICATE-----",
@@ -415,20 +468,20 @@ paths:
             type: integer
             example: 333
       responses:
-        '200':
+        "200":
           description: operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certificate'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/Certificate"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -436,6 +489,8 @@ paths:
             curl -X GET \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
     put:
       operationId: certificate_update
@@ -471,24 +526,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Certificate_POST'
+              $ref: "#/components/schemas/Certificate_POST"
       responses:
-        '200':
+        "200":
           description: operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certificate'
-        '422':
-          $ref: '#/components/responses/unprocessable_entity'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/Certificate"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -496,6 +551,8 @@ paths:
             curl -X PUT \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               -d '{
                 "name": "lb.computedev.loc.icdc.io",
                 "cert": "-----BEGIN CERTIFICATE----- MIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL BQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu c2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv bXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp bkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL MAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG A1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl di56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls LmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz WF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I QSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF xb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj z6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0 7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh 1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP d5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG 8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn +IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ vTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0 ZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww HQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg qlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD ggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p B32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67 vfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU oDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx 7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin CcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi Q+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO 1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM DqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf yUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH Uwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n -----END CERTIFICATE-----",
@@ -533,16 +590,16 @@ paths:
             type: integer
             example: 333
       responses:
-        '204':
+        "204":
           description: No content
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '500':
-          $ref: '#/components/responses/server_error'
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -550,6 +607,8 @@ paths:
             curl -X DELETE \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
   /services:
     operationId: services_list
@@ -574,16 +633,16 @@ paths:
           Account: []
           Role: []
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServiceCollection'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/ServiceCollection"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -591,6 +650,8 @@ paths:
             curl -X GET \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/services
   /routes:
     get:
@@ -611,22 +672,24 @@ paths:
           Account: []
           Role: []
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RouteCollection'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/RouteCollection"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/server_error"
       x-codeSamples:
         - lang: cURL
           source: |-
             curl -X GET \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes
     post:
       operationId: route_create
@@ -650,20 +713,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Route'
+              $ref: "#/components/schemas/Route"
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '422':
-          $ref: '#/components/responses/unprocessable_entity'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/Route"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -671,6 +734,8 @@ paths:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               -d '{
                 "route": {
                   "name": "route_name",
@@ -735,20 +800,20 @@ paths:
             type: integer
             example: 444
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route'
-      '401':
-        $ref: '#/components/responses/unauthorized'
-      '403':
-        $ref: '#/components/responses/forbidden'
-      '404':
-        $ref: '#/components/responses/not_found'
-      '500':
-        $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/Route"
+      "401":
+        $ref: "#/components/responses/unauthorized"
+      "403":
+        $ref: "#/components/responses/forbidden"
+      "404":
+        $ref: "#/components/responses/not_found"
+      "500":
+        $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -756,6 +821,8 @@ paths:
             curl -X GET \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
     put:
       operationId: route_update
@@ -787,24 +854,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Route'
+              $ref: "#/components/schemas/Route"
       responses:
-        '200':
-          description: 'Operation successful'
+        "200":
+          description: "Operation successful"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '422':
-          $ref: '#/components/responses/unprocessable_entity'
-        '500':
-          $ref: '#/components/responses/server_error'
+                $ref: "#/components/schemas/Route"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -812,6 +879,8 @@ paths:
             curl -X POST \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               -d '{
                 "route": {
                   "name": "route_name",
@@ -876,16 +945,16 @@ paths:
             type: integer
             example: 444
       responses:
-        '204':
+        "204":
           description: No content
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '403':
-          $ref: '#/components/responses/forbidden'
-        '404':
-          $ref: '#/components/responses/not_found'
-        '500':
-          $ref: '#/components/responses/server_error'
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
@@ -893,6 +962,8 @@ paths:
             curl -X DELETE \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
 components:
   securitySchemes:
@@ -941,7 +1012,7 @@ components:
     GatewayCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Gateway'
+        $ref: "#/components/schemas/Gateway"
     Gateway:
       type: object
       required:
@@ -1024,7 +1095,7 @@ components:
     CertificateCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Certificate'
+        $ref: "#/components/schemas/Certificate"
     Certificate:
       type: object
       required:
@@ -1094,7 +1165,7 @@ components:
           example: "-----BEGIN CERTIFICATE-----\nMIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL\nBQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu\nc2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv\nbXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp\nbkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL\nMAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG\nA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl\ndi56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls\nLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz\nWF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I\nQSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF\nxb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj\nz6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0\n7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh\n1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP\nd5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG\n8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn\n+IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ\nvTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0\nZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww\nHQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg\nqlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD\nggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p\nB32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67\nvfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU\noDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx\n7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin\nCcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi\nQ+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO\n1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM\nDqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf\nyUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH\nUwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n\n-----END CERTIFICATE-----"
         key:
           type: string
-          example:  "-----BEGIN PRIVATE KEY-----\n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\n5ABeDQkqJFWJyTPhLw5Io3QZaLecpXxvxA==\n-----END PRIVATE KEY-----\n"
+          example: "-----BEGIN PRIVATE KEY-----\n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\n5ABeDQkqJFWJyTPhLw5Io3QZaLecpXxvxA==\n-----END PRIVATE KEY-----\n"
         ca:
           type: string
           example: ""
@@ -1107,7 +1178,7 @@ components:
     ServiceCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Service'
+        $ref: "#/components/schemas/Service"
     Service:
       type: object
       properties:
@@ -1132,7 +1203,7 @@ components:
     RouteCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Route'
+        $ref: "#/components/schemas/Route"
     Route:
       type: object
       properties:
@@ -1182,7 +1253,7 @@ components:
         services:
           type: array
           items:
-            $ref: '#/components/schemas/Service'
+            $ref: "#/components/schemas/Service"
         healthcheck_enabled:
           type: boolean
           example: true
@@ -1191,7 +1262,7 @@ components:
           properties:
             path:
               type: string
-              example: '/'
+              example: "/"
             scheme:
               type: string
               example: https
@@ -1209,7 +1280,7 @@ components:
               example: 3
             headers:
               type: string
-              example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
+              example: { "x-icdc-account": "devel", "x-icdc-role": "admin" }
             method:
               type: string
               example: POST
@@ -1229,7 +1300,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "500"
             data:
@@ -1241,7 +1312,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "401"
             data:
@@ -1252,7 +1323,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "403"
             data:
@@ -1263,7 +1334,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "404"
             data:
@@ -1275,7 +1346,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "422"
             data:
@@ -1285,7 +1356,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GatewayCollection'
+            $ref: "#/components/schemas/GatewayCollection"
   parameters:
     Account:
       name: x-icdc-account
