@@ -46,7 +46,7 @@ class CloudGateway < ApplicationRecord
 
   def routers_http(route)
     router = {
-      'service' => route.routes_services.first.name,
+      'service' => service_name(route),
       'rule' => rule(route),
       'tls' => route.certificate ? true : { 'certResolver' => 'default' }
     }
@@ -70,7 +70,7 @@ class CloudGateway < ApplicationRecord
       next if route.services.empty?
 
       tcp_block['routers'][route.name] = {
-        'service' => route.routes_services.first.name,
+        'service' => service_name(route),
         'rule' => "HostSNI(`#{route.hostname}`)",
         'tls' => {
           'passthrough' => true
@@ -92,15 +92,15 @@ class CloudGateway < ApplicationRecord
         }
       }
     else
-      services[route_service.name] = {
+      services[route_service.group_name] = {
         'weighted' => {
-          'services' => weighted(route.routes_services, section, route)
+          'services' => weighted(route.routes_services)
         }
       }
-      route.services.each do |service|
-        services["#{service.ext_id}-#{route.target_port}"] = {
+      route.routes_services.each do |routes_service|
+        services["#{routes_service.name}"] = {
           'loadBalancer' => {
-            'servers' => lb_server(service, section, route)
+            'servers' => lb_server(routes_service.service, section, route)
           }
         }
       end
@@ -150,10 +150,10 @@ class CloudGateway < ApplicationRecord
     end
   end
 
-  def weighted(route_services, _section, route)
+  def weighted(route_services)
     route_services.map do |route_service|
       {
-        'name' => "#{route_service.service.ext_id}-#{route.target_port}",
+        'name' => route_service.name,
         'weight' => route_service.value
       }
     end
@@ -190,5 +190,9 @@ class CloudGateway < ApplicationRecord
         }
       end
     }
+  end
+
+  def service_name(route)
+    route.services.count == 1 ? route.routes_services.first.name : route.routes_services.first.group_name
   end
 end

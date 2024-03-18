@@ -21,7 +21,7 @@ class Route < ApplicationRecord
     update!(data)
 
     routes_services.each(&:destroy!)
-
+    name = RoutesService.generate_name
     if new_services.count == 1
       service = Service.find_by(id: new_services.first['id'])
       RoutesService.create!(
@@ -29,17 +29,16 @@ class Route < ApplicationRecord
         service:,
         balance_type: :loadbalancer,
         value: nil,
-        name: "#{name}_#{service.name}"
+        name: RoutesService.unique_name(name)
       )
     else
       new_services.each do |data|
-        name = RoutesService.generate_name
         RoutesService.create!(
           route: self,
           service: Service.find_by(id: data['id']),
           balance_type: :weighted,
           value: data['weight'],
-          name:
+          name: RoutesService.unique_name(name)
         )
       end
     end
