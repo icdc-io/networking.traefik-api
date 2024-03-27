@@ -1,28 +1,28 @@
 openapi: 3.0.0
 info:
-  version: '1.0'
+  version: "1.0"
   title: ICDC Appication LoadBalancer API1
   description: >
     # Introduction
-    
+
     The `Traefik Manager` subsystem provides easy HTTP API to manage **Application LoadBalancer** functionality of ICDC Cloud Platform.
-    
+
     Using this API you can script the complex actions that are required for your business case.
-    
+
     The API documentation starting from general overview and followed by reference information on specific endpoints.
 
     ## Application LoadBalancer
-    
+
     **Application LoadBalancer (ALB)** is a technology based on OpenSource `Traefik` reverse-proxy.
-    
+
     This functionality allows to accept HTTP and HTTPS traffic coming to public IP address on ports 80/tcp and 443/tcp, differentiate requests by target website hostname and send requests to specific virtual machine or group of virtual machines located in `Instance Group` (previously named as `Service`) of *ICDC Compute*.
-    
-    
+
+
     In case of using multiple virtual machines in the `Instance Group` by default all requests are balanced by round-robin algorithm:
       - first request goes to first instance;
       - second request goes to second instance;
       - so on until we reach end of the list of the `Instance Group` then starting again with the first instance.
-    
+
     By default requests are sent to all members of `Instance Group` until health-check configured, then requests are sent only to live members of `Instance Group` (ALB actively monitors liveness of target ports).
 
     ## Web-routes
@@ -35,7 +35,7 @@ info:
     ## Cloud Gateways
 
     **Application LoadBalancer** software installed on an instance of **CloudGateway** which is a special-purposed small multi-functional virtual machine attached to account's network.
-    
+
     By default each organizational account has at least one `Cloud Gateway`.
   contact:
     email: support@icdc.io
@@ -65,9 +65,14 @@ tags:
       Long-term certificates for your domains can be purchased from vendors.
       Sending requests to the `/certificates` endpoint, you can list uploaded certificates, upload new one or delete.
   - name: Routes
-    description: Routes
+    description: >
+      **Routes** enable the creation of public HTTP routes for sites or web applications deployed on virtual machines.
+      Routes also facilitate TLS termination, health checks, and load balancing between **Instance Groups (Services)** using weights.
+      Sending requests to the /routes endpoint, you can list created routes, retrieve details, update existing ones, or create new routes.
   - name: Services
-    description: Compute Services
+    description: >
+      The **Services** functionality enables users to view configurations of owned services/instance groups deployed within the Compute application.
+      Sending requests to the /services endpoint, you can list owned services.
 paths:
   /gateways:
     get:
@@ -77,25 +82,24 @@ paths:
       summary: List of ALB Gateways
       description: >
         By sending request to this endpoint you can get list of ALB Gateways which are currently attached to account network infrastructure (VPC).
-        
 
         Role-based access:
-          - `admin` role in `operator` account see all gateways of all accounts
-          - `manager`,`admin`,`billing`,`member` roles see gateways in attached to account
+          - `admin` role in`operator` account see all gateways of all accounts
+          - `admin`/`owner`, `member` roles see gateways in attached to account
       security:
-         - JWT: [admin]
-           Account: []
-           Role: []
-         - basicAuth: []
-           Account: []
-           Role: []
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       responses:
-        '200':
-          $ref: '#/components/responses/alb_list'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '500':
-          $ref: '#/components/responses/server_error'
+        "200":
+          $ref: "#/components/responses/alb_list"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/server_error"
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -110,7 +114,7 @@ paths:
         - Private
       summary: Attach new ALB Gateway to account infrastructure
       security:
-        - JWT: [location_admin]
+        - JWT: []
           Account: []
           Role: []
         - basicAuth: []
@@ -120,8 +124,9 @@ paths:
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to create new gateways
 
-
         Role-based access:
+          - `operator` role can send requests to the endpoint
+          - other roles does have to access the endpoint
       requestBody:
         required: true
         content:
@@ -139,12 +144,14 @@ paths:
                   type: string
                   example: acc
       responses:
-        '200':
-          $ref: '#/components/responses/alb_list'
-        '401':
-          $ref: '#/components/responses/unauthorized'
-        '405':
-          $ref: '#/components/responses/apigw_not_allowed'
+        "200":
+          $ref: "#/components/responses/alb_list"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "405":
+          $ref: "#/components/responses/apigw_not_allowed"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -162,11 +169,18 @@ paths:
         - ALB Gateways
       summary: Display ALB gateway details
       security:
-        - JWT: [admin]
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       description: >
-        
+        Role-based access:
+          - `admin` role in`operator` account see all gateways of all accounts
+          - `admin`/`owner`, `member` roles see gateways in attached to account
+
       parameters:
-        - $ref: '#/components/parameters/Account'
         - name: id
           in: path
           required: true
@@ -174,21 +188,47 @@ paths:
             type: integer
             example: 1234
       responses:
-        '200':
-          description: 'Operation successful'
+        "200":
+          description: "Operation successful"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Gateway'
+                $ref: "#/components/schemas/Gateway"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
     put:
       operationId: alb_modify
       tags:
         - ALB Gateways
+        - Private
       summary: Update Traefik Gateway. Usually use to assign Traefik Gateway to account.
+      description: >
+        Role-based access:
+          - `operator` role can send requests to the endpoint
+          - other roles does have to access the endpoint
       security:
-        - JWT: [admin]
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
-        - $ref: '#/components/parameters/Account'
         - name: id
           in: path
           required: true
@@ -200,109 +240,225 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: New Traefik Name
+              $ref: "#/components/schemas/Gateway_PUT"
       responses:
-        '200':
-          description: 'Operation successful'
+        "200":
+          description: "Operation successful"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Gateway'
+                $ref: "#/components/schemas/Gateway"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $OPERATOR" \
+              -H "x-icdc-role: admin" \
+              -d '{"account":"devel", "name": "alb-special"}' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
     delete:
+      operationId: alb_unregister
       tags:
         - ALB Gateways
+        - Private
       summary: Remove Traefik Gateway (un-register)
       security:
-        - JWT: [location_admin]
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       description: >
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to delete gateways
+
+        Role-based access:
+          - `operator` role can send requests to the endpoint
+          - other roles does have to access the endpoint
       parameters:
-      - $ref: '#/components/parameters/Account'
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          example: 1234
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1234
       responses:
-        '204':
-          description: 'No content'
+        "204":
+          description: "No content"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X DELETE \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $OPERATOR" \
+              -H "x-icdc-role: admin" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
   /gateways/{uuid}/config:
     get:
       tags:
         - ALB Gateways
+        - Private
       summary: Return YAML config for Traefik Gateway
-      security:
-        - CloudGatewayUUID: [cloud_gateway_id]
+      description: >
+        This endpoint is called from CloudGateway Automation only.
+        So we are not going to provide ability to Account Admins to see a Gateway Config
       parameters:
-        - $ref: '#/components/parameters/CloudGatewayId'
+        - $ref: "#/components/parameters/CloudGatewayId"
       responses:
-        '200':
-          description: 'Operation successful'
+        "200":
+          description: "Operation successful"
           content:
             text/yaml:
               schema:
-                $ref: '#/components/schemas/GatewayConfig'
-  /api/certificates:
+                $ref: "#/components/schemas/GatewayConfig"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#components/responses/server_error"
+  /certificates:
     get:
+      operationId: certificates_list
       tags:
         - Certificates
-      summary: Show all certificates
+      summary: List of certificates attached to an account gateways
+      description: >
+        This endpoint is called to retrieve the list of certificates attached to an account's gateways.
+
+        Role-based access:
+          - `operator` role can see all certificates in location
+          - `admin`/`owner` role can see all certificates in account
+          - `member` role can see only own certificates
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       responses:
-        '200':
+        "200":
           description: operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CertificateCollection'
+                $ref: "#/components/schemas/CertificateCollection"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/certificates
     post:
+      operationId: certificates_create
       tags:
         - Certificates
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       summary: Create a new certificate
+      description: >
+        This endpoint is used for creating a new SSL certificate and uploading it to a **CloudGateway**.
+        The server automatically checks the validity of the uploaded certificate.
+        After the certificate has been successfully uploaded via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
+
+        Role-based access:
+          - `operator` role can create certificate in any account per location
+          - `admin`/`owner` role can create certificate only in the account space
+          - `member` role can create certificate only in the account space
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                certificate:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      example: "lb.computedev.loc.icdc.io"
-                    cert:
-                      type: string
-                      example: "-----BEGIN CERTIFICATE-----\nMIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL\nBQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu\nc2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv\nbXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp\nbkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL\nMAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG\nA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl\ndi56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls\nLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz\nWF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I\nQSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF\nxb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj\nz6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0\n7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh\n1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP\nd5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG\n8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn\n+IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ\nvTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0\nZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww\nHQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg\nqlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD\nggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p\nB32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67\nvfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU\noDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx\n7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin\nCcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi\nQ+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO\n1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM\nDqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf\nyUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH\nUwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n\n-----END CERTIFICATE-----"
-                    key:
-                      type: string
-                      example:  "-----BEGIN PRIVATE KEY-----\n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\n5ABeDQkqJFWJyTPhLw5Io3QZaLecpXxvxA==\n-----END PRIVATE KEY-----\n"
-                    ca:
-                      type: string
-                      example: ""
-                    dest_ca:
-                      type: string
-                      example: ""
-                    owner:
-                      type: string
-                      example: user@test.email
+              $ref: "#/components/schemas/Certificate_POST"
       responses:
-        '200':
-          description: operation successful
+        "201":
+          description: created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certificate'
+                $ref: "#/components/schemas/Certificate"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              -d '{
+                "name": "lb.computedev.loc.icdc.io",
+                "cert": "-----BEGIN CERTIFICATE----- MIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL BQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu c2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv bXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp bkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL MAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG A1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl di56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls LmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz WF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I QSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF xb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj z6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0 7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh 1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP d5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG 8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn +IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ vTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0 ZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww HQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg qlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD ggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p B32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67 vfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU oDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx 7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin CcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi Q+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO 1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM DqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf yUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH Uwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n -----END CERTIFICATE-----",
+                "key": "-----BEGIN PRIVATE KEY----- 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 5ABeDQkqJFWJyTPhLw5Io3QZaLecpXxvxA== -----END PRIVATE KEY-----",
+                "ca": "",
+                "dest_ca": "",
+                "owner": " admin@acc"
+              }' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/certificates
   /certificates/{id}:
     get:
+      operationId: certificate_show
       tags:
         - Certificates
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       summary: Show certificate record
+      description: >
+        This endpoint is used to explore the details of a certificate.
+
+        Role-based access:
+          - `operator` role can see all certificates in location
+          - `admin`/`owner` role can see all certificates in account
+          - `member` role can see only own certificates
       parameters:
         - name: id
           in: path
@@ -312,16 +468,51 @@ paths:
             type: integer
             example: 333
       responses:
-        '200':
+        "200":
           description: operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certificate'
+                $ref: "#/components/schemas/Certificate"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
     put:
+      operationId: certificate_update
       tags:
         - Certificates
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       summary: update cert
+      description: >
+        The endpoint is called for updating a certificate.
+        The server automatically checks the validity of the updated certificate.
+        After the certificate has been successfully updated via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
+
+        Role-based access:
+          - `operator` role can manage all certificates in location
+          - `admin`/`owner` role can manage all certificates in account
+          - `member` role can manage only own certificates
       parameters:
         - name: id
           in: path
@@ -335,40 +526,61 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                certificate:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      example: "lb.computedev.loc.icdc.io"
-                    cert:
-                      type: string
-                      example: "-----BEGIN CERTIFICATE-----\nMIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL\nBQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu\nc2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv\nbXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp\nbkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL\nMAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG\nA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl\ndi56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls\nLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz\nWF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I\nQSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF\nxb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj\nz6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0\n7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh\n1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP\nd5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG\n8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn\n+IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ\nvTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0\nZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww\nHQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg\nqlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD\nggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p\nB32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67\nvfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU\noDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx\n7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin\nCcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi\nQ+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO\n1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM\nDqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf\nyUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH\nUwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n\n-----END CERTIFICATE-----"
-                    key:
-                      type: string
-                      example:  "-----BEGIN PRIVATE KEY-----\n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\n5ABeDQkqJFWJyTPhLw5Io3QZaLecpXxvxA==\n-----END PRIVATE KEY-----\n"
-                    ca:
-                      type: string
-                      example: ""
-                    dest_ca:
-                      type: string
-                      example: ""
-                    owner:
-                      type: string
-                      example: user@test.email
+              $ref: "#/components/schemas/Certificate_POST"
       responses:
-        '200':
+        "200":
           description: operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Certificate'
+                $ref: "#/components/schemas/Certificate"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X PUT \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              -d '{
+                "name": "lb.computedev.loc.icdc.io",
+                "cert": "-----BEGIN CERTIFICATE----- MIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL BQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu c2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv bXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp bkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL MAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG A1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl di56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls LmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz WF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I QSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF xb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj z6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0 7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh 1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP d5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG 8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn +IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ vTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0 ZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww HQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg qlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD ggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p B32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67 vfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU oDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx 7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin CcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi Q+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO 1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM DqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf yUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH Uwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n -----END CERTIFICATE-----",
+                "key": "-----BEGIN PRIVATE KEY----- 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 5ABeDQkqJFWJyTPhLw5Io3QZaLecpXxvxA== -----END PRIVATE KEY-----",
+                "ca": "",
+                "dest_ca": "",
+                "owner": " admin@acc"
+              }' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
     delete:
+      operationId: certificate_delete
       tags:
         - Certificates
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       summary: Delete certificate
+      description: >
+        The endpoint is called to delete a certificate from the system.
+
+        Role-based access:
+          - `operator` role can manage all certificates in location
+          - `admin`/`owner` role can manage all certificates in account
+          - `member` role can manage only own certificates
       parameters:
         - name: id
           in: path
@@ -378,134 +590,208 @@ paths:
             type: integer
             example: 333
       responses:
-        '204':
+        "204":
           description: No content
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X DELETE \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
   /services:
+    operationId: services_list
     get:
       tags:
-        - Service
+        - Services
       summary: Show all existing certificates
+      description: >
+        This endpoint is called to retrieve the list of services along with information about VMs' IP addresses.
+        It is typically used for fetching the service_id when users create routes using the API.
+        The information is synchronized with the Compute application automatically every 15 minutes.
+
+        Role-based access:
+          - `operator` role can see all services in the location
+          - `admin`/`owner` role can see all services in account
+          - `member` role can see only own services
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServiceCollection'
+                $ref: "#/components/schemas/ServiceCollection"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/services
   /routes:
     get:
+      operationId: routes_list
       tags:
         - Routes
       summary: Get info about existing routes
+      description: >
+        Role-based access:
+          - `operator` role can see all routes in the location
+          - `admin`/`owner` role can see all routes in account
+          - `member` role can see only own routes
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RouteCollection'
+                $ref: "#/components/schemas/RouteCollection"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/server_error"
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes
     post:
+      operationId: route_create
       tags:
         - Routes
       summary: Create a new route
+      description: >
+        Role-based access:
+          - `operator` role can create routes in any account per location
+          - `admin`/`owner` role can create route only in the account space
+          - `member` role can create route only in the account space
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                route:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      example: 'miq-api'
-                    hostname:
-                      type: string
-                      example: 'miq.computedev.loc.icdc.io'
-                    target_port:
-                      type: integer
-                      example: 3000
-                    tls_termination:
-                      type: string
-                      example: 'passthrough'
-                    owner:
-                      type: string
-                      example: 'user@test.email'
-                    cloud_gateway_id:
-                      type: integer
-                      example: 1
-                    path:
-                      type: string
-                      example: '/'
-                    source_proto:
-                      type: string
-                      example: 'tcp'
-                    destination_proto:
-                      type: string
-                      example: 'tcp'
-                    ip_version:
-                      type: integer
-                      example: 4
-                    services:
-                      type: array
-                      items:
-                        properties:
-                          id:
-                            type: string
-                            example: 61
-                    certificate_id:
-                      type: integer
-                      example: 6
-                    insecure:
-                      type: string
-                      example: 'none'
-                    healthcheck_enabled:
-                      type: boolean
-                      example: true
-                    healthcheck:
-                      type: object
-                      properties:
-                        path:
-                          type: string
-                          example: '/'
-                        scheme:
-                          type: string
-                          example: https
-                        hostname:
-                          type: string
-                          example: check-cors.loc.icdc.io
-                        port:
-                          type: integer
-                          example: 8080
-                        interval:
-                          type: integer
-                          example: 15
-                        timeout:
-                          type: integer
-                          example: 3
-                        headers:
-                          type: string
-                          example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
-                        method:
-                          type: string
-                          example: POST
-                        follow_redirects:
-                          type: boolean
-                          example: true
+              $ref: "#/components/schemas/Route"
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route'
+                $ref: "#/components/schemas/Route"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              -d '{
+                "route": {
+                  "name": "route_name",
+                  "hostname": "acc.vpn.loc.icdc.io",
+                  "target_port": "443",
+                  "tls_termination": "re-encrypt",
+                  "owner": " user@example.com",
+                  "cloud_gateway_id": "1",
+                  "path": "/",
+                  "source_proto": "tcp",
+                  "destination_proto": "tcp",
+                  "ip_version": "4",
+                  "services": [
+                    {
+                      "id": "1"
+                    }
+                  ],
+                  "healthcheck_enabled": true,
+                  "healthcheck": {
+                    "path": "/",
+                    "scheme": "http",
+                    "hostname": "check-cors.loc.icdc.io",
+                    "port": 8080,
+                    "interval": 15,
+                    "timeout": 3,
+                    "headers": {
+                      "x-request-id": "123-456-789"
+                    },
+                    "method": "GET",
+                    "follow_redirects": true
+                  },
+                  "certificate_id": "1",
+                  "insecure": "redirect"
+                }
+              }' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes
+
   /routes/{id}:
+    operationId: route_show
     get:
       tags:
         - Routes
       summary: Show info about selected route
+      description: >
+        Role-based access:
+          - `operator` role can see all routes in the location
+          - `admin`/`owner` role can see all routes in account
+          - `member` role can see only own routes
+
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
         - name: id
           in: path
@@ -514,16 +800,48 @@ paths:
             type: integer
             example: 444
       responses:
-        '200':
+        "200":
           description: Operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route'
+                $ref: "#/components/schemas/Route"
+      "401":
+        $ref: "#/components/responses/unauthorized"
+      "403":
+        $ref: "#/components/responses/forbidden"
+      "404":
+        $ref: "#/components/responses/not_found"
+      "500":
+        $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X GET \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
     put:
+      operationId: route_update
       tags:
         - Routes
       summary: Add routes
+      description: >
+        Role-based access:
+          - `operator` role can modify all routes in the location
+          - `admin`/`owner` role can  modify routes in the account space
+          - `member` role can modify only own routes
+
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
         - name: id
           in: path
@@ -536,98 +854,88 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                route:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      example: 'miq-api'
-                    hostname:
-                      type: string
-                      example: 'miq.computedev.loc.icdc.io'
-                    target_port:
-                      type: integer
-                      example: 3000
-                    tls_termination:
-                      type: string
-                      example: 'passthrough'
-                    owner:
-                      type: string
-                      example: 'user@test.email'
-                    cloud_gateway_id:
-                      type: integer
-                      example: 1
-                    path:
-                      type: string
-                      example: '/'
-                    source_proto:
-                      type: string
-                      example: 'tcp'
-                    destination_proto:
-                      type: string
-                      example: 'tcp'
-                    ip_version:
-                      type: integer
-                      example: 4
-                    services:
-                      type: array
-                      items:
-                        properties:
-                          id:
-                            type: string
-                            example: 61
-                    certificate_id:
-                      type: integer
-                      example: 6
-                    insecure:
-                      type: string
-                      example: 'none'
-                    healthcheck_enabled:
-                      type: boolean
-                      example: true
-                    healthcheck:
-                      type: object
-                      properties:
-                        path:
-                          type: string
-                          example: '/'
-                        scheme:
-                          type: string
-                          example: https
-                        hostname:
-                          type: string
-                          example: check-cors.loc.icdc.io
-                        port:
-                          type: integer
-                          example: 8080
-                        interval:
-                          type: integer
-                          example: 15
-                        timeout:
-                          type: integer
-                          example: 3
-                        headers:
-                          type: string
-                          example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
-                        method:
-                          type: string
-                          example: POST
-                        follow_redirects:
-                          type: boolean
-                          example: true                      
+              $ref: "#/components/schemas/Route"
       responses:
-        '200':
-          description: 'Operation successful'
+        "200":
+          description: "Operation successful"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route' 
+                $ref: "#/components/schemas/Route"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "422":
+          $ref: "#/components/responses/unprocessable_entity"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              -d '{
+                "route": {
+                  "name": "route_name",
+                  "hostname": "acc.vpn.loc.icdc.io",
+                  "target_port": "443",
+                  "tls_termination": "re-encrypt",
+                  "owner": " user@example.com",
+                  "cloud_gateway_id": "1",
+                  "path": "/",
+                  "source_proto": "tcp",
+                  "destination_proto": "tcp",
+                  "ip_version": "4",
+                  "services": [
+                    {
+                      "id": "1"
+                    }
+                  ],
+                  "healthcheck_enabled": true,
+                  "healthcheck": {
+                    "path": "/",
+                    "scheme": "http",
+                    "hostname": "check-cors.loc.icdc.io",
+                    "port": 8080,
+                    "interval": 15,
+                    "timeout": 3,
+                    "headers": {
+                      "x-request-id": "123-456-789"
+                    },
+                    "method": "GET",
+                    "follow_redirects": true
+                  },
+                  "certificate_id": "1",
+                  "insecure": "redirect"
+                }
+              }' \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
+
     delete:
+      operationId: route_delete
       tags:
         - Routes
       summary: Delete route
+      description: >
+        Role-based access:
+          - `operator` role can delete each route in the location
+          - `admin`/`owner` role can delete routes only in the account space
+          - `member` role can delete only own routes
+
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
       parameters:
         - name: id
           in: path
@@ -637,8 +945,26 @@ paths:
             type: integer
             example: 444
       responses:
-        '204':
+        "204":
           description: No content
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
+
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X DELETE \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
 components:
   securitySchemes:
     JWT:
@@ -661,7 +987,7 @@ components:
       type: apiKey
       in: path
       name: UUID
-    
+
   schemas:
     error:
       type: object
@@ -686,7 +1012,7 @@ components:
     GatewayCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Gateway'
+        $ref: "#/components/schemas/Gateway"
     Gateway:
       type: object
       required:
@@ -727,6 +1053,15 @@ components:
           type: string
           example: "2023-11-23T18:00:01.555Z"
           description: Timestamp object updated
+    Gateway_PUT:
+      type: object
+      properties:
+        name:
+          type: string
+          example: alb-special
+        account:
+          type: string
+          example: devel
     GatewayConfig:
       type: string
       description: Traefik YAML config
@@ -756,11 +1091,11 @@ components:
                 servers:
                 - url: http://10.254.20.10
         tcp: {}
-        tls: {}  
+        tls: {}
     CertificateCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Certificate'
+        $ref: "#/components/schemas/Certificate"
     Certificate:
       type: object
       required:
@@ -781,7 +1116,7 @@ components:
           example: test
         ca_path:
           type: string
-          example: 
+          example:
         dest_ca_path:
           type: string
           example: test
@@ -819,10 +1154,31 @@ components:
             issuer:
               type: string
               example: "Default Company Ltd"
+    Certificate_POST:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "lb.computedev.loc.icdc.io"
+        cert:
+          type: string
+          example: "-----BEGIN CERTIFICATE-----\nMIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcwDQYJKoZIhvcNAQEL\nBQAwgZYxCzAJBgNVBAYTAlJCMQ4wDAYDVQQIDAVNaW5zazEOMAwGA1UEBwwFTWlu\nc2sxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxIjAgBgNVBAMMGWxiLmNv\nbXB1dGVkZXYuemJ5LmljZGMuaW8xJTAjBgkqhkiG9w0BCQEWFmFocmVjaHVzaGtp\nbkBnbWFpbC5jb20wHhcNMjExMDI4MTE1MjE1WhcNMzExMDI2MTE1MjE1WjCBljEL\nMAkGA1UEBhMCUkIxDjAMBgNVBAgMBU1pbnNrMQ4wDAYDVQQHDAVNaW5zazEcMBoG\nA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEiMCAGA1UEAwwZbGIuY29tcHV0ZWRl\ndi56YnkuaWNkYy5pbzElMCMGCSqGSIb3DQEJARYWYWhyZWNodXNoa2luQGdtYWls\nLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAN9mILy9prFVniFz\nWF/jXVa1GR1n+nw7aw3ck/xm8fW9v57IxWb/U/H41s14kGYdJqnK2abAcdgPpx4I\nQSU0yYTOM6hfAB/Ueq0vMR3iOPEbm4h+52IMt60KARlRx623Eh/x5R7MSHygzTMF\nxb72daRwbk56ScdUYQXon+ti+MExMVcpljVZqsauCr/wzDGQScu92qTPdUAyUpIj\nz6l915l+lqLC3Ru0hU99Hg2Y/Y2be0KdzoQ+SnupaMVQ1l0jIN4xrJqQbKoEW4T0\n7JZocFjQBxWR1Pgv30eoDTH7U9PsEPKwTuX6j5QyWXysy18ZOxIVknwqH+zkMjJh\n1PJ4E5f4RXLnIZq9Y5W9Izlert5H8pdbNlPOCf8tq/6fYtgr6WLSR8Uc6bo/7+sP\nd5VlpFcZ1Kso6s77Fqgm8pYk+B2cOtRHruygxdSuJvNNAigV3nlaz3yKcj1HF4GG\n8fOE1bGDqjd7/JI7iG46d5ToKrLsvO4H4PGTVDUfWttUe95bxf1hq+wfzCsfE6xn\n+IIr9oWojUxVg/+khCNiGqgQQQtj/nrsrrMM1C08DnfgW7o7LPn8sIr1COtJtDvZ\nvTftkD7NC5KrZ1enlsZazeia+BOSgeAWRq1vG9tBq0ma/kPBdnJoYSul8g76vQO0\nZLhniWxzYBf4cYC9eAQHbN47zHNTAgMBAAGjZDBiMA8GA1UdEQQIMAaHBAr+FHww\nHQYDVR0OBBYEFBOiEKwgqlSEoQbstblNl3tn9GMEMB8GA1UdIwQYMBaAFBOiEKwg\nqlSEoQbstblNl3tn9GMEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQAD\nggIBAMZMqxyH7Wvi0PMhAdMsBWZVhJDgvs8TahcmvFXa26awk8v014sTYix3SG7p\nB32uNXsDji1D46Ys/2Qcp3NuCVFEUUFbYbKzTOptCjsuh3zIS2LiTPDWhRLYWv67\nvfLpHxk5sDLhLyGp6B5X7WEQwpQcxvP3rd6R2t9O4ddPuCImz2lglKyGMYmPQPGU\noDIZ5F84+Bh2t973jT4wc+3ILvAL0GWKs6zjuOOgMm9JyLPaaxto10QsQfUdyXnx\n7zC5EQQ9dkTf0qqSOxu/ZhoiTUIqpIfpZV1OF6X5BOlF6yVlyWB7v350y65+cMin\nCcFTXuz29kFceMyNlBb2XEcPG2mNYq9Nl4SeEgKuSXrU6Su/eYjvpnElETIoJDLi\nQ+LCtCu5+UyWLb5Zysx2iTyOuZgPVom/t00Knb4kEClQa0FKxV8/Mga59cp86ojO\n1pU5moADBY7E/dD2ai74JZqmeN4aaEk/37zFbXEG4edPA5yawwj7yXk9GY9lj4VM\nDqdN2HD8HpaSVCTaV58QGSfkzf4IPuYgbrcWeAxpGYL7M+eH89TlGPNsKnKCylSf\nyUUbpg25KJJMhdY4D2mffl0izeJuJhyrNbtoQ6pfN2WlgSIixnFdVWUEYoSqXtPH\nUwa4MjwoCzcWU406lhDofkEB22lz4oeK9zXO3ubxR8aS7P8n\n-----END CERTIFICATE-----"
+        key:
+          type: string
+          example: "-----BEGIN PRIVATE KEY-----\n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\n5ABeDQkqJFWJyTPhLw5Io3QZaLecpXxvxA==\n-----END PRIVATE KEY-----\n"
+        ca:
+          type: string
+          example: ""
+        dest_ca:
+          type: string
+          example: ""
+        owner:
+          type: string
+          example: user@test.email
     ServiceCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Service'
+        $ref: "#/components/schemas/Service"
     Service:
       type: object
       properties:
@@ -847,13 +1203,14 @@ components:
     RouteCollection:
       type: array
       items:
-        $ref: '#/components/schemas/Route'
+        $ref: "#/components/schemas/Route"
     Route:
       type: object
       properties:
         id:
           type: integer
           example: 1
+          readOnly: true
         name:
           type: string
           example: Route
@@ -863,7 +1220,7 @@ components:
         path:
           type: string
           example: /
-        terget_port:
+        target_port:
           type: integer
           example: 6587
         insecure:
@@ -896,7 +1253,7 @@ components:
         services:
           type: array
           items:
-            $ref: '#/components/schemas/Service'
+            $ref: "#/components/schemas/Service"
         healthcheck_enabled:
           type: boolean
           example: true
@@ -905,7 +1262,7 @@ components:
           properties:
             path:
               type: string
-              example: '/'
+              example: "/"
             scheme:
               type: string
               example: https
@@ -923,7 +1280,7 @@ components:
               example: 3
             headers:
               type: string
-              example: {'x-icdc-account': 'devel', 'x-icdc-role': 'admin'}
+              example: { "x-icdc-account": "devel", "x-icdc-role": "admin" }
             method:
               type: string
               example: POST
@@ -943,7 +1300,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "500"
             data:
@@ -955,29 +1312,51 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "401"
             data:
               message: You're not authorized.
+    forbidden:
+      description: >
+        Request authorized, but current user doesn't have access rights to perform action.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
+          example:
+            status: "403"
+            data:
+              message: You're doesn't have permissions to perform the action.
     not_found:
       description: >
         Requested object is not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'
+            $ref: "#/components/schemas/error"
           example:
             status: "404"
             data:
               #TODO: [DS] maybe rename message as bad request is a 400 code, means that object attributes are malformed or can not be applied
               message: Bad request, not found {object}
+    unprocessable_entity:
+      description: >
+        Unprocessable entity.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
+          example:
+            status: "422"
+            data:
+              message: Bad request, unprocessable entity
     alb_list:
       description: A list of ALB Gateways attached to account's infrastructure
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GatewayCollection'
+            $ref: "#/components/schemas/GatewayCollection"
   parameters:
     Account:
       name: x-icdc-account
@@ -1004,16 +1383,3 @@ components:
       schema:
         type: string
         example: a843bf2a-7353-563e-a220-f59949849dba
-security:
-  - JWT:
-    - location_admin
-    - admin
-    - manager
-    - billing
-    - member
-    Account: []
-    Role: []
-  - basicAuth: []
-    Account: []
-    Role: []
-  # - CloudGatewayUUID: []

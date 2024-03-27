@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../config/environment', __dir__)
 # Prevent database truncation if the environment is production
-abort("The Rails environment is running in production mode!") if Rails.env.production?
+abort('The Rails environment is running in production mode!') if Rails.env.production?
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
+require 'sidekiq/testing'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -32,7 +35,7 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{::Rails.root}/spec/fixtures"
+  config.fixture_path = "#{Rails.root}/spec/fixtures"
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
@@ -63,45 +66,45 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 end
 
-JWT_MEMBER = "Bearer " + JWT.encode({
-  "external": {
-    "accounts": {
-      "test": {
-        "roles": ["member"]
-      },
-    }
-  },
-  "groups": ["test.member"],
-  "user_id": "test_member@test.com",
-  "email": 'test_member@test.com',
-  "name": "Test Member"
-}, nil)
+JWT_MEMBER = 'Bearer ' + JWT.encode({
+                                      external: {
+                                        accounts: {
+                                          test: {
+                                            roles: ['member']
+                                          }
+                                        }
+                                      },
+                                      groups: ['test.member'],
+                                      user_id: 'test_member@test.com',
+                                      email: 'test_member@test.com',
+                                      name: 'Test Member'
+                                    }, nil)
 
-JWT_ADMIN = "Bearer " + JWT.encode({
-  "external": {
-    "accounts": {
-      "test": {
-        "roles": ["admin"]
-      },
-    }
-  },
-  "groups": ["test.admin"],
-  "user_id": "test_admin@test.com",
-  "email": 'test_admin@test.com',
-  "name": "Test Admin"
-}, nil)
+JWT_ADMIN = 'Bearer ' + JWT.encode({
+                                     external: {
+                                       accounts: {
+                                         test: {
+                                           roles: ['admin']
+                                         }
+                                       }
+                                     },
+                                     groups: ['test.admin'],
+                                     user_id: 'test_admin@test.com',
+                                     email: 'test_admin@test.com',
+                                     name: 'Test Admin'
+                                   }, nil)
 
 ENV['LOCATION_ADMIN_GROUP'] = 'location.admin'
-JWT_LOCATION_ADMIN = "Bearer " + JWT.encode({
-  "external": {
-    "accounts": {
-      "location": {
-        "roles": ["admin"]
-      },
-    }
-  },
-  "groups": ["location.admin"],
-  "user_id": "test_location_admin@test.com",
-  "email": "test_location_admin@test.com",
-  "name": "Test Location Admin"
-}, nil)
+JWT_LOCATION_ADMIN = 'Bearer ' + JWT.encode({
+                                              external: {
+                                                accounts: {
+                                                  location: {
+                                                    roles: ['admin']
+                                                  }
+                                                }
+                                              },
+                                              groups: ['location.admin'],
+                                              user_id: 'test_location_admin@test.com',
+                                              email: 'test_location_admin@test.com',
+                                              name: 'Test Location Admin'
+                                            }, nil)
