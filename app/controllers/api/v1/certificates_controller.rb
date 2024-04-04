@@ -44,7 +44,7 @@ class Api::V1::CertificatesController < ApplicationController
 
   def download
     if @cloudgw = CloudGateway.find_by(:cloudgw_id => params[:cloudgw_id])
-      send_file "#{ENV['USERS_CERT_PATH_ARCH']}/#{@cloudgw.cloudgw_id}.zip"
+      send_file File.join(Rails.root, ENV['USERS_CERT_PATH_ARCH'], "#{@cloudgw.cloudgw_id}.zip")
     else
       render json: nil, status: :not_found
     end
