@@ -12,7 +12,7 @@ class RoutesService < ApplicationRecord
   end
 
   def self.unique_name(name)
-    "#{name}-#{maximum(:id).next}"
+    "#{name}-#{maximum(:id).to_i.next}"
   end
 
   def group_name

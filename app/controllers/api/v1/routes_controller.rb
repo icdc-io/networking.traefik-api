@@ -80,7 +80,7 @@ module Api
             @route.healthcheck&.destroy!
           end
         end
-        render json: @route, status: :ok
+        render json: @route.reload, status: :ok
       rescue StandardError => e
         render json: { message: e }, status: :bad_request
       end
