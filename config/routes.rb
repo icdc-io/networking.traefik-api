@@ -33,6 +33,4 @@ Rails.application.routes.draw do
       resources :routes
     end
   end
-
-  get 'alb/ping', to: 'ping#ping'
 end
