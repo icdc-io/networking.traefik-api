@@ -565,7 +565,7 @@ describe 'Api::V1::GatewaysController', type: :request, aggregate_failures: true
               "routers" => {
                 "alb-ping-internal" => {
                   "service"     => "ping@internal",
-                  "rule"        => "Host(`#{gateway.account}.alb.dcz.lab.icdc.io`) && Path(`/alb/ping`)",
+                  "rule"        => "Host(`#{gateway.account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) && Path(`/alb/ping`)",
                   "entryPoints" => ["web"]
                 },
                 "#{route.name}-http" => {
