@@ -9,8 +9,7 @@ class CloudGateway < ApplicationRecord
 
   def config
     generated_config = {}
-    generated_config['http'] = http if routes.where(tls_termination: ['re-encrypt', 'edge', nil])
-                                             .or(routes.where(tls_termination: 'passthrough', insecure: 'redirect')).any?
+    generated_config['http'] = http
     generated_config['tcp'] = tcp if routes.where(tls_termination: 'passthrough').any?
     mw = routes.where(insecure: 'redirect').where.not(tls_termination: nil).any? ? middlewares : []
     generated_config['http']['middlewares'] = mw unless mw.empty?
@@ -25,7 +24,7 @@ class CloudGateway < ApplicationRecord
   private
 
   def http
-    http_block = { 'routers' => {}, 'services' => {} }
+    http_block = { 'routers' => internal_ping_router, 'services' => {} }
 
     routes.where(tls_termination: ['re-encrypt', 'edge', nil]).find_each do |route|
       next if route.services.empty?
@@ -194,5 +193,15 @@ class CloudGateway < ApplicationRecord
 
   def service_name(route)
     route.services.count == 1 ? route.routes_services.first.name : route.routes_services.first.group_name
+  end
+
+  def internal_ping_router
+    {
+      'alb-ping-internal' => {
+        'service' => 'ping@internal',
+        'rule' => "(Host(`#{account}.alb.dcz.lab.icdc.io`) && Path(`/alb/ping`)",
+        'entryPoints' => ['web']
+      }
+    }
   end
 end
