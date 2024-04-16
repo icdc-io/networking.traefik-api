@@ -2,7 +2,7 @@ class Api::V1::CertificatesController < ApplicationController
   before_action :validate_certificate, only: [:create, :update]
 
   def index
-    render json: Certificate.filtered, status: :ok
+    render json: Certificate.filtered.includes(:routes), status: :ok
   end
 
   def show
