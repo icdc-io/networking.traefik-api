@@ -5,7 +5,7 @@ class CloudGateway < ApplicationRecord
   has_many :routes, dependent: :destroy
   validates :cloudgw_id, uniqueness: true
 
-  after_destroy { FileUtils.rm_f(File.join(Rails.root, ENV.fetch('USERS_CERT_PATH_ARCH'), "#{cloudgw_id}.zip")) }
+  after_destroy { FileUtils.rm_f(File.join(ENV.fetch('USERS_CERT_PATH_ARCH'), "#{cloudgw_id}.zip")) }
 
   def config
     generated_config = {}

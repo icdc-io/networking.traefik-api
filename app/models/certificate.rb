@@ -29,11 +29,11 @@ class Certificate < ApplicationRecord
       FileUtils.mkdir_p(full_path)
 
       %w[cert key ca dest_ca].each do |file|
-        FileUtils.mv(File.join(Rails.root, send(:"#{file}_path")), "#{full_path}/#{file}")
+        FileUtils.mv(File.join(ENV.fetch('USERS_CERT_PATH'), send(:"#{file}_path")), "#{full_path}/#{file}")
         send(:"#{file}_path=", "#{path}/#{file}")
       end
 
-      FileUtils.rm_f(File.join(Rails.root, old_path))
+      FileUtils.rm_f(File.join(ENV.fetch('USERS_CERT_PATH'), old_path))
     end
 
     save!
@@ -42,11 +42,11 @@ class Certificate < ApplicationRecord
   end
 
   def full_path
-    @full_path ||= File.join(Rails.root, path)
+    @full_path ||= File.join(ENV.fetch('USERS_CERT_PATH'), path)
   end
 
   def path
-    @path ||= "#{ENV.fetch('USERS_CERT_PATH')}/#{account}/#{name}"
+    @path ||= File.join(account, name)
   end
 
   def write_files(files_hash)
@@ -61,16 +61,16 @@ class Certificate < ApplicationRecord
   private
 
   def values
-    cert = OpenSSL::X509::Certificate.new(File.read(File.join(Rails.root, cert_path)))
+    cert = OpenSSL::X509::Certificate.new(File.read(File.join(ENV.fetch('USERS_CERT_PATH'), cert_path)))
     certprops = OpenSSL::X509::Name.new(cert.issuer).to_a
     common_name = certprops.find { |name, _, _| name == 'CN' }[1]
     organization = certprops.find { |name, _, _| name == 'O' }[1]
     hostname = routes.collect(&:hostname).uniq
     {
-      cert: File.read(File.join(Rails.root, cert_path)),
-      key: File.read(File.join(Rails.root, key_path)),
-      ca: File.read(File.join(Rails.root, ca_path)),
-      dest_ca: File.read(File.join(Rails.root, dest_ca_path)),
+      cert: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), cert_path)),
+      key: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), key_path)),
+      ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), ca_path)),
+      dest_ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), dest_ca_path)),
       hostnames: hostname,
       valid_from: cert.not_before,
       valid_until: cert.not_after,
@@ -78,10 +78,10 @@ class Certificate < ApplicationRecord
     }
   rescue StandardError => e
     {
-      cert: File.read(File.join(Rails.root, cert_path)),
-      key: File.read(File.join(Rails.root, key_path)),
-      ca: File.read(File.join(Rails.root, ca_path)),
-      dest_ca: File.read(File.join(Rails.root, dest_ca_path))
+      cert: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), cert_path)),
+      key: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), key_path)),
+      ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), ca_path)),
+      dest_ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), dest_ca_path))
     }
   end
 
@@ -90,7 +90,7 @@ class Certificate < ApplicationRecord
 
     # TODO: Remove lines below
     cloudgw_id = CloudGateway.find_by(account:).cloudgw_id
-    FileUtils.rm_rf(File.join(Rails.root, ENV.fetch('USERS_CERT_PATH'), cloudgw_id, name))
+    FileUtils.rm_rf(File.join(ENV.fetch('USERS_CERT_PATH'), cloudgw_id, name))
     FileUtils.rm_rf("certificates/#{cloudgw_id}/#{name}")
     FileUtils.rm_rf("tmp/certificates/#{cloudgw_id}/#{name}")
   end
