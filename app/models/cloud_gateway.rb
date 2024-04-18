@@ -199,7 +199,7 @@ class CloudGateway < ApplicationRecord
     {
       'alb-ping-internal' => {
         'service' => 'ping@internal',
-        'rule' => "Host(`#{account}.alb.#{ENV.fetch(LOCATION_DOMAIN)}`) && Path(`/alb/ping`)",
+        'rule' => "Host(`#{account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) && Path(`/alb/ping`)",
         'entryPoints' => ['web']
       }
     }
