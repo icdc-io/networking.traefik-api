@@ -258,7 +258,8 @@ describe 'Api::V1::RoutesController', type: :request do
           expect(RoutesService.count).to eq(1)
           expect(
             JSON.parse(response.body, symbolize_names: true).
-              except(:id, :created_at, :updated_at, :services, :routes_services, :cloud_gateway)
+              except(:id, :created_at, :updated_at, :services,
+                     :routes_services, :cloud_gateway, :healthcheck, :healthcheck_enabled)
           ).to eq(
             request_body['route'].symbolize_keys.except(:services)
           )
@@ -301,7 +302,8 @@ describe 'Api::V1::RoutesController', type: :request do
           expect(RoutesService.count).to eq(test_count)
           expect(
             JSON.parse(response.body, symbolize_names: true).
-              except(:id, :created_at, :updated_at, :services, :routes_services, :cloud_gateway)
+              except(:id, :created_at, :updated_at, :services,
+                     :routes_services, :cloud_gateway, :healthcheck, :healthcheck_enabled)
           ).to eq(
             request_body['route'].symbolize_keys.except(:services)
           )
@@ -627,7 +629,8 @@ describe 'Api::V1::RoutesController', type: :request do
           expect(response).to have_http_status(:ok)
           expect(
             JSON.parse(response.body, symbolize_names: true).
-              except(:id, :created_at, :updated_at, :services, :routes_services, :cloud_gateway)
+              except(:id, :created_at, :updated_at, :services,
+                     :routes_services, :cloud_gateway, :healthcheck, :healthcheck_enabled)
           ).to eq(
             request_body['route'].symbolize_keys.except(:services)
           )

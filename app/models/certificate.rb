@@ -23,15 +23,17 @@ class Certificate < ApplicationRecord
     if params['name'] && params['name'] != name
       old_path = path
       @path = nil
+      @full_path = nil
+
       self.name = params['name']
-      FileUtils.mkdir_p(path)
+      FileUtils.mkdir_p(full_path)
 
       %w[cert key ca dest_ca].each do |file|
-        FileUtils.mv(send(:"#{file}_path"), "#{path}/#{file}")
+        FileUtils.mv(File.join(ENV.fetch('USERS_CERT_PATH'), send(:"#{file}_path")), "#{full_path}/#{file}")
         send(:"#{file}_path=", "#{path}/#{file}")
       end
 
-      FileUtils.rm_f(old_path)
+      FileUtils.rm_f(File.join(ENV.fetch('USERS_CERT_PATH'), old_path))
     end
 
     save!
@@ -39,15 +41,19 @@ class Certificate < ApplicationRecord
     self
   end
 
+  def full_path
+    @full_path ||= File.join(ENV.fetch('USERS_CERT_PATH'), path)
+  end
+
   def path
-    @path ||= "#{ENV.fetch('USERS_CERT_PATH')}/#{account}/#{name}"
+    @path ||= File.join(account, name)
   end
 
   def write_files(files_hash)
-    FileUtils.mkdir_p(path)
+    FileUtils.mkdir_p(full_path)
 
     files_hash.each do |file, value|
-      File.write("#{path}/#{file}", value)
+      File.write("#{full_path}/#{file}", value)
       send(:"#{file}_path=", "#{path}/#{file}")
     end
   end
@@ -55,36 +61,36 @@ class Certificate < ApplicationRecord
   private
 
   def values
-    cert = OpenSSL::X509::Certificate.new(File.read(cert_path))
+    cert = OpenSSL::X509::Certificate.new(File.read(File.join(ENV.fetch('USERS_CERT_PATH'), cert_path)))
     certprops = OpenSSL::X509::Name.new(cert.issuer).to_a
     common_name = certprops.find { |name, _, _| name == 'CN' }[1]
     organization = certprops.find { |name, _, _| name == 'O' }[1]
     hostname = routes.collect(&:hostname).uniq
     {
-      cert: File.read(cert_path),
-      key: File.read(key_path),
-      ca: File.read(ca_path),
-      dest_ca: File.read(dest_ca_path),
+      cert: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), cert_path)),
+      key: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), key_path)),
+      ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), ca_path)),
+      dest_ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), dest_ca_path)),
       hostnames: hostname,
       valid_from: cert.not_before,
       valid_until: cert.not_after,
       issuer: "#{common_name} / #{organization}"
     }
-  rescue StandardError
+  rescue StandardError => e
     {
-      cert: File.read(cert_path),
-      key: File.read(key_path),
-      ca: File.read(ca_path),
-      dest_ca: File.read(dest_ca_path)
+      cert: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), cert_path)),
+      key: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), key_path)),
+      ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), ca_path)),
+      dest_ca: File.read(File.join(ENV.fetch('USERS_CERT_PATH'), dest_ca_path))
     }
   end
 
   def remove_cert_files
-    FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH')}/#{account}/#{name}")
+    FileUtils.rm_rf(full_path)
 
     # TODO: Remove lines below
     cloudgw_id = CloudGateway.find_by(account:).cloudgw_id
-    FileUtils.rm_rf("#{ENV.fetch('USERS_CERT_PATH')}/#{cloudgw_id}/#{name}")
+    FileUtils.rm_rf(File.join(ENV.fetch('USERS_CERT_PATH'), cloudgw_id, name))
     FileUtils.rm_rf("certificates/#{cloudgw_id}/#{name}")
     FileUtils.rm_rf("tmp/certificates/#{cloudgw_id}/#{name}")
   end
