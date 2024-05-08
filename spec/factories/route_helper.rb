@@ -1,23 +1,25 @@
+# frozen_string_literal: true
+
 def add_routes_services(route, services)
+  name = RoutesService.generate_name
+
   if services.count == 1
-  service = Service.find_by(:id => services.first[:id])
-  RoutesService.create!(
-    :route => route,
-    :service => service,
-    :balance_type => :loadbalancer,
-    :value => nil,
-    :name => "#{service.ext_id}-#{route.target_port}"
-  )
+    service = Service.find_by(id: services.first[:id])
+    create_routes_service(route, service, :loadbalancer, nil, name)
   elsif services.count > 1
     services.map do |data|
-    service = Service.find_by(:id => data[:id])
-    RoutesService.create!(
-      :route => route,
-      :service => service,
-      :balance_type => :weighted,
-      :value => data[:weight],
-      :name => RoutesService.generate_name
-    )
+      service = Service.find_by(id: data[:id])
+      create_routes_service(route, service, :weighted, data[:weight], name)
     end
   end
+end
+
+def create_routes_service(route, service, balance_type, value, name)
+  RoutesService.create!(
+    route:,
+    service:,
+    balance_type:,
+    value:,
+    name: RoutesService.unique_name(name)
+  )
 end

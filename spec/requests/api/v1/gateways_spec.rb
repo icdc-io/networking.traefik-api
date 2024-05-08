@@ -1,7 +1,7 @@
 require 'rails_helper'
 require 'swagger_helper'
 
-describe 'Api::V1::GatewaysController', type: :request do
+describe 'Api::V1::GatewaysController', type: :request, aggregate_failures: true do
   path "/api/v1/gateways" do
     get "List of Traefik Gateways" do
       tags "Gateways"
@@ -526,16 +526,16 @@ describe 'Api::V1::GatewaysController', type: :request do
           expect(response).to have_http_status(:ok)
           yaml = YAML.load(response.body)
           services_block = {
-            "#{routes_service.first.name}" => {
+            "#{routes_service.first.group_name}" => {
               "weighted" => {
                 "services" => services.map do |service|
-                  {"name" => "#{service[:service].ext_id}-#{route.target_port}", "weight" => service[:weight]}
+                  { "name" => service[:service].routes_services.first.name, "weight" => service[:weight] }
                 end
               }
             }
           }
           services.each do |service|
-            services_block.merge!("#{service[:service].ext_id}-#{route.target_port}" => {
+            services_block.merge!("#{service[:service].routes_services.first.name}" => {
                 "loadBalancer" => {
                   "servers" => [{ "address" => "#{service[:service].addresses(4)}:#{route.target_port}" }]
                 }
@@ -546,7 +546,7 @@ describe 'Api::V1::GatewaysController', type: :request do
             {
               "routers" => {
                 "#{route.name}" => {
-                  "service" => routes_service.first.name,
+                  "service" => routes_service.first.group_name,
                   "rule"    => "HostSNI(`#{route.hostname}`)",
                   "tls"     => { "passthrough" => true }
                 }
@@ -563,8 +563,13 @@ describe 'Api::V1::GatewaysController', type: :request do
           expect(yaml["http"]).to eq(
             {
               "routers" => {
+                "alb-ping-internal" => {
+                  "service"     => "ping@internal",
+                  "rule"        => "Host(`#{gateway.account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) && Path(`/alb/ping`)",
+                  "entryPoints" => ["web"]
+                },
                 "#{route.name}-http" => {
-                  "service"     => routes_service.first.name,
+                  "service"     => routes_service.first.group_name,
                   "rule"        => "Host(`#{route.hostname}`)",
                   "middlewares" => ["#{route.name}-redirect"],
                   "entryPoints" => ["web"]
