@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   mount Rswag::Ui::Engine  => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
 
+  get '/up', to: proc { [200, {}, ['Up!']] }
+
   namespace :api do
     namespace :v1 do
       # Old-style: remove after 2023
