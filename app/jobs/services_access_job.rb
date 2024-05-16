@@ -18,7 +18,7 @@ class ServicesAccessJob < ApplicationJob
         :account => service["tenant"]["name"],
         :ipaddresses => service["networks"].collect{ |network| network["allocations"] }
                                            .flatten.select{ |alloc| alloc if alloc["type"] == "nic" }
-                                           .collect{ |alloc| alloc["ip"] }.flatten.join(','),
+                                           .collect{ |alloc| alloc["ip"] }.flatten.compact.reject(&:empty?).compact.join(','),
         :type => service["type"],
         :retired? => service["retired"] || !!service["retirement_state"]
       }
@@ -42,7 +42,7 @@ class ServicesAccessJob < ApplicationJob
       service = Service.find_by(:ext_id => service_opts[:ext_id])
       service_opts.except!(:retired?, :type)
       if service
-        service.update!(service_opts)
+        service.update!(service_opts) unless service[:ipaddresses].empty?
       else
         Service.create!(service_opts)
       end
