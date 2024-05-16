@@ -15,9 +15,15 @@ Sidekiq.configure_server do |config|
 end
 
 jobs = {
-  'Collect data about access to services' => {
-    'class' => 'ServicesAccessJob',
-    'description' => 'Collect data from Compute and store it into InfluxDB',
+  'Load list of services' => {
+    'class' => 'LoadServicesJob',
+    'description' => 'Load list of services from Compute and store it into database',
+    'cron' => '*/15 * * * *',
+    'args' => []
+  },
+  'Delete retired services' => {
+    'class' => 'DeleteServicesJob',
+    'description' => 'Itterate over each service and delete retired services',
     'cron' => '*/15 * * * *',
     'args' => []
   }
