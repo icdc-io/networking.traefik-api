@@ -42,7 +42,7 @@ class ServicesAccessJob < ApplicationJob
       service = Service.find_by(:ext_id => service_opts[:ext_id])
       service_opts.except!(:retired?, :type)
       if service
-        service.update!(service_opts) unless service[:ipaddresses].empty?
+        service.update!(service_opts) unless service_opts[:ipaddresses].empty?
       else
         Service.create!(service_opts)
       end
