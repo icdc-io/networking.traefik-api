@@ -52,8 +52,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).size).to eq(test_count * 3)
@@ -73,7 +73,7 @@ describe 'Api::V1::GatewaysController', type: :request do
       parameter name: 'x-icdc-role', description: "Role of account",
         in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
-        schema: { type: :string, example: JWT_LOCATION_ADMIN }
+        schema: { type: :string, example: JWT_LOCATION_OPERATOR }
       parameter name: :request_body, in: :body, required: true,
         schema: {
           type: :object,
@@ -96,8 +96,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:created)
           expect(CloudGateway.count).to eq(1)
@@ -172,8 +172,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).except('created_at', 'updated_at')).to eq(
@@ -274,7 +274,7 @@ describe 'Api::V1::GatewaysController', type: :request do
       parameter name: 'x-icdc-role', description: "Role of account",
         in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
-        schema: { type: :string, example: JWT_LOCATION_ADMIN }
+        schema: { type: :string, example: JWT_LOCATION_OPERATOR }
       parameter name: :id, in: :path, required: true,
         schema: { type: :integer, example: 3 }
       parameter name: :request_body, in: :body, required: true,
@@ -300,8 +300,8 @@ describe 'Api::V1::GatewaysController', type: :request do
               :params => request_body,
               :headers => {
                 :'x-icdc-account' => 'location',
-                :'x-icdc-role' => 'admin',
-                :Authorization => JWT_LOCATION_ADMIN
+                :'x-icdc-role' => 'operator',
+                :Authorization => JWT_LOCATION_OPERATOR
               }
             expect(response).to have_http_status(:ok)
             expect(JSON.parse(response.body).except('created_at', 'updated_at')).to eq(
@@ -327,8 +327,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => request_body,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).except('created_at', 'updated_at')).to eq(
@@ -385,8 +385,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:not_found)
           generate_docs(example, response)
@@ -406,7 +406,7 @@ describe 'Api::V1::GatewaysController', type: :request do
       parameter name: 'x-icdc-role', description: "Role of account",
         in: :header, required: true, schema: { type: :string, example: "admin" }
       parameter name: :Authorization, in: :header, required: true,
-        schema: { type: :string, example: JWT_LOCATION_ADMIN }
+        schema: { type: :string, example: JWT_LOCATION_OPERATOR }
       parameter name: :id, in: :path, required: true,
         schema: { type: :integer, example: 3 }
 
@@ -424,8 +424,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:no_content)
           expect(CloudGateway.count).to eq(0)
@@ -477,8 +477,8 @@ describe 'Api::V1::GatewaysController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:not_found)
           generate_docs(example, response)

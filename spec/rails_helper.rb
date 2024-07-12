@@ -94,17 +94,17 @@ JWT_ADMIN = 'Bearer ' + JWT.encode({
                                      name: 'Test Admin'
                                    }, nil)
 
-ENV['LOCATION_ADMIN_GROUP'] = 'location.admin'
-JWT_LOCATION_ADMIN = 'Bearer ' + JWT.encode({
+ENV['OPERATOR_GROUP'] = 'location.operator'
+JWT_LOCATION_OPERATOR = 'Bearer ' + JWT.encode({
                                               external: {
                                                 accounts: {
                                                   location: {
-                                                    roles: ['admin']
+                                                    roles: ['operator']
                                                   }
                                                 }
                                               },
-                                              groups: ['location.admin'],
-                                              user_id: 'test_location_admin@test.com',
-                                              email: 'test_location_admin@test.com',
-                                              name: 'Test Location Admin'
+                                              groups: ['location.operator'],
+                                              user_id: 'test_location_operator@test.com',
+                                              email: 'test_location_operator@test.com',
+                                              name: 'Test Location Operator'
                                             }, nil)

@@ -165,8 +165,8 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).size).to eq(test_count * 3)
@@ -480,8 +480,8 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:not_found)
           generate_docs(example, response)
@@ -652,8 +652,8 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:not_found)
           generate_docs(example, response)
@@ -758,8 +758,8 @@ describe 'Api::V1::RoutesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:not_found)
           generate_docs(example, response)

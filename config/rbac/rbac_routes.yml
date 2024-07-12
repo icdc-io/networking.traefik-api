@@ -3,67 +3,95 @@ role_header: <%= ENV['ROLE_HEADER'] %>
 features:
   api/v1/certificates:
     index:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     show:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     create:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     update:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     delete:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     download:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
   api/v1/gateways:
     index:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     show:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     create_cloudgw:
-      - location_admin
+      - location_operator
     update_cloudgw:
-      - location_admin
+      - location_operator
     delete_cloudgw:
-      - location_admin
+      - location_operator
   api/v1/routes:
     index:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     show:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     create:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     update:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
     destroy:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member
   api/v1/services:  
     index:
+      - location_operator
+      - owner
+      - operator
       - admin
-      - location_admin
       - member

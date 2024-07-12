@@ -54,8 +54,8 @@ class ApplicationController < ActionController::API
   end
 
   def setup_role(account, role)
-    if ENV['LOCATION_ADMIN_GROUP'] == "#{account}.#{role}"
-      "location_admin"
+    if ENV['OPERATOR_GROUP'] == "#{account}.#{role}"
+      "location_operator"
     else 
       role
     end

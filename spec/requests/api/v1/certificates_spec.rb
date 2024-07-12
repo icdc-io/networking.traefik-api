@@ -54,8 +54,8 @@ describe 'Api::V1::CertificatesController', type: :request do
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).size).to eq(test_count * 2)
