@@ -256,18 +256,9 @@ describe 'Api::V1::RoutesController', type: :request do
           expect(response).to have_http_status(:created)
           expect(Route.count).to eq(1)
           expect(RoutesService.count).to eq(1)
-          expect(
-            JSON.parse(response.body, symbolize_names: true).
-              except(:id, :created_at, :updated_at, :services, :routes_services, :cloud_gateway)
-          ).to eq(
-            request_body['route'].symbolize_keys.except(:services)
-          )
-          expect(JSON.parse(response.body)['services'][0].except('created_at', 'updated_at')).to eq(
-            service.attributes.except('created_at', 'updated_at')
-          )
-          expect(JSON.parse(response.body)['routes_services'][0].except('created_at', 'updated_at')).to eq(
-            RoutesService.first.attributes.except('created_at', 'updated_at')
-          )
+          expect(JSON.parse(response.body)).to eq(Route.last.as_json)
+          expect(JSON.parse(response.body)['services'][0]).to eq(service.as_json)
+          expect(JSON.parse(response.body)['routes_services'][0]).to eq(RoutesService.first.as_json)
           generate_docs(example, response)
         end
 
@@ -299,19 +290,11 @@ describe 'Api::V1::RoutesController', type: :request do
           expect(response).to have_http_status(:created)
           expect(Route.count).to eq(1)
           expect(RoutesService.count).to eq(test_count)
-          expect(
-            JSON.parse(response.body, symbolize_names: true).
-              except(:id, :created_at, :updated_at, :services, :routes_services, :cloud_gateway)
-          ).to eq(
-            request_body['route'].symbolize_keys.except(:services)
-          )
+          expect(JSON.parse(response.body)).to eq(Route.last.as_json)
+
           services.each_with_index do |service, index|
-            expect(JSON.parse(response.body)['services'][index].except('created_at', 'updated_at')).to eq(
-              service.attributes.except('created_at', 'updated_at')
-            )
-            expect(JSON.parse(response.body)['routes_services'][index].except('created_at', 'updated_at')).to eq(
-              RoutesService.all[index].attributes.except('created_at', 'updated_at')
-            )
+            expect(JSON.parse(response.body)['services'][index]).to eq(service.as_json)
+            expect(JSON.parse(response.body)['routes_services'][index]).to eq(RoutesService.all[index].as_json)
           end
         end
 
@@ -625,20 +608,10 @@ describe 'Api::V1::RoutesController', type: :request do
             }
 
           expect(response).to have_http_status(:ok)
-          expect(
-            JSON.parse(response.body, symbolize_names: true).
-              except(:id, :created_at, :updated_at, :services, :routes_services, :cloud_gateway)
-          ).to eq(
-            request_body['route'].symbolize_keys.except(:services)
-          )
-          expect(JSON.parse(response.body)['services'][0].except('created_at', 'updated_at')).to eq(
-            service.attributes.except('created_at', 'updated_at')
-          )
-          expect(JSON.parse(response.body)['routes_services'][0].except('created_at', 'updated_at')).to eq(
-            RoutesService.last.attributes.except('created_at', 'updated_at')
-          )
+          expect(JSON.parse(response.body)).to eq(route.reload.as_json)
+          expect(JSON.parse(response.body)['services'][0]).to eq(service.reload.as_json)
+          expect(JSON.parse(response.body)['routes_services'][0]).to eq(route.routes_services.first.as_json)
           generate_docs(example, response)
-
         end
       end
 
