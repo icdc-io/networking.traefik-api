@@ -1,7 +1,7 @@
 require 'rails_helper'
 require 'swagger_helper'
 
-describe 'Api::V1::GatewaysController', type: :request do
+describe 'Api::V1::GatewaysController', type: :request, aggregate_failures: true do
   path "/api/v1/gateways" do
     get "List of Traefik Gateways" do
       tags "Gateways"
@@ -563,6 +563,11 @@ describe 'Api::V1::GatewaysController', type: :request do
           expect(yaml["http"]).to eq(
             {
               "routers" => {
+                "alb-ping-internal" => {
+                  "service"     => "ping@internal",
+                  "rule"        => "Host(`#{gateway.account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) && Path(`/alb/ping`)",
+                  "entryPoints" => ["web"]
+                },
                 "#{route.name}-http" => {
                   "service"     => routes_service.first.group_name,
                   "rule"        => "Host(`#{route.hostname}`)",

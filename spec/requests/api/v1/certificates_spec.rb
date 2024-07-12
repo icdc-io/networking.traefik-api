@@ -134,7 +134,7 @@ describe 'Api::V1::CertificatesController', type: :request do
           expect(response).to have_http_status(:created)
           expect(Certificate.count).to eq(1)
           response_body = JSON.parse(response.body, symbolize_names: true)
-          path = "#{ENV.fetch('USERS_CERT_PATH')}/#{gateway.account}/#{request_body['certificate']['name']}/"
+          path = "#{gateway.account}/#{request_body['certificate']['name']}/"
           expect(response_body.except(:created_at, :updated_at, :id, :values)).to eq(
             request_body['certificate'].symbolize_keys.except(:cert, :key, :ca, :dest_ca).merge(
               :account => 'test',
@@ -298,7 +298,7 @@ describe 'Api::V1::CertificatesController', type: :request do
             }
           expect(response).to have_http_status(:ok)
           response_body = JSON.parse(response.body, symbolize_names: true)
-          path = "#{ENV.fetch('USERS_CERT_PATH')}/#{gateway.account}/#{request_body['certificate']['name']}/"
+          path = "#{gateway.account}/#{request_body['certificate']['name']}/"
           expect(response_body.except(:created_at, :updated_at, :id, :values)).to eq(
             request_body['certificate'].symbolize_keys.
               except(:cert, :key, :ca, :dest_ca).
@@ -338,7 +338,7 @@ describe 'Api::V1::CertificatesController', type: :request do
             }
           expect(response).to have_http_status(:ok)
           response_body = JSON.parse(response.body, symbolize_names: true)
-          path = "#{ENV.fetch('USERS_CERT_PATH')}/#{gateway.account}/#{request_body['certificate']['name']}/"
+          path = "#{gateway.account}/#{request_body['certificate']['name']}/"
           expect(response_body.except(:created_at, :updated_at, :id, :values)).to eq(
             request_body['certificate'].symbolize_keys.except(:cert, :key, :ca, :dest_ca).merge(
               :account => 'test',
