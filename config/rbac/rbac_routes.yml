@@ -5,50 +5,42 @@ features:
     index:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     show:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     create:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     update:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     delete:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     download:
       - location_operator
       - owner
-      - operator
       - admin
       - member
   api/v1/gateways:
     index:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     show:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     create_cloudgw:
@@ -61,37 +53,31 @@ features:
     index:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     show:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     create:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     update:
       - location_operator
       - owner
-      - operator
       - admin
       - member
     destroy:
       - location_operator
       - owner
-      - operator
       - admin
       - member
   api/v1/services:  
     index:
       - location_operator
       - owner
-      - operator
       - admin
       - member

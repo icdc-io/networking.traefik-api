@@ -6,9 +6,6 @@ Certificate:
   owner:
     filters:
       account: account
-  operator:
-    filters:
-      account: account
   admin:
     filters:
       account: account
@@ -23,9 +20,6 @@ CloudGateway:
   owner:
     filters:
       account: account
-  operator:
-    filters:
-      account: account
   admin:
     filters:
       account: account
@@ -38,8 +32,6 @@ Route:
       all
   owner:
     parent: CloudGateway
-  operator:
-    parent: CloudGateway
   admin:
     parent: CloudGateway
   member:
@@ -51,9 +43,6 @@ Service:
     scope:
       all
   owner:
-    filters:
-      account: account
-  operator:
     filters:
       account: account
   admin:
