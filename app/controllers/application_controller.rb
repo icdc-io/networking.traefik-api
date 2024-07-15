@@ -68,7 +68,11 @@ class ApplicationController < ActionController::API
     return role unless role == 'operator'
 
     # if role is an operator
-    ENV['OPERATOR_GROUP'] == "#{account}.#{role}" ? 'operator' : 'admin'
+    if ENV.fetch('OPERATOR_GROUP') == "#{account}.#{role}"
+      'operator' 
+    else
+      'admin'
+    end
   end
 
   def validate(token, account, role)
