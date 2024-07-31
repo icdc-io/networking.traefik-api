@@ -65,11 +65,11 @@ class ApplicationController < ActionController::API
   end
 
   def setup_role(account, role)
-    return role unless role == 'operator'
+    return role unless ['operator', 'admin'].include?(role)
 
-    # if role is an operator
+    # if role is an operator or admin
     if ENV.fetch('OPERATOR_GROUP') == "#{account}.#{role}"
-      'operator' 
+      'operator'
     else
       'admin'
     end
