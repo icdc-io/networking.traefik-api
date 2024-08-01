@@ -3,67 +3,81 @@ role_header: <%= ENV['ROLE_HEADER'] %>
 features:
   api/v1/certificates:
     index:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     show:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     create:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     update:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     delete:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     download:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
   api/v1/gateways:
     index:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     show:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     create_cloudgw:
-      - location_admin
+      - operator
     update_cloudgw:
-      - location_admin
+      - operator
     delete_cloudgw:
-      - location_admin
+      - operator
   api/v1/routes:
     index:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     show:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     create:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     update:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
     destroy:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member
   api/v1/services:  
     index:
+      - operator
+      - owner
       - admin
-      - location_admin
       - member

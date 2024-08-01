@@ -34,7 +34,6 @@ class Api::V1::GatewaysController < ApplicationController
       Certificate.where(:account => @gateway.account).each do |certificate|
         name = certificate.name
         certificate.destroy!
-        Api::V1::CertificatesController.new.send(:remove_dir, "certificates/#{@gateway.cloudgw_id}/#{name}")
       end
       @gateway.destroy!
       render json: nil, status: :no_content
