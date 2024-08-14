@@ -4,18 +4,18 @@ class DeleteServicesJob < ApplicationJob
   include RequestHelper
 
   def perform
-    Service.where(ext_id: retired_services_ids).destroy_all
+    service_ids = active_services_ids
+    return if service_ids.blank?
+
+    Service.where.not(ext_id: service_ids).destroy_all
   end
 
-  def retired_services_ids
+  def active_services_ids
     resp = request_compute('services', 'expand=resources')
+    return [] unless resp.code == 200
 
-    if resp.code == 200
-      body = JSON.parse resp.body
-      return body['resources'].filter_map { |s| s['id'] if !s['retirement_state'].nil? || s['retired'] }
-    end
-
-    []
+    body = JSON.parse(resp.body)
+    body['resources'].filter_map { |service| service['id'] }
   rescue StandardError => e
     Rails.logger.debug { "Something went wrong, #{e.message}" }
     []
