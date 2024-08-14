@@ -31,7 +31,7 @@ class LoadServicesJob < ApplicationJob
   end
 
   def store_or_update_service(service_opts)
-    return if service_opts['type'] == 'ServiceAnsiblePlaybook'
+    return if service_opts[:type] == 'ServiceAnsiblePlaybook'
 
     service = Service.find_by(ext_id: service_opts[:ext_id])
     if service
