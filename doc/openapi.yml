@@ -52,7 +52,7 @@ servers:
   - description: Location-local URL
     url: http://traefik.cloud-networking.svc:3000/api/v1
   - description: Local development URL
-    url: http://localhost:8080/api/v1
+    url: http://localhost:3000/api/v1
 tags:
   - name: ALB Gateways
     description: >
@@ -611,8 +611,8 @@ paths:
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
   /services:
-    operationId: services_list
     get:
+      operationId: services_list
       tags:
         - Services
       summary: Show all existing certificates
@@ -774,8 +774,9 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/routes
 
   /routes/{id}:
-    operationId: route_show
+    
     get:
+      operationId: route_show
       tags:
         - Routes
       summary: Show info about selected route
@@ -806,14 +807,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Route"
-      "401":
-        $ref: "#/components/responses/unauthorized"
-      "403":
-        $ref: "#/components/responses/forbidden"
-      "404":
-        $ref: "#/components/responses/not_found"
-      "500":
-        $ref: "#/components/responses/server_error"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/not_found"
+        "500":
+          $ref: "#/components/responses/server_error"
 
       x-codeSamples:
         - lang: cURL
