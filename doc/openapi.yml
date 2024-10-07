@@ -106,7 +106,166 @@ paths:
             curl -X GET \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $TOKEN" \
-              https://api.loc.icdc.io/api/traefik_manager/v1/gateways
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.$LOC.icdc.io/api/traefik_manager/v1/gateways
+              
+        - lang: Python
+          source: |-
+            import requests
+
+            url = "https://api.{loc}.icdc.io/api/traefik_manager/v1/gateways"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {TOKEN}",
+                "x-icdc-account": ACCOUNT,
+                "x-icdc-role": ROLE
+            }
+
+            response = requests.get(url, headers=headers)
+            print(response.json())
+
+        - lang: JavaScript (Axios)
+          source: |-
+            const axios = require('axios');
+
+            const url = `https://api.${LOC}.icdc.io/api/traefik_manager/v1/gateways`;
+
+            axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${TOKEN}`,
+                    'x-icdc-account': ACCOUNT,
+                    'x-icdc-role': ROLE
+                }
+            })
+            .then(response => {
+                console.log(response.data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        - lang: Node.js (HTTPS)
+          source: |-
+            const https = require('https');
+
+            const options = {
+              hostname: `api.${LOC}.icdc.io`,
+              path: '/api/traefik_manager/v1/gateways',
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`,
+                'x-icdc-account': ACCOUNT,
+                'x-icdc-role': ROLE
+              }
+            };
+
+            const req = https.request(options, (res) => {
+              let data = '';
+
+              res.on('data', (chunk) => {
+                data += chunk;
+              });
+
+              res.on('end', () => {
+                console.log(JSON.parse(data));
+              });
+            });
+
+            req.on('error', (error) => {
+              console.error(error);
+            });
+
+            req.end();
+
+        - lang: Go
+          source: |-
+            package main
+
+            import (
+                "fmt"
+                "net/http"
+                "io/ioutil"
+            )
+
+            func main() {
+                url := "https://api.{loc}.icdc.io/api/traefik_manager/v1/gateways"
+
+                req, _ := http.NewRequest("GET", url, nil)
+                req.Header.Add("Content-Type", "application/json")
+                req.Header.Add("Authorization", "Bearer "+TOKEN)
+                req.Header.Add("x-icdc-account", ACCOUNT)
+                req.Header.Add("x-icdc-role", ROLE)
+
+                client := &http.Client{}
+                resp, err := client.Do(req)
+                if err != nil {
+                    fmt.Println(err)
+                    return
+                }
+                defer resp.Body.Close()
+
+                body, _ := ioutil.ReadAll(resp.Body)
+                fmt.Println(string(body))
+            }
+
+        - lang: Ruby
+          source: |-
+            require 'net/http'
+            require 'uri'
+            require 'json'
+
+            uri = URI.parse("https://api.#{LOC}.icdc.io/api/traefik_manager/v1/gateways")
+            request = Net::HTTP::Get.new(uri)
+            request["Content-Type"] = "application/json"
+            request["Authorization"] = "Bearer #{TOKEN}"
+            request["x-icdc-account"] = ACCOUNT
+            request["x-icdc-role"] = ROLE
+
+            response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+              http.request(request)
+            end
+
+            puts response.body
+
+        - lang: Java
+          source: |-
+            import java.io.BufferedReader;
+            import java.io.InputStreamReader;
+            import java.net.HttpURLConnection;
+            import java.net.URL;
+
+            public class Main {
+                public static void main(String[] args) {
+                    try {
+                        String url = "https://api." + LOC + ".icdc.io/api/traefik_manager/v1/gateways";
+                        URL obj = new URL(url);
+                        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+                        con.setRequestMethod("GET");
+                        con.setRequestProperty("Content-Type", "application/json");
+                        con.setRequestProperty("Authorization", "Bearer " + TOKEN);
+                        con.setRequestProperty("x-icdc-account", ACCOUNT);
+                        con.setRequestProperty("x-icdc-role", ROLE);
+
+                        int responseCode = con.getResponseCode();
+                        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                        String inputLine;
+                        StringBuilder response = new StringBuilder();
+
+                        while ((inputLine = in.readLine()) != null) {
+                            response.append(inputLine);
+                        }
+                        in.close();
+
+                        System.out.println(response.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
     post:
       operationId: alb_attach
       tags:
@@ -211,6 +370,7 @@ paths:
               -H "x-icdc-account: $ACCOUNT" \
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
+
     put:
       operationId: alb_modify
       tags:
@@ -258,6 +418,7 @@ paths:
           $ref: "#/components/responses/unprocessable_entity"
         "500":
           $ref: "#/components/responses/server_error"
+
       x-codeSamples:
         - lang: cURL
           source: |-
