@@ -1,8 +1,11 @@
 ---
 Certificate:
-  location_admin:
+  operator:
     scope:
       all
+  owner:
+    filters:
+      account: account
   admin:
     filters:
       account: account
@@ -11,9 +14,12 @@ Certificate:
       account: account
       owner: userid
 CloudGateway:
-  location_admin:
+  operator:
     scope:
       all
+  owner:
+    filters:
+      account: account
   admin:
     filters:
       account: account
@@ -21,9 +27,11 @@ CloudGateway:
     filters:
       account: account
 Route:
-  location_admin:
+  operator:
     scope:
       all
+  owner:
+    parent: CloudGateway
   admin:
     parent: CloudGateway
   member:
@@ -31,9 +39,12 @@ Route:
     filters:
       owner: userid
 Service:
-  location_admin:
+  operator:
     scope:
       all
+  owner:
+    filters:
+      account: account
   admin:
     filters:
       account: account

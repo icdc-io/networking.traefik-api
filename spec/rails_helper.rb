@@ -97,18 +97,17 @@ RSpec.configure do |config|
                                        name: 'Test Admin'
                                      }, private_key, 'RS256')
 
-  ENV['LOCATION_ADMIN_GROUP'] = 'location.admin'
-  JWT_LOCATION_ADMIN = 'Bearer ' + JWT.encode({
-                                                external: {
-                                                  accounts: {
-                                                    location: {
-                                                      roles: ['admin']
-                                                    }
+ENV['OPERATOR_GROUP'] = 'location.operator'
+JWT_LOCATION_OPERATOR = 'Bearer ' + JWT.encode({
+                                              external: {
+                                                accounts: {
+                                                  location: {
+                                                    roles: ['operator']
                                                   }
-                                                },
-                                                groups: ['location.admin'],
-                                                user_id: 'test_location_admin@test.com',
-                                                email: 'test_location_admin@test.com',
-                                                name: 'Test Location Admin'
-                                              }, private_key, 'RS256')
-end
+                                                }
+                                              },
+                                              groups: ['location.operator'],
+                                              user_id: 'test_location_operator@test.com',
+                                              email: 'test_location_operator@test.com',
+                                              name: 'Test Location Operator'
+                                            }, nil)

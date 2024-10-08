@@ -60,16 +60,16 @@ describe 'Api::V1::ServicesController', type: :request do
         it "shows all services" do |example|
           test_count = rand(1..20)
           test_count.times do
-            FactoryBot.create(:service, :account => 'test', :owner => 'test_location_admin@test.com')
+            FactoryBot.create(:service, :account => 'test', :owner => 'test_location_operator@test.com')
             FactoryBot.create(:service, :account => 'test', :owner => 'not_test_member@test.com')
-            FactoryBot.create(:service, :account => 'not_test', :owner => 'test_location_admin@test.com')
+            FactoryBot.create(:service, :account => 'not_test', :owner => 'test_location_operator@test.com')
           end
           get "/api/v1/services",
             :params => nil,
             :headers => {
               :'x-icdc-account' => 'location',
-              :'x-icdc-role' => 'admin',
-              :Authorization => JWT_LOCATION_ADMIN
+              :'x-icdc-role' => 'operator',
+              :Authorization => JWT_LOCATION_OPERATOR
             }
           expect(response).to have_http_status(:ok)
           expect(JSON.parse(response.body).size).to eq(test_count * 3)
