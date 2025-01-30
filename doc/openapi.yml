@@ -1159,8 +1159,8 @@ components:
       properties:
         status:
           # TODO: may be use integer for status
-          type: string
-          example: "500"
+          type: integer
+          example: 500
           description: HTTP code
           readOnly: true
         data:
@@ -1464,9 +1464,8 @@ components:
           schema:
             $ref: "#/components/schemas/error"
           example:
-            status: "500"
-            data:
-              message: Unexpected server-side error
+            status: 500
+            message: Unexpected server-side error
     unauthorized:
       description: >
         Request is not authorized, usually because of:
@@ -1476,9 +1475,8 @@ components:
           schema:
             $ref: "#/components/schemas/error"
           example:
-            status: "401"
-            data:
-              message: You're not authorized.
+            status: 401
+            message: You're not authorized.
     forbidden:
       description: >
         Request authorized, but current user doesn't have access rights to perform action.
@@ -1487,9 +1485,8 @@ components:
           schema:
             $ref: "#/components/schemas/error"
           example:
-            status: "403"
-            data:
-              message: You're doesn't have permissions to perform the action.
+            status: 403
+            message: You're doesn't have permissions to perform the action.
     not_found:
       description: >
         Requested object is not found
@@ -1498,10 +1495,9 @@ components:
           schema:
             $ref: "#/components/schemas/error"
           example:
-            status: "404"
-            data:
+            status: 404
               #TODO: [DS] maybe rename message as bad request is a 400 code, means that object attributes are malformed or can not be applied
-              message: Bad request, not found {object}
+            message: Bad request, not found {object}
     unprocessable_entity:
       description: >
         Unprocessable entity.
@@ -1510,9 +1506,8 @@ components:
           schema:
             $ref: "#/components/schemas/error"
           example:
-            status: "422"
-            data:
-              message: Bad request, unprocessable entity
+            status: 422
+            message: Bad request, unprocessable entity
     alb_list:
       description: A list of ALB Gateways attached to account's infrastructure
       content:
