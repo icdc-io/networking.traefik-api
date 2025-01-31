@@ -3,18 +3,15 @@
 module Api
   module V1
     class RoutesController < ApplicationController
-      before_action :set_route, :check_params, only: :update
+      before_action :set_route, only: %i[update show destroy]
+      before_action :check_params, only: :update
 
       def index
         render json: Route.filtered, status: :ok
       end
 
       def show
-        if @route = Route.filtered.find_by(id: params[:id])
-          render json: { route: @route }, status: :ok
-        else
-          render json: nil, status: :not_found
-        end
+        render json: { route: @route }, status: :ok
       end
 
       def create
@@ -63,6 +60,9 @@ module Api
           end
         end
         render json: @route, status: :created
+      rescue StandardError => e
+        status = ActionDispatch::ExceptionWrapper.status_code_for_exception(e.class.name)
+        render json: { message: e, status: }, status:
       end
 
       def update
@@ -82,26 +82,24 @@ module Api
         end
         render json: @route.reload, status: :ok
       rescue StandardError => e
-        render json: { message: e }, status: :bad_request
+        status = ActionDispatch::ExceptionWrapper.status_code_for_exception(e.class.name)
+        render json: { message: e, status: }, status:
       end
 
       def destroy
-        if (@route = Route.filtered.find_by(id: params[:id]))
-          @route.destroy!
-          return render json: nil, status: :no_content
-        end
-        render json: nil, status: :not_found
+        @route.destroy!
+        render json: nil, status: :no_content
       end
 
       private
 
       def set_route
-        @route_params = params[:route]
         @route = Route.filtered.find_by(id: params[:id])
-        render json: nil, status: :not_found unless @route
+        not_found("Route with id #{params[:id]}") unless @route
       end
 
       def check_params
+        @route_params = params[:route]
         return render json: @route unless @route_params
 
         cloud_gateway_id = @route_params[:cloud_gateway_id]
