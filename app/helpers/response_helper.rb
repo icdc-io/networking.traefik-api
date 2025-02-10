@@ -17,8 +17,19 @@ module ResponseHelper
     c_response(404, "Bad request, not found #{object}")
   end
 
-  def forbidden(body)
-    c_response(403, body)
+  def forbidden(message)
+    # TODO: leave this for backward compatibility, remove it in future
+    code = 403
+    render json: {
+      status: code,
+      data: message,
+      message: 
+    }, status: code
+    # end TODO
+
+    # TODO: use this in future
+    #   c_response(403, message)
+    # end TODO
   end
 
   def abort(message)
