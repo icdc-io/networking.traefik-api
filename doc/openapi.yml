@@ -497,7 +497,7 @@ paths:
         "404":
           $ref: "#/components/responses/not_found"
         "500":
-          $ref: "#components/responses/server_error"
+          $ref: "#/components/responses/server_error"
   /certificates:
     get:
       operationId: certificates_list
@@ -1394,6 +1394,8 @@ components:
         labels:
           type: string
           example: KV
+        cloud_gateway:
+          $ref: "#/components/schemas/Gateway"
         cloud_gateway_id:
           type: integer
           example: 1
