@@ -67,7 +67,7 @@ module Api
           message: I18n.t('controllers.api.v1.routes.create.creation_failed'),
           code: 'ENT016',
           errors: [e]
-      )
+        )
       end
 
       def update
@@ -92,7 +92,7 @@ module Api
           status: ActionDispatch::ExceptionWrapper.status_code_for_exception(e.class.name),
           code: 'ENT017',
           errors: [e]
-      )
+        )
       end
 
       def destroy
@@ -105,6 +105,7 @@ module Api
       def set_route
         @route = Route.filtered.find_by(id: params[:id])
         return if @route
+
         render_not_found_response(message: I18n.t('controllers.api.v1.routes.set_route.not_found'), code: 'ENT018', data: { message: I18n.t('controllers.api.v1.routes.set_route.not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
       end
 
