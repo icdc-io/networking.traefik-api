@@ -19,7 +19,7 @@ module Api
         healthcheck_params = params[:route].delete(:healthcheck) if params[:route][:healthcheck_enabled]
         route_params = route_create_params
         unless CloudGateway.filtered.find_by(id: route_params[:cloud_gateway_id])
-          return not_found("Cloud Gateway with id #{route_params[:cloud_gateway_id]}")
+          return render_not_found_response(message: I18n.t('controllers.api.v1.routes.create.cloud_gateway_not_found'), code: 'ENT013', data: { message: I18n.t('controllers.api.v1.routes.create.cloud_gateway_not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
         end
 
         route_params[:owner] = User.current_user.userid if User.current_user.role == 'member'
@@ -34,7 +34,7 @@ module Api
           name = RoutesService.generate_name
           if services.count == 1
             unless (service = Service.filtered.find_by(id: services.first['id']))
-              return not_found("Service with id #{services.first['id']}")
+              return render_not_found_response(message: I18n.t('controllers.api.v1.routes.create.service_not_found'), code: 'ENT014', data: { message: I18n.t('controllers.api.v1.routes.create.service_not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
             end
 
             RoutesService.create!(
@@ -47,7 +47,9 @@ module Api
 
           elsif services.count > 1
             services.each do |data|
-              return not_found("Service with id #{data['id']}") unless (service = Service.filtered.find_by(id: data['id']))
+              unless (service = Service.filtered.find_by(id: data['id']))
+                return render_not_found_response(message: I18n.t('controllers.api.v1.routes.create.service_not_found'), code: 'ENT015', data: { message: I18n.t('controllers.api.v1.routes.create.service_not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
+              end
 
               RoutesService.create!(
                 route: @route,
@@ -60,9 +62,12 @@ module Api
           end
         end
         render json: @route, status: :created
-      rescue StandardError => e
-        status = ActionDispatch::ExceptionWrapper.status_code_for_exception(e.class.name)
-        render json: { message: e, status: }, status:
+      rescue ActiveRecord::RecordInvalid => e
+        render_error_response(
+          message: I18n.t('controllers.api.v1.routes.create.creation_failed'),
+          code: 'ENT016',
+          errors: [e]
+      )
       end
 
       def update
@@ -82,8 +87,12 @@ module Api
         end
         render json: @route.reload, status: :ok
       rescue StandardError => e
-        status = ActionDispatch::ExceptionWrapper.status_code_for_exception(e.class.name)
-        render json: { message: e, status: }, status:
+        render_error_response(
+          message: I18n.t('controllers.api.v1.routes.update.updating_failed'),
+          status: ActionDispatch::ExceptionWrapper.status_code_for_exception(e.class.name),
+          code: 'ENT017',
+          errors: [e]
+      )
       end
 
       def destroy
@@ -95,7 +104,8 @@ module Api
 
       def set_route
         @route = Route.filtered.find_by(id: params[:id])
-        not_found("Route with id #{params[:id]}") unless @route
+        return if @route
+        render_not_found_response(message: I18n.t('controllers.api.v1.routes.set_route.not_found'), code: 'ENT018', data: { message: I18n.t('controllers.api.v1.routes.set_route.not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
       end
 
       def check_params
@@ -105,7 +115,7 @@ module Api
         cloud_gateway_id = @route_params[:cloud_gateway_id]
         return unless cloud_gateway_id && !CloudGateway.filtered.find_by(id: cloud_gateway_id)
 
-        not_found("Cloud Gateway with id #{cloud_gateway_id}")
+        render_not_found_response(message: I18n.t('controllers.api.v1.routes.update.cloud_gateway_not_found'), code: 'ENT019', data: { message: I18n.t('controllers.api.v1.routes.update.cloud_gateway_not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
       end
 
       def update_certificate

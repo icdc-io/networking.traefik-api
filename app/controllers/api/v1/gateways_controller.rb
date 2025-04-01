@@ -10,12 +10,25 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def create_cloudgw
-    @gateway = CloudGateway.create!(params.permit(:name, :account, :cloudgw_id))
+    @gateway = CloudGateway.new(params.permit(:name, :account, :cloudgw_id))
+    unless @gateway.save
+      return render_error_response(
+        message: I18n.t('controllers.api.v1.gateways.create.creation_failed'),
+        code: 'ENT009',
+        errors: @gateway.errors.full_messages
+      )
+    end
     render json: @gateway, status: :created
   end
 
   def update_cloudgw
-    @gateway.update!(params.permit(:name, :account))
+    unless @gateway.update(params.permit(:name, :account))
+      return render_error_response(
+        message: I18n.t('controllers.api.v1.gateways.update.updating_failed'),
+        code: 'ENT010',
+        errors: @gateway.errors.full_messages
+      )
+    end
     render json: @gateway, status: :ok
   end
 
@@ -33,7 +46,7 @@ class Api::V1::GatewaysController < ApplicationController
     if gateway = CloudGateway.find_by(cloudgw_id: params[:cloudgw_id])
       render json: gateway.config, content_type: 'text/yaml', status: :ok
     else
-      not_found("CloudGateway with id #{params[:cloudgw_id]}")
+      render_not_found_response(message: I18n.t('controllers.api.v1.gateways.traefik_config.cloud_gateway_not_found'), code: 'ENT011', data: { message: I18n.t('controllers.api.v1.gateways.traefik_config.cloud_gateway_not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
     end
   end
 
@@ -41,6 +54,7 @@ class Api::V1::GatewaysController < ApplicationController
 
   def set_gateway
     @gateway = CloudGateway.filtered.find_by(id: params[:id])
-    not_found("CloudGateway with id #{params[:id]}") unless @gateway
+    return if @gateway
+    render_not_found_response(message: I18n.t('controllers.api.v1.gateways.set_gateway.not_found'), code: 'ENT012', data: { message: I18n.t('controllers.api.v1.gateways.set_gateway.not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
   end
 end

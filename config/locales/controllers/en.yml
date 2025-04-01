@@ -1,0 +1,43 @@
+en:
+  controllers:
+    application:
+      jwt:
+        decode_error: "Something went wrong. Can't decode JWT token!"
+      unauthorized: 'You are not authorized'
+      forbidden: 'You are not authorized to perform this action'
+      internal_server_error: 'Something went wrong. Try again later'
+    api:
+      v1:
+        certificates:
+          create:
+            creation_failed: 'Certificates creation failed. Invalid entered data'
+          update:
+            updating_failed: 'Certificates updating failed. Invalid entered data'
+          set_certificate:
+            not_found: 'Bad request, certificate not found'
+          validate_certificate:
+            invalid_certificate: 'Invalid certificate'
+          delete:
+            destroying_failed: 'Certificate deleting failed'
+          download:
+            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
+        gateways:
+          create:
+            creation_failed: 'Cloud gateway creation failed. Invalid entered data'
+          update:
+            updating_failed: 'Cloud gateway updating failed. Invalid entered data'
+          set_gateway:
+            not_found: 'Bad request, cloud gateway not found'
+          traefik_config:
+            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
+        routes:
+          create:
+            creation_failed: 'Route creation failed. Invalid entered data'
+            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
+            service_not_found: Bad request, service not found'
+          update:
+            updating_failed: 'Route updating failed'
+            certificate_not_found: Bad request, certificate not found'
+            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
+          set_route:
+            not_found: 'Bad request, route not found'
