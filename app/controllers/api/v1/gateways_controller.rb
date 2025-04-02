@@ -1,15 +1,12 @@
 class Api::V1::GatewaysController < ApplicationController
+  before_action :set_gateway, only: %i[show update_cloudgw delete_cloudgw]
 
   def index
     render json: CloudGateway.filtered, status: :ok
   end
 
   def show
-    if @gateway = CloudGateway.filtered.find_by(:id => params[:id])
-      render json: @gateway, status: :ok
-    else
-      render json: nil, status: :not_found
-    end
+    render json: @gateway, status: :ok
   end
 
   def create_cloudgw
@@ -18,35 +15,32 @@ class Api::V1::GatewaysController < ApplicationController
   end
 
   def update_cloudgw
-    @gateway = CloudGateway.filtered.find_by(:id => params[:id])
-    if @gateway
-      @gateway.update!(params.permit(:name, :account))
-      render json: @gateway, status: :ok
-    else
-      render json: nil, status: :not_found
-    end
+    @gateway.update!(params.permit(:name, :account))
+    render json: @gateway, status: :ok
   end
 
   def delete_cloudgw
-    @gateway = CloudGateway.filtered.find_by(:id => params[:id])
-    if @gateway
-      @gateway.routes.each(&:destroy!)
-      Certificate.where(:account => @gateway.account).each do |certificate|
-        name = certificate.name
-        certificate.destroy!
-      end
-      @gateway.destroy!
-      render json: nil, status: :no_content
-    else
-      render json: nil, status: :not_found
+    @gateway.routes.each(&:destroy!)
+    Certificate.where(account: @gateway.account).each do |certificate|
+      name = certificate.name
+      certificate.destroy!
     end
+    @gateway.destroy!
+    render json: nil, status: :no_content
   end
 
   def traefik_config
-    if gateway = CloudGateway.find_by(:cloudgw_id => params[:cloudgw_id])
-      render :json => gateway.config, :content_type => 'text/yaml', :status => :ok
+    if gateway = CloudGateway.find_by(cloudgw_id: params[:cloudgw_id])
+      render json: gateway.config, content_type: 'text/yaml', status: :ok
     else
-      render :json => nil, :status => :not_found
+      not_found("CloudGateway with id #{params[:cloudgw_id]}")
     end
+  end
+
+  private
+
+  def set_gateway
+    @gateway = CloudGateway.filtered.find_by(id: params[:id])
+    not_found("CloudGateway with id #{params[:id]}") unless @gateway
   end
 end
