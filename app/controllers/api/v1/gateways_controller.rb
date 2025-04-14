@@ -6,37 +6,29 @@ module Api
       before_action :set_gateway, only: %i[show update_cloudgw delete_cloudgw]
 
       def index
+        set_error_code('017')
         render json: CloudGateway.filtered, status: :ok
       end
 
       def show
+        set_error_code('018')
         render json: @gateway, status: :ok
       end
 
       def create_cloudgw
-        @gateway = CloudGateway.new(params.permit(:name, :account, :cloudgw_id))
-        unless @gateway.save
-          return render_error_response(
-            message: I18n.t('controllers.api.v1.gateways.create.creation_failed'),
-            code: 'ENT009',
-            errors: @gateway.errors.full_messages
-          )
-        end
+        set_error_code('019')
+        @gateway = CloudGateway.create!(params.permit(:name, :account, :cloudgw_id))
         render json: @gateway, status: :created
       end
 
       def update_cloudgw
-        unless @gateway.update(params.permit(:name, :account))
-          return render_error_response(
-            message: I18n.t('controllers.api.v1.gateways.update.updating_failed'),
-            code: 'ENT010',
-            errors: @gateway.errors.full_messages
-          )
-        end
+        set_error_code('020')
+        @gateway.update!(params.permit(:name, :account))
         render json: @gateway, status: :ok
       end
 
       def delete_cloudgw
+        set_error_code('021')
         @gateway.routes.each(&:destroy!)
         Certificate.where(account: @gateway.account).each do |certificate|
           name = certificate.name
@@ -47,20 +39,16 @@ module Api
       end
 
       def traefik_config
-        if (gateway = CloudGateway.find_by(cloudgw_id: params[:cloudgw_id]))
-          render json: gateway.config, content_type: 'text/yaml', status: :ok
-        else
-          render_not_found_response(message: I18n.t('controllers.api.v1.gateways.traefik_config.cloud_gateway_not_found'), code: 'ENT011', data: { message: I18n.t('controllers.api.v1.gateways.traefik_config.cloud_gateway_not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
-        end
+        set_error_code('022')
+        gateway = CloudGateway.find_by!(cloudgw_id: params[:cloudgw_id])
+        render json: gateway.config, content_type: 'text/yaml', status: :ok
       end
 
       private
 
       def set_gateway
-        @gateway = CloudGateway.filtered.find_by(id: params[:id])
-        return if @gateway
-
-        render_not_found_response(message: I18n.t('controllers.api.v1.gateways.set_gateway.not_found'), code: 'ENT012', data: { message: I18n.t('controllers.api.v1.gateways.set_gateway.not_found') }) # TODO: leave 'data' for backward compatibility, remove it in future
+        set_error_code('023')
+        @gateway = CloudGateway.filtered.find(params[:id])
       end
     end
   end

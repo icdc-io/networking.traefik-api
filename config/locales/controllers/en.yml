@@ -1,43 +1,43 @@
 en:
+  errors:
+    cloud_gateway: 
+      record_not_found: 'Bad request, cloud gateway not found'
+    certificate:
+      record_not_found: 'Bad request, certificate not found'
+    service:
+      record_not_found: 'Bad request, service not found'
+    route:
+      record_not_found: 'Bad request, route not found'
+    common:
+      internal_server_error: 'Something went wrong, try again later'
   controllers:
     application:
       jwt:
         decode_error: "Something went wrong. Can't decode JWT token!"
       unauthorized: 'You are not authorized'
       forbidden: 'You are not authorized to perform this action'
-      internal_server_error: 'Something went wrong. Try again later'
     api:
       v1:
         certificates:
           create:
-            creation_failed: 'Certificates creation failed. Invalid entered data'
+            record_invalid: 'Certificates creation failed. Invalid data'
+            rsa_error: 'Certificates creation failed. Invalid data'
+            certificate_error: 'Certificates creation failed. Invalid data'
           update:
-            updating_failed: 'Certificates updating failed. Invalid entered data'
-          set_certificate:
-            not_found: 'Bad request, certificate not found'
-          validate_certificate:
-            invalid_certificate: 'Invalid certificate'
+            record_invalid: 'Certificates updating failed. Invalid data'
+            rsa_error: 'Certificates updating failed. Invalid data'
+            certificate_error: 'Certificates updating failed. Invalid data'
           delete:
-            destroying_failed: 'Certificate deleting failed'
-          download:
-            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
+            invalid_foreign_key: 'Certificate deleting failed'
         gateways:
-          create:
-            creation_failed: 'Cloud gateway creation failed. Invalid entered data'
-          update:
-            updating_failed: 'Cloud gateway updating failed. Invalid entered data'
-          set_gateway:
-            not_found: 'Bad request, cloud gateway not found'
-          traefik_config:
-            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
+          create_cloudgw:
+            record_invalid: 'Cloud gateway creation failed. Invalid data'
+          update_cloudgw:
+            record_invalid: 'Cloud gateway updating failed. Invalid data'
         routes:
           create:
-            creation_failed: 'Route creation failed. Invalid entered data'
-            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
-            service_not_found: Bad request, service not found'
+            record_invalid: 'Route creation failed. Invalid data'
+            invalid_foreign_key: 'Route updating failed. Сertificate does not exist'
           update:
-            updating_failed: 'Route updating failed'
-            certificate_not_found: Bad request, certificate not found'
-            cloud_gateway_not_found: 'Bad request, cloud gateway not found'
-          set_route:
-            not_found: 'Bad request, route not found'
+            record_invalid: 'Route updating failed. Invalid data'
+            invalid_foreign_key: 'Route updating failed. Сertificate does not exist'

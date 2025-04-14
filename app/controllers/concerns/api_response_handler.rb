@@ -7,8 +7,8 @@ module ApiResponseHandler
     render json: { message:, status:, code:, errors:, data: }, status:
   end
 
-  def render_not_found_response(message:, code:, data:)
-    render_error_response(message:, status: 404, code:, data:)
+  def render_not_found_response(message:, code:, errors: [], data: {})
+    render_error_response(message:, status: 404, code:, errors:, data:)
   end
 
   def render_unauthorized_response(message:, code:, data: {})

@@ -22,6 +22,7 @@ module AuthHelper
   end
 
   def decoded_token(token = nil)
+    set_error_code('007')
     JWT.decode(token, Rails.application.secrets.sso_public_key, true, algorithm: 'RS256')[0]
   rescue JWT::DecodeError => e
     render_error_response(message: I18n.t('controllers.application.jwt.decode_error'), status: 500, code: 'ENT020',

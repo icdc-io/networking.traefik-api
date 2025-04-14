@@ -1,47 +1,43 @@
 ru:
+  errors:
+    cloud_gateway: 
+      record_not_found: 'Неверный запрос, облачный шлюз не найден'
+    certificate:
+      record_not_found: 'Неверный запрос, сертификат не найден'
+    service:
+      record_not_found: 'Неверный запрос, сервис не найден'
+    route:
+      record_not_found: 'Неверный запрос, веб-маршрут не найден'
+    common:
+      internal_server_error: 'Что-то пошло не так, попробуйте позже'
   controllers:
     application:
       jwt:
         decode_error: 'Что-то пошло не так. Невозможно декодировать токен JWT!'
       unauthorized: 'Вы не авторизованы'
       forbidden: 'У вас нет прав на выполнение этого действия'
-      internal_server_error: 'Что-то пошло не так. Попробуйте еще раз позже'
     api:
       v1:
         certificates:
           create:
-            creation_failed: 'Ошибка создания сертификата. Введенные данные некорректны'
+            record_invalid: 'Ошибка создания сертификата. Данные некорректны'
+            rsa_error: 'Ошибка создания сертификата. Данные некорректны'
+            certificate_error: 'Ошибка создания сертификата. Данные некорректны'
           update:
-            updating_failed: 'Ошибка обновления сертификата. Введенные данные некорректны'
-          set_certificate:
-            not_found: 'Неверный запрос, сертификат не найден'
-          validate_certificate:
-            invalid_certificate: 'Недействительный сертификат'
+            record_invalid: 'Ошибка обновления сертификата. Данные некорректны'
+            rsa_error: 'Ошибка обновления сертификата. Данные некорректны'
+            certificate_error: 'Ошибка обновления сертификата. Данные некорректны'
           delete:
-            destroying_failed: 'Ошибка удаления сертификата'
-          download:
-            cloud_gateway_not_found: 'Неверный запрос, облачный шлюз не найден'
+            invalid_foreign_key: 'Ошибка удаления сертификата'
         gateways:
-          create:
-            creation_failed: 'Ошибка создания облачного шлюза. Введенные данные некорректны'
-          update:
-            updating_failed: 'Ошибка обновления облачного шлюза. Введенные данные некорректны'
-          set_gateway:
-            not_found: 'Неверный запрос, облачный шлюз не найден'
-          traefik_config:
-            cloud_gateway_not_found: 'Неверный запрос, облачный шлюз не найден'
+          create_cloudgw:
+            record_invalid: 'Ошибка создания облачного шлюза. Данные некорректны'
+          update_cloudgw:
+            record_invalid: 'Ошибка обновления облачного шлюза. Данные некорректны'
         routes:
           create:
-            creation_failed: 'Ошибка создания веб-маршрута. Введенные данные некорректны'
-            cloud_gateway_not_found: 'Неверный запрос, облачный шлюз не найден'
-            service_not_found: 'Неверный запрос, сервис не найден'
+            record_invalid: 'Ошибка создания веб-маршрута. Данные некорректны'
+            invalid_foreign_key: 'Ошибка обновления веб-маршрута. Выбранный сертификат не существует'
           update:
-            updating_failed: 'Ошибка обновления веб-маршрута. Введенные данные некорректны'
-            certificate_not_found: 'Неверный запрос, сертификат не найден'
-            cloud_gateway_not_found: 'Неверный запрос, облачный шлюз не найден'
-          set_route:
-            not_found: 'Неверный запрос, веб-маршрут не найден'
-
-
-      
-      
+            record_invalid: 'Ошибка обновления веб-маршрута. Данные некорректны'
+            invalid_foreign_key: 'Ошибка обновления веб-маршрута. Выбранный сертификат не существует'
