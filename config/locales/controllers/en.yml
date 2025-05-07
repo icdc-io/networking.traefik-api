@@ -1,0 +1,43 @@
+en:
+  errors:
+    cloud_gateway: 
+      record_not_found: 'Bad request, cloud gateway not found'
+    certificate:
+      record_not_found: 'Bad request, certificate not found'
+    service:
+      record_not_found: 'Bad request, service not found'
+    route:
+      record_not_found: 'Bad request, route not found'
+    common:
+      internal_server_error: 'Something went wrong, try again later'
+  controllers:
+    application:
+      jwt:
+        decode_error: "Something went wrong. Can't decode JWT token!"
+      unauthorized: 'You are not authorized'
+      forbidden: 'You are not authorized to perform this action'
+    api:
+      v1:
+        certificates:
+          create:
+            record_invalid: 'Certificates creation failed. Invalid data'
+            rsa_error: 'Certificates creation failed. Invalid data'
+            certificate_error: 'Certificates creation failed. Invalid data'
+          update:
+            record_invalid: 'Certificates updating failed. Invalid data'
+            rsa_error: 'Certificates updating failed. Invalid data'
+            certificate_error: 'Certificates updating failed. Invalid data'
+          delete:
+            invalid_foreign_key: 'Certificate deleting failed'
+        gateways:
+          create_cloudgw:
+            record_invalid: 'Cloud gateway creation failed. Invalid data'
+          update_cloudgw:
+            record_invalid: 'Cloud gateway updating failed. Invalid data'
+        routes:
+          create:
+            record_invalid: 'Route creation failed. Invalid data'
+            invalid_foreign_key: 'Route updating failed. Сertificate does not exist'
+          update:
+            record_invalid: 'Route updating failed. Invalid data'
+            invalid_foreign_key: 'Route updating failed. Сertificate does not exist'

@@ -2,6 +2,7 @@
 
 module Authenticator
   def config
+    set_error_code('008')
     require 'yaml'
     config_template = ERB.new Rails.root.join('config/icdc_credentials.yml.erb').read
     YAML.load config_template.result(binding)

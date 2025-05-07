@@ -1,0 +1,43 @@
+ru:
+  errors:
+    cloud_gateway: 
+      record_not_found: 'Неверный запрос, облачный шлюз не найден'
+    certificate:
+      record_not_found: 'Неверный запрос, сертификат не найден'
+    service:
+      record_not_found: 'Неверный запрос, сервис не найден'
+    route:
+      record_not_found: 'Неверный запрос, веб-маршрут не найден'
+    common:
+      internal_server_error: 'Что-то пошло не так, попробуйте позже'
+  controllers:
+    application:
+      jwt:
+        decode_error: 'Что-то пошло не так. Невозможно декодировать токен JWT!'
+      unauthorized: 'Вы не авторизованы'
+      forbidden: 'У вас нет прав на выполнение этого действия'
+    api:
+      v1:
+        certificates:
+          create:
+            record_invalid: 'Ошибка создания сертификата. Данные некорректны'
+            rsa_error: 'Ошибка создания сертификата. Данные некорректны'
+            certificate_error: 'Ошибка создания сертификата. Данные некорректны'
+          update:
+            record_invalid: 'Ошибка обновления сертификата. Данные некорректны'
+            rsa_error: 'Ошибка обновления сертификата. Данные некорректны'
+            certificate_error: 'Ошибка обновления сертификата. Данные некорректны'
+          delete:
+            invalid_foreign_key: 'Ошибка удаления сертификата'
+        gateways:
+          create_cloudgw:
+            record_invalid: 'Ошибка создания облачного шлюза. Данные некорректны'
+          update_cloudgw:
+            record_invalid: 'Ошибка обновления облачного шлюза. Данные некорректны'
+        routes:
+          create:
+            record_invalid: 'Ошибка создания веб-маршрута. Данные некорректны'
+            invalid_foreign_key: 'Ошибка обновления веб-маршрута. Выбранный сертификат не существует'
+          update:
+            record_invalid: 'Ошибка обновления веб-маршрута. Данные некорректны'
+            invalid_foreign_key: 'Ошибка обновления веб-маршрута. Выбранный сертификат не существует'
