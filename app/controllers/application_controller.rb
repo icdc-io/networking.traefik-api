@@ -4,12 +4,12 @@ require 'json/jwt'
 require 'rbac'
 
 class ApplicationController < ActionController::API
-  around_action :switch_locale
   include ApiResponseHandler
   include ApiExceptionsHandler
   include AuthHelper
   include Rbac
 
+  around_action :switch_locale
   before_action :authorize, :authorize_action, except: %i[traefik_config download]
 
   def authorize
@@ -60,7 +60,7 @@ class ApplicationController < ActionController::API
   end
 
   def extract_locale_from_accept_language_header
-    request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first
+    request.env['HTTP_ACCEPT_LANGUAGE']&.scan(/^[a-z]{2}/)&.first
   end
 
   def fetch_account
