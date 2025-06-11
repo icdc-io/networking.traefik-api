@@ -7,17 +7,17 @@ module Api
       before_action :check_params, only: %i[create update]
 
       def index
-        set_error_code('024')
+        set_error_code('023')
         render json: Route.filtered, status: :ok
       end
 
       def show
-        set_error_code('025')
+        set_error_code('024')
         render json: { route: @route }, status: :ok
       end
 
       def create
-        set_error_code('026')
+        set_error_code('025')
         services = params[:route].delete(:services)
         healthcheck_params = params[:route].delete(:healthcheck) if params[:route][:healthcheck_enabled]
         route_params = route_create_params
@@ -56,7 +56,7 @@ module Api
       end
 
       def update
-        set_error_code('027')
+        set_error_code('026')
         services = @route_params.delete(:services)
         Route.transaction do
           update_certificate
@@ -75,7 +75,7 @@ module Api
       end
 
       def destroy
-        set_error_code('028')
+        set_error_code('027')
         @route.destroy!
         render json: nil, status: :no_content
       end
@@ -83,7 +83,7 @@ module Api
       private
 
       def set_route
-        set_error_code('029')
+        set_error_code('028')
         @route = Route.filtered.find(params[:id])
       end
 
@@ -96,7 +96,7 @@ module Api
       end
 
       def update_certificate
-        set_error_code('030')
+        set_error_code('029')
         certificate_id = @route_params[:certificate_id]
         if certificate_id
           @route.update!(certificate_id:) if Certificate.filtered.find_by(id: certificate_id)

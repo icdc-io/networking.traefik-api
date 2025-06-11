@@ -29,7 +29,8 @@ class ApplicationController < ActionController::API
     set_error_code('002')
     return if Rbac::Authorizer.new('./config/rbac/rbac_routes.yml').role_allows?(request)
 
-    render_forbidden_response(message: I18n.t('controllers.application.forbidden'), code: 'ENT002', data: I18n.t('controllers.application.forbidden')) # TODO: leave 'data' for backward compatibility, remove it in future
+    render_forbidden_response(message: I18n.t('controllers.application.forbidden'), code:,
+                              data: I18n.t('controllers.application.forbidden')) # TODO: leave 'data' for backward compatibility, remove it in future
   end
 
   def switch_locale(&)
@@ -90,6 +91,7 @@ class ApplicationController < ActionController::API
 
   def unauthorized
     set_error_code('006')
-    render_unauthorized_response(message: I18n.t('controllers.application.unauthorized'), code: 'ENT001', data: { message: I18n.t('controllers.application.unauthorized') }) # TODO: leave 'data' for backward compatibility, remove it in future
+    render_unauthorized_response(message: I18n.t('controllers.application.unauthorized'), code:,
+                                 data: { message: I18n.t('controllers.application.unauthorized') }) # TODO: leave 'data' for backward compatibility, remove it in future
   end
 end
