@@ -51,6 +51,7 @@ Layout/LineLength:
     - 'Rakefile'
   AllowedPatterns:
     - '(SELECT|INSERT|UPDATE|DELETE)'
+    - '^\s*#'
   Max: 80
 ####### Metrics #######
 Metrics/BlockLength:

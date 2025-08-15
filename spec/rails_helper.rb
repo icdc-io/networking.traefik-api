@@ -135,3 +135,8 @@ JWT_LOCATION_OPERATOR = 'Bearer ' + JWT.encode({
                                                  email:    'test_location_operator@test.com',
                                                  name:     'Test Location Operator'
                                                }, private_key, 'RS256')
+ENV['ACCOUNT_HEADER']  = 'x-icdc-account'
+ENV['ROLE_HEADER']     = 'x-icdc-role'
+ENV['LOCATION_DOMAIN'] = 'dcz.lab.icdc.io'
+ENV['SCOPES_MAP_FILE'] = 'config/rbac/rbac_scopes.yml'
+ENV['ROUTES_MAP_FILE'] = 'config/rbac/rbac_routes.yml'

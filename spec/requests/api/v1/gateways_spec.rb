@@ -443,10 +443,10 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       expect(yaml["tls"]).to eq(
         "certificates" => [
           {
-            "certFile" => "#{ENV.fetch('TRAEFIK_CERT_PATH',
-                                       nil)}/certificates/#{gateway.cloudgw_id}/#{cert.name}/#{cert.cert_path.split('/').last}",
-            "keyFile"  => "#{ENV.fetch('TRAEFIK_CERT_PATH',
-                                       nil)}/certificates/#{gateway.cloudgw_id}/#{cert.name}/#{cert.key_path.split('/').last}"
+            "certFile" => "#{ENV.fetch('TRAEFIK_CERT_PATH', '/etc/traefik')}" \
+                          "/certificates/#{gateway.cloudgw_id}/#{cert.name}/#{cert.cert_path.split('/').last}",
+            "keyFile"  => "#{ENV.fetch('TRAEFIK_CERT_PATH', '/etc/traefik')}" \
+                          "/certificates/#{gateway.cloudgw_id}/#{cert.name}/#{cert.key_path.split('/').last}"
           }
         ]
       )
