@@ -29,12 +29,8 @@ module Api
       def delete_cloudgw
         set_error_code("020")
         @gateway.routes.each(&:destroy!)
-        Certificate.where(account: @gateway.account).find_each do |certificate|
-          certificate.name
-          certificate.destroy!
-        end
+        Certificate.where(account: @gateway.account).find_each(&:destroy!)
         @gateway.destroy!
-        render json: nil, status: :no_content
       end
 
       def traefik_config

@@ -4,19 +4,24 @@ class CloudGateway < ApplicationRecord
   validates :cloudgw_id, uniqueness: true
 
   after_destroy do
-    FileUtils.rm_f(File.join(ENV.fetch("USERS_CERT_PATH_ARCH", "certificates/download"),
-                             "#{cloudgw_id}.zip"))
+    FileUtils.rm_f(
+      File.join(
+        ENV.fetch("USERS_CERT_PATH_ARCH", "certificates/download"),
+        "#{cloudgw_id}.zip"
+      )
+    )
   end
 
+  # TODO: Move this to Config class
   def config
     generated_config = {}
     generated_config["http"] = http
     if routes.where(tls_termination: "passthrough").any?
-      generated_config["tcp"] =
-        tcp
+      generated_config["tcp"] = tcp
     end
-    mw = routes.where(insecure: "redirect").where.not(tls_termination: nil).any? ? middlewares : []
-    generated_config["http"]["middlewares"] = mw unless mw.empty?
+    if routes.where(insecure: "redirect").where.not(tls_termination: nil).any?
+      generated_config["http"]["middlewares"] = middlewares
+    end
     generated_config["tls"] = tls if Certificate.where(account:).any?
     generated_config.delete_if { |_key, value| value.empty? }.to_yaml.strip
   end
@@ -30,16 +35,10 @@ class CloudGateway < ApplicationRecord
   def http
     http_block = { "routers" => internal_ping_router, "services" => {} }
 
-    routes.where(tls_termination: [ "re-encrypt", "edge",
-                                    nil ]).find_each do |route|
-      next if route.services.empty?
-
-      http_block["routers"].merge! routers_http(route)
-      http_block["services"].merge! services_section(route, :http)
-    end
-
-    routes.where(tls_termination: "passthrough",
-                 insecure:        "redirect").find_each do |route|
+    routes
+      .where(tls_termination: [ "re-encrypt", "edge", nil ])
+      .or(routes.where(tls_termination: "passthrough", insecure: "redirect"))
+      .find_each do |route|
       next if route.services.empty?
 
       http_block["routers"].merge! routers_http(route)
@@ -55,21 +54,28 @@ class CloudGateway < ApplicationRecord
       "rule"    => rule(route),
       "tls"     => route.certificate ? true : { "certResolver" => "default" }
     }
+
     if route.insecure == "redirect" && route.tls_termination
-      router["middlewares"] =
-        [ "#{route.name}-redirect" ]
+      router["middlewares"] = [ "#{route.name}-redirect" ]
     end
 
-    outp = { "#{route.name}-http" => router.except("tls").merge("entryPoints" => [ "web" ]) }
+    outp = { "#{route.name}-http" => router.except("tls")
+                                           .merge("entryPoints" => [ "web" ]) }
+
     if route.tls_termination.in? %w[re-encrypt edge]
       outp["#{route.name}-https"] =
         router.except("middlewares").merge("entryPoints" => [ "websecure" ])
     end
+
     outp
   end
 
   def rule(route)
-    route.path == "/" ? "Host(`#{route.hostname}`)" : "Host(`#{route.hostname}`) && PathPrefix(`#{route.path}`)"
+    if route.path == "/"
+      "Host(`#{route.hostname}`)"
+    else
+      "Host(`#{route.hostname}`) && PathPrefix(`#{route.path}`)"
+    end
   end
 
   def tcp
@@ -81,9 +87,7 @@ class CloudGateway < ApplicationRecord
       tcp_block["routers"][route.name] = {
         "service" => service_name(route),
         "rule"    => "HostSNI(`#{route.hostname}`)",
-        "tls"     => {
-          "passthrough" => true
-        }
+        "tls"     => { "passthrough" => true }
       }
       tcp_block["services"].merge!(services_section(route, :tcp))
     end
@@ -94,6 +98,7 @@ class CloudGateway < ApplicationRecord
   def services_section(route, section)
     services = {}
     route_service = route.routes_services.first
+
     if route_service.balance_type == "loadbalancer"
       services[route_service.name] = {
         "loadBalancer" => {
@@ -114,25 +119,25 @@ class CloudGateway < ApplicationRecord
         }
       end
     end
+
     services.delete_if { |_key, value| value.empty? }
+
     if route.healthcheck_enabled
-      healthcheck_section(services,
-                          route.healthcheck)
+      healthcheck_section(services, route.healthcheck)
     end
+
     services
   end
 
   def healthcheck_section(lb_config, healthcheck)
-    healthcheck = healthcheck.attributes.except("id", "route_id", "created_at",
-                                                "updated_at").compact
-    if healthcheck["interval"]
-      healthcheck["interval"] =
-        "#{healthcheck['interval']}s"
-    end
-    if healthcheck["timeout"]
-      healthcheck["timeout"] =
-        "#{healthcheck['timeout']}s"
-    end
+    healthcheck =
+      healthcheck.attributes
+                 .except("id", "route_id", "created_at", "updated_at")
+                 .compact
+
+    healthcheck["interval"] += "s" if healthcheck["interval"]
+    healthcheck["timeout"]  += "s" if healthcheck["timeout"]
+
     healthcheck["followRedirects"] = healthcheck.delete("follow_redirects")
 
     healthcheck = healthcheck.compact.delete_if { |_, v| [ "", {} ].include? v }
@@ -152,19 +157,23 @@ class CloudGateway < ApplicationRecord
     when :http
       schema = schema(route)
       service.addresses(ip_version).split(",").map do |ip|
-        if route.target_port
-          { "url" => "#{schema}://#{ip}:#{route.target_port.to_i}" }
-        else
-          { "url" => "#{schema}://#{ip}" }
-        end
+        {
+          "url" => if route.target_port
+                     "#{schema}://#{ip}:#{route.target_port.to_i}"
+                   else
+                     "#{schema}://#{ip}"
+                   end
+        }
       end
     when :tcp
       service.addresses(ip_version).split(",").map do |ip|
-        if route.target_port
-          { "address" => "#{ip}:#{route.target_port.to_i}" }
-        else
-          { "address" => ip.to_s }
-        end
+        {
+          "address" => if route.target_port
+                         "#{ip}:#{route.target_port.to_i}"
+                       else
+                         ip.to_s
+                       end
+        }
       end
     end
   end
@@ -186,41 +195,49 @@ class CloudGateway < ApplicationRecord
 
   def middlewares
     block = {}
+    redirect_scheme = {
+      "redirectScheme" => {
+        "scheme"    => "https",
+        "permanent" => true
+      }
+    }
     routes.where(insecure: "redirect").find_each do |route|
       next if route.services.empty? || !route.tls_termination
 
-      block["#{route.name}-redirect"] = {
-        "redirectScheme" => {
-          "scheme"    => "https",
-          "permanent" => true
-        }
-      }
+      block["#{route.name}-redirect"] = redirect_scheme
     end
     block.delete_if { |_key, value| value.empty? }
   end
 
   def tls
-    certificates_path = "#{ENV.fetch('TRAEFIK_CERT_PATH',
-                                     '/etc/traefik')}/certificates/#{cloudgw_id}/"
+    certificates_path = "#{ENV.fetch('TRAEFIK_CERT_PATH', '/etc/traefik')}" \
+                        "/certificates/#{cloudgw_id}/"
     {
       "certificates" => Certificate.where(account:).map do |certificate|
         {
-          "certFile" => "#{certificates_path}#{certificate.name}/#{certificate.cert_path.split('/').last}",
-          "keyFile"  => "#{certificates_path}#{certificate.name}/#{certificate.key_path.split('/').last}"
+          "certFile" => "#{certificates_path}#{certificate.name}/" \
+                        "#{certificate.cert_path.split('/').last}",
+          "keyFile"  => "#{certificates_path}#{certificate.name}/" \
+                        "#{certificate.key_path.split('/').last}"
         }
       end
     }
   end
 
   def service_name(route)
-    route.services.one? ? route.routes_services.first.name : route.routes_services.first.group_name
+    if route.services.one?
+      route.routes_services.first.name
+    else
+      route.routes_services.first.group_name
+    end
   end
 
   def internal_ping_router
     {
       "alb-ping-internal" => {
         "service"     => "ping@internal",
-        "rule"        => "Host(`#{account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) && Path(`/alb/ping`)",
+        "rule"        => "Host(`#{account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) " \
+                         "&& Path(`/alb/ping`)",
         "entryPoints" => [ "web" ]
       }
     }

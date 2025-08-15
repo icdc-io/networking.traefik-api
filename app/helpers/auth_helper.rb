@@ -3,7 +3,8 @@ module AuthHelper
   def get_jwt_token(login, password)
     response = RestClient::Request.execute(
       method:     :post,
-      url:        "#{ENV.fetch('SSO_URL')}/realms/#{ENV.fetch('SSO_REALM')}/protocol/openid-connect/token",
+      url:        "#{ENV.fetch('SSO_URL')}/realms/#{ENV.fetch('SSO_REALM')}" \
+                  "/protocol/openid-connect/token",
       payload:    request_payload(login, password),
       verify_ssl: Rails.env.production?
     )
@@ -25,7 +26,8 @@ module AuthHelper
                algorithm: "RS256")[0]
   rescue JWT::DecodeError => error
     render_error_response(
-      message: I18n.t("controllers.application.jwt.decode_error"), status: 500, code:, errors: [ error ]
+      message: I18n.t("controllers.application.jwt.decode_error"),
+      status: 500, code:, errors: [ error ]
     )
     nil
   end

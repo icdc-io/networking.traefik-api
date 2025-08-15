@@ -9,40 +9,41 @@ class ServicesAccessJob < ApplicationJob
 
   private
 
-  def fetch_services
-    services = request_compute("services",
-                               "expand=resources&attributes=networks,evm_owner,tenant")
-    services.map do |service|
-      {
-        ext_id:      service["id"],
-        name:        service["name"],
-        owner:       service.dig("evm_owner", "email"),
-        account:     service["tenant"]["name"],
-        ipaddresses: service["networks"].collect do |network|
-          network["allocations"]
-        end
-                                           .flatten.select do |alloc|
-          alloc if alloc["type"] == "nic"
-        end
-                                           .collect { |alloc| alloc["ip"] }.flatten.compact.reject(&:empty?).compact.join(","),
-        type:        service["type"],
-        retired?:    service["retired"] || !service["retirement_state"].nil?
-      }
-    end
-  end
-
   def refresh
-    services = fetch_services
-    to_delete = []
-    to_delete << Service.where.not(ext_id: services.pluck(:ext_id))
-    to_delete << Service.where(ext_id: services.select do |x|
-      x if x[:retired?] || x[:type] == "ServiceAnsiblePlaybook"
-    end.pluck(:ext_id))
-    to_delete.flatten.each(&:destroy)
-    services.reject! do |x|
+    services = fetch_services.reject do |x|
       x[:retired?] || x[:type] == "ServiceAnsiblePlaybook"
     end
+    Service.where.not(ext_id: services.pluck(:ext_id)).destroy_all
     find_or_build(services)
+  end
+
+  def fetch_services
+    services = request_compute(
+      "services",
+      "expand=resources&attributes=networks,evm_owner,tenant"
+    )
+
+    services.map { |service| parse_raw_service(service) }
+  end
+
+  def parse_raw_service(service)
+    {
+      ext_id:      service["id"],
+      name:        service["name"],
+      owner:       service.dig("evm_owner", "email"),
+      account:     service["tenant"]["name"],
+      ipaddresses: parse_id_addresses(service["networks"]),
+      type:        service["type"],
+      retired?:    service["retired"] || !service["retirement_state"].nil?
+    }
+  end
+
+  def parse_id_addresses(networks)
+    networks.flat_map do |network|
+      network["allocations"].filter_map do |alloc|
+        alloc["type"] == "nic" && alloc["ip"].presence
+      end
+    end.join(",")
   end
 
   def find_or_build(services_opts)

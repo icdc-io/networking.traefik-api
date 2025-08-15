@@ -14,8 +14,11 @@ class LoadServicesJob < ApplicationJob
   end
 
   def service_list(limit = 50, offset = 0, iter = 0)
-    response = request_compute("services",
-                               "expand=resources&attributes=networks,evm_owner,tenant&offset=#{offset}&limit=#{limit}")
+    response = request_compute(
+      "services",
+      "expand=resources&attributes=networks,evm_owner,tenant&" \
+      "offset=#{offset}&limit=#{limit}"
+    )
     if response.code == 200
       response = JSON.parse response.body
       return if offset > response["count"]
@@ -35,8 +38,8 @@ class LoadServicesJob < ApplicationJob
     service = Service.find_by(ext_id: service_opts[:ext_id])
     if service
       Rails.logger.debug do
-        "service updated: #{service.attributes} -> #{service_opts.except(:type,
-                                                                         :retired?)}"
+        "service updated: #{service.attributes} -> " \
+          "#{service_opts.except(:type, :retired?)}"
       end
       unless service_opts[:ipaddresses].empty?
         service.update!(service_opts.except(:type,
@@ -55,13 +58,19 @@ class LoadServicesJob < ApplicationJob
       name:        service["name"],
       owner:       service.dig("evm_owner", "email"),
       account:     service["tenant"]["name"],
-      ipaddresses: service["networks"].pluck("allocations")
-                                      .flatten.select do |alloc|
-        alloc if alloc["type"] == "nic"
-      end
-                                      .pluck("ip").flatten.compact.reject(&:empty?).compact.join(","),
+      ipaddresses: parse_id_addresses(service["networks"]),
       type:        service["type"],
       retired?:    service["retired"] || !service["retirement_state"].nil?
     }
+  end
+
+  private
+
+  def parse_id_addresses(networks)
+    networks.flat_map do |network|
+      network["allocations"].filter_map do |alloc|
+        alloc["type"] == "nic" && alloc["ip"].presence
+      end
+    end.join(",")
   end
 end

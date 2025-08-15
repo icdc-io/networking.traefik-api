@@ -29,8 +29,12 @@ module Api
           @route = Route.create!(route_params)
 
           if @route.healthcheck_enabled
-            @route.create_healthcheck!(healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :method,
-                                                                 :follow_redirects, headers: {}))
+            @route.create_healthcheck!(
+              healthcheck_params.permit(
+                :path, :scheme, :hostname, :port, :interval, :timeout, :method,
+                :follow_redirects, headers: {}
+              )
+            )
           end
 
           name = RoutesService.generate_name
@@ -80,7 +84,6 @@ module Api
       def destroy
         set_error_code("027")
         @route.destroy!
-        render json: nil, status: :no_content
       end
 
       private
@@ -115,20 +118,25 @@ module Api
       end
 
       def params_white_list
-        %w[name hostname path target_port insecure tls_termination labels cloud_gateway_id owner source_proto
-           destination_proto ip_version healthcheck_enabled]
+        %w[name hostname path target_port insecure tls_termination labels
+           cloud_gateway_id owner source_proto destination_proto ip_version
+           healthcheck_enabled]
       end
 
       def healthcheck_params
         healthcheck_params = @route_params.delete(:healthcheck)
-        healthcheck_params.permit(:path, :scheme, :hostname, :port, :interval, :timeout, :method, :follow_redirects,
-                                  headers: {})
+        healthcheck_params.permit(
+          :path, :scheme, :hostname, :port, :interval, :timeout, :method,
+          :follow_redirects, headers: {}
+        )
       end
 
       def route_create_params
-        params.require(:route).permit(:name, :hostname, :path, :target_port, :insecure, :tls_termination, :labels,
-                                      :cloud_gateway_id, :owner, :source_proto, :destination_proto, :ip_version,
-                                      :certificate_id, :healthcheck_enabled)
+        params.require(:route).permit(
+          :name, :hostname, :path, :target_port, :insecure, :tls_termination,
+          :labels, :cloud_gateway_id, :owner, :source_proto, :destination_proto,
+          :ip_version, :certificate_id, :healthcheck_enabled
+        )
       end
     end
   end

@@ -18,7 +18,8 @@ module ApiExceptionsHandler
     yield
   rescue ActiveRecord::RecordNotFound => error
     handle_record_not_found(error)
-  rescue ActiveModel::ValidationError, ActiveRecord::RecordInvalid, ArgumentError, ActiveRecord::InvalidForeignKey,
+  rescue ActiveModel::ValidationError, ActiveRecord::RecordInvalid,
+         ArgumentError, ActiveRecord::InvalidForeignKey,
          OpenSSL::PKey::RSAError, OpenSSL::X509::CertificateError => error
     handle_validation_error(error)
   rescue ActionController::ParameterMissing => error
@@ -31,7 +32,9 @@ module ApiExceptionsHandler
 
   def handle_record_not_found(exception)
     message = I18n.t(error_path(exception))
-    render_not_found_response(message:, errors: [ exception ], code:, data: { message: }) # TODO: leave 'data' for backward compatibility, remove it in future
+    render_not_found_response(
+      message:, errors: [ exception ], code:, data: { message: }
+    ) # TODO: leave 'data' for backward compatibility, remove it in future
   end
 
   def handle_validation_error(exception)
@@ -46,7 +49,8 @@ module ApiExceptionsHandler
   def handle_standard_error(exception)
     log_exception(exception)
     render_error_response(
-      message: I18n.t("errors.common.internal_server_error"), errors: [ exception ], status: 500, code:
+      message: I18n.t("errors.common.internal_server_error"),
+      errors: [ exception ], status: 500, code:
     )
   end
 

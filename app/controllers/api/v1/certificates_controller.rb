@@ -16,8 +16,9 @@ module Api
 
       def create
         set_error_code("010")
-        certificate_params = params.require("certificate").permit("cert",
-                                                                  "key", "ca", "dest_ca", "owner", "name")
+        certificate_params =
+          params.require("certificate")
+                .permit("cert", "key", "ca", "dest_ca", "owner", "name")
         certificate = Certificate.store(certificate_params)
         render json: certificate, status: :created
       end
@@ -26,8 +27,8 @@ module Api
         set_error_code("011")
         if params["certificate"]
           @certificate.update_content(
-            params.require("certificate").permit("cert", "key", "ca",
-                                                 "dest_ca", "owner", "name")
+            params.require("certificate")
+                  .permit("cert", "key", "ca", "dest_ca", "owner", "name")
           )
         end
         render json: @certificate, status: :ok
@@ -36,16 +37,20 @@ module Api
       def delete
         set_error_code("012")
         @certificate.destroy!
-        render json: nil, status: :no_content
       end
 
       def download
         set_error_code("013")
-        @cloudgw = CloudGateway.find_by!(cloudgw_id: params[:cloudgw_id])
-        send_file File.join(
-          ENV.fetch("USERS_CERT_PATH_ARCH", "certificates/download"),
-          "#{@cloudgw.cloudgw_id}.zip"
-        )
+        cloudgw_id = params[:cloudgw_id]
+        if CloudGateway.exists?(cloudgw_id:)
+          return send_file File.join(
+            ENV.fetch("USERS_CERT_PATH_ARCH", "certificates/download"),
+            "#{cloudgw_id}.zip"
+          )
+        end
+
+        message = I18n.t("errors.cloud_gateway.record_not_found")
+        render_not_found_response(message:, code: "031", data: { message: })
       end
 
       private
