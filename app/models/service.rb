@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class Service < ApplicationRecord
   include RequestHelper
 
@@ -7,11 +5,15 @@ class Service < ApplicationRecord
   has_many :routes, through: :routes_services
 
   def addresses(ip_type)
-    require 'ipaddr'
+    require "ipaddr"
     if ip_type.to_i == 4
-      ipaddresses.split(',').select { |ip| ip if IPAddr.new(ip).ipv4? }.join(',')
+      ipaddresses.split(",").select do |ip|
+        ip if IPAddr.new(ip).ipv4?
+      end.join(",")
     else
-      ipaddresses.split(',').select { |ip| ip if IPAddr.new(ip).ipv6? }.join(',')
+      ipaddresses.split(",").select do |ip|
+        ip if IPAddr.new(ip).ipv6?
+      end.join(",")
     end
   end
 end

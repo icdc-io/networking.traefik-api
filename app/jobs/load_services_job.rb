@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class LoadServicesJob < ApplicationJob
   include RequestHelper
 
@@ -16,12 +14,13 @@ class LoadServicesJob < ApplicationJob
   end
 
   def service_list(limit = 50, offset = 0, iter = 0)
-    response = request_compute('services', "expand=resources&attributes=networks,evm_owner,tenant&offset=#{offset}&limit=#{limit}")
+    response = request_compute("services",
+                               "expand=resources&attributes=networks,evm_owner,tenant&offset=#{offset}&limit=#{limit}")
     if response.code == 200
       response = JSON.parse response.body
-      return if offset > response['count']
+      return if offset > response["count"]
 
-      @services << response['resources']
+      @services << response["resources"]
       service_list(limit, offset + limit)
     else
       return if iter > 4 # to avoid infinity loop
@@ -31,12 +30,18 @@ class LoadServicesJob < ApplicationJob
   end
 
   def store_or_update_service(service_opts)
-    return if service_opts[:type] == 'ServiceAnsiblePlaybook'
+    return if service_opts[:type] == "ServiceAnsiblePlaybook"
 
     service = Service.find_by(ext_id: service_opts[:ext_id])
     if service
-      Rails.logger.debug { "service updated: #{service.attributes} -> #{service_opts.except(:type, :retired?)}" }
-      service.update!(service_opts.except(:type, :retired?)) unless service_opts[:ipaddresses].empty?
+      Rails.logger.debug do
+        "service updated: #{service.attributes} -> #{service_opts.except(:type,
+                                                                         :retired?)}"
+      end
+      unless service_opts[:ipaddresses].empty?
+        service.update!(service_opts.except(:type,
+                                            :retired?))
+      end
     else
       service_opts.except!(:type, :retired?)
       Rails.logger.debug { "a new service stored: #{service_opts}" }
@@ -46,15 +51,17 @@ class LoadServicesJob < ApplicationJob
 
   def parse_raw_service(service)
     {
-      ext_id: service['id'],
-      name: service['name'],
-      owner: service.dig('evm_owner', 'email'),
-      account: service['tenant']['name'],
-      ipaddresses: service['networks'].pluck('allocations')
-                                      .flatten.select { |alloc| alloc if alloc['type'] == 'nic' }
-                                      .pluck('ip').flatten.compact.reject(&:empty?).compact.join(','),
-      type: service['type'],
-      retired?: service['retired'] || !service['retirement_state'].nil?
+      ext_id:      service["id"],
+      name:        service["name"],
+      owner:       service.dig("evm_owner", "email"),
+      account:     service["tenant"]["name"],
+      ipaddresses: service["networks"].pluck("allocations")
+                                      .flatten.select do |alloc|
+        alloc if alloc["type"] == "nic"
+      end
+                                      .pluck("ip").flatten.compact.reject(&:empty?).compact.join(","),
+      type:        service["type"],
+      retired?:    service["retired"] || !service["retirement_state"].nil?
     }
   end
 end
