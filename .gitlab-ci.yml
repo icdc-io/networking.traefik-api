@@ -1,0 +1,121 @@
+stages:
+  - build
+  - test
+  - clear
+variables:
+  IMAGE_NAME: $CI_PROJECT_NAME
+  IMAGE_TAG: $CI_PIPELINE_ID
+  IMAGE_FULL_NAME: artifactory.icz.icdc.io/sys-docker/telemetry/$CI_PROJECT_NAME:$CI_PIPELINE_ID
+.default_rules: &default_rules
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && ( $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" )
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "master"
+build:
+  tags:
+    - testing
+  stage: build
+  script:
+    - echo $IMAGE_NAME
+    - echo $IMAGE_TAG
+    - echo $IMAGE_FULL_NAME
+    - echo "Building image..."
+    - podman build -t $IMAGE_NAME:$IMAGE_TAG .
+    - podman tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_FULL_NAME
+    - podman push $IMAGE_FULL_NAME
+  !!merge <<: *default_rules 
+rubocop:
+  tags:
+    - testing
+  stage: test
+  before_script:
+    - touch rubocop_report.html
+    - chmod a+w rubocop_report.html
+  script:
+    - podman run --rm --name $CI_PROJECT_NAME -v ./rubocop_report.html:/rubocop_report.html:z $IMAGE_FULL_NAME sh -c "bin/rubocop -f p -f h -o /rubocop_report.html"
+  artifacts:
+    paths:
+      - rubocop_report.html
+    expire_in: 1 week
+    when: always
+  allow_failure: false
+  !!merge <<: *default_rules 
+reek:
+  tags:
+    - testing
+  stage: test
+  before_script:
+    - touch reek_report.html
+    - chmod a+w reek_report.html
+  script:
+    - podman run --rm --name $CI_PROJECT_NAME -v ./reek_report.html:/reek_report.html:z $IMAGE_FULL_NAME sh -c "bundle exec reek -f html . > /reek_report.html"
+  artifacts:
+    paths:
+      - reek_report.html
+    expire_in: 1 week
+    when: always
+  allow_failure: false
+  !!merge <<: *default_rules 
+brakeman:
+  tags:
+    - testing
+  stage: test
+  before_script:
+    - touch brakeman_report.html
+    - chmod a+w brakeman_report.html
+  script:
+    - podman run --rm --name $CI_PROJECT_NAME -v ./brakeman_report.html:/brakeman_report.html:z $IMAGE_FULL_NAME sh -c "bundle exec brakeman -f html -o /brakeman_report.html;"
+  artifacts:
+    paths:
+      - brakeman_report.html
+    expire_in: 1 week
+    when: always
+  allow_failure: false
+  !!merge <<: *default_rules 
+rspec:
+  tags:
+    - testing
+  stage: test
+  before_script:
+    - touch rspec_report.html
+    - chmod a+w rspec_report.html
+    - touch rspec_report.xml
+    - chmod a+w rspec_report.xml
+  script:
+    - podman pod create --name $CI_PROJECT_NAME
+    - podman run --replace -d --pod $CI_PROJECT_NAME --name postgres -e POSTGRES_DB=$CI_PROJECT_NAME -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password docker.io/library/postgres:latest
+    - podman run --replace --pod $CI_PROJECT_NAME --name rails-app -v ./rspec_report.html:/rspec_report.html:z -v ./rspec_report.xml:/rspec_report.xml:z -e RAILS_ENV=test -e SMTP_SERVER="example.com" -e SMTP_PORT=587 -e SMTP_FROM="noreply@example.com" -e BULLET_RAISE=true -e DATABASE_HOST=postgres -e DATABASE_USER=postgres -e DATABASE_PASSWORD=password -e DATABASE_NAME=$CI_PROJECT_NAME $IMAGE_FULL_NAME sh -c "bin/rails db:create && bin/rails db:migrate && bundle exec rspec -f d -f h -o /rspec_report.html -f RspecJunitFormatter -o /rspec_report.xml"
+  after_script:
+    - podman cp rails-app:/rails/coverage .
+    - podman pod rm --force $CI_PROJECT_NAME
+  coverage: '/(?:LOC\s\(\d+\.\d+%|Line Coverage:\s\d+\.\d+%)/'
+  artifacts:
+    paths:
+      - rspec_report.html
+      - rspec_report.xml
+      - coverage
+    expire_in: 1 week
+    reports:
+      junit: rspec_report.xml
+      cobertura: coverage/coverage.xml
+    when: always
+  allow_failure: false
+  !!merge <<: *default_rules 
+clear:
+  tags:
+    - testing
+  stage: clear
+  script:
+    - rm -f rubocop_report.html
+    - rm -f reek_report.html
+    - rm -f brakeman_report.html
+    - rm -f rspec_report.html
+    - rm -f rspec_report.xml
+    - rm -rf coverage
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && ( $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" )
+      when: always
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: always
