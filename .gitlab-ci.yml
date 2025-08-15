@@ -84,7 +84,7 @@ rspec:
   script:
     - podman pod create --name $CI_PROJECT_NAME
     - podman run --replace -d --pod $CI_PROJECT_NAME --name postgres -e POSTGRES_DB=$CI_PROJECT_NAME -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password docker.io/library/postgres:latest
-    - sleep 3 # Waiting for PostgreSQL to be ready
+    - echo "Waiting for PostgreSQL to be ready ..." && sleep 3
     - podman run --replace --pod $CI_PROJECT_NAME --name rails-app -v ./rspec_report.html:/rspec_report.html:z -v ./rspec_report.xml:/rspec_report.xml:z -e RAILS_ENV=test -e SMTP_SERVER="example.com" -e SMTP_PORT=587 -e SMTP_FROM="noreply@example.com" -e BULLET_RAISE=true -e DATABASE_HOST=postgres -e DATABASE_USER=postgres -e DATABASE_PASSWORD=password -e DATABASE_NAME=$CI_PROJECT_NAME $IMAGE_FULL_NAME sh -c "bin/rails db:create && bin/rails db:migrate && bundle exec rspec -f d -f h -o /rspec_report.html -f RspecJunitFormatter -o /rspec_report.xml"
   after_script:
     - podman cp rails-app:/rails/coverage .
