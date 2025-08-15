@@ -60,8 +60,6 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    addressable (2.8.7)
-      public_suffix (>= 2.0.2, < 7.0)
     aes_key_wrap (1.1.0)
     ast (2.4.3)
     base64 (0.3.0)
@@ -134,7 +132,7 @@ GEM
       net-http (>= 0.5.0)
     ffi (1.17.2-arm64-darwin)
     ffi (1.17.2-x86_64-linux-gnu)
-    fileutils (1.7.3)
+    fileutils (1.7.0)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -154,9 +152,6 @@ GEM
       bindata
       faraday (~> 2.0)
       faraday-follow_redirects
-    json-schema (5.2.2)
-      addressable (~> 2.8)
-      bigdecimal (~> 3.1)
     json2yaml (0.0.3)
       yajl-ruby
     jwt (3.1.2)
@@ -208,7 +203,6 @@ GEM
     pg (1.6.1-arm64-darwin)
     pg (1.6.1-x86_64-linux)
     prism (1.4.0)
-    public_suffix (6.0.2)
     puma (6.6.1)
       nio4r (~> 2.0)
     raabro (1.4.0)
@@ -285,21 +279,6 @@ GEM
     rspec-support (3.13.4)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rswag (2.16.0)
-      rswag-api (= 2.16.0)
-      rswag-specs (= 2.16.0)
-      rswag-ui (= 2.16.0)
-    rswag-api (2.16.0)
-      activesupport (>= 5.2, < 8.1)
-      railties (>= 5.2, < 8.1)
-    rswag-specs (2.16.0)
-      activesupport (>= 5.2, < 8.1)
-      json-schema (>= 2.2, < 6.0)
-      railties (>= 5.2, < 8.1)
-      rspec-core (>= 2.14)
-    rswag-ui (2.16.0)
-      actionpack (>= 5.2, < 8.1)
-      railties (>= 5.2, < 8.1)
     rubocop (1.79.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -394,7 +373,7 @@ DEPENDENCIES
   concurrent-ruby (= 1.3.4)
   dotenv-rails (~> 3.0)
   factory_bot_rails (~> 6.5)
-  fileutils (>= 1.6.0)
+  fileutils (= 1.7.0)
   haikunator
   json-jwt
   json2yaml
@@ -412,8 +391,6 @@ DEPENDENCIES
   rest-client
   rspec-rails (~> 6.1)
   rspec_junit_formatter (~> 0.6.0)
-  rswag
-  rswag-specs
   rubocop-factory_bot (~> 2.27)
   rubocop-performance (~> 1.25)
   rubocop-rails (~> 2.33)

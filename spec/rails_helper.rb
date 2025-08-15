@@ -134,4 +134,4 @@ JWT_LOCATION_OPERATOR = 'Bearer ' + JWT.encode({
                                                  user_id:  'test_location_operator@test.com',
                                                  email:    'test_location_operator@test.com',
                                                  name:     'Test Location Operator'
-                                               }, nil)
+                                               }, private_key, 'RS256')

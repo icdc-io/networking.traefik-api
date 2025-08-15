@@ -25,14 +25,13 @@ gem "bootsnap", ">= 1.4.4", require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 gem "rack-cors"
 
-gem "fileutils", ">= 1.6.0"
+gem "fileutils", "1.7.0"
 gem "haikunator"
 gem "json2yaml"
 gem "json-jwt"
 gem "jwt"
 gem "rbac-ruby", "1.0.1"
 gem "rest-client"
-gem "rswag"
 gem "rubyzip"
 gem "sidekiq", "< 7.0.0"
 gem "sidekiq-cron", "< 1.8"
@@ -49,7 +48,6 @@ group :development, :test do
   gem "dotenv-rails", "~> 3.0"
   gem "factory_bot_rails", "~> 6.5"
   gem "rspec-rails", "~> 6.1"
-  gem "rswag-specs"
 
   gem "bullet", "~> 6.1"
 
