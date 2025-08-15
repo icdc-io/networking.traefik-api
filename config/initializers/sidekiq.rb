@@ -27,4 +27,4 @@ jobs = {
   }
 }
 
-Sidekiq::Cron::Job.load_from_hash jobs
+Sidekiq::Cron::Job.load_from_hash jobs unless Rails.env.test?
