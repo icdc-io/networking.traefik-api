@@ -13,7 +13,12 @@ class Route < ApplicationRecord
 
   alias_attribute :cloudgateway, :cloud_gateway
 
+  before_validation { self.tls_termination = tls_termination.to_s.downcase }
+
   validates :name, uniqueness: { scope: :cloud_gateway }
+  validates :tls_termination,
+            inclusion: { in: %w[edge re-encrypt passthrough] }
+  # TODO: if: https_route?
 
   def update(data, new_services)
     update!(data)
