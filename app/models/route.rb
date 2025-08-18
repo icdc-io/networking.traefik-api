@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class Route < ApplicationRecord
   belongs_to :cloud_gateway
   belongs_to :certificate, optional: true
@@ -22,23 +20,23 @@ class Route < ApplicationRecord
 
     routes_services.each(&:destroy!)
     name = RoutesService.generate_name
-    if new_services.count == 1
-      service = Service.find_by(id: new_services.first['id'])
+    if new_services.one?
+      service = Service.find_by(id: new_services.first["id"])
       RoutesService.create!(
-        route: self,
+        route:        self,
         service:,
         balance_type: :loadbalancer,
-        value: nil,
-        name: RoutesService.unique_name(name)
+        value:        nil,
+        name:         RoutesService.unique_name(name)
       )
     else
       new_services.each do |data|
         RoutesService.create!(
-          route: self,
-          service: Service.find_by(id: data['id']),
+          route:        self,
+          service:      Service.find_by(id: data["id"]),
           balance_type: :weighted,
-          value: data['weight'],
-          name: RoutesService.unique_name(name)
+          value:        data["weight"],
+          name:         RoutesService.unique_name(name)
         )
       end
     end

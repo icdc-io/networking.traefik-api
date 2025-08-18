@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module ApiExceptionsHandler
   extend ActiveSupport::Concern
 
@@ -18,26 +16,30 @@ module ApiExceptionsHandler
 
   def handle_exceptions
     yield
-  rescue ActiveRecord::RecordNotFound => e
-    handle_record_not_found(e)
-  rescue ActiveModel::ValidationError, ActiveRecord::RecordInvalid, ArgumentError, ActiveRecord::InvalidForeignKey,
-         OpenSSL::PKey::RSAError, OpenSSL::X509::CertificateError => e
-    handle_validation_error(e)
-  rescue ActionController::ParameterMissing => e
-    handle_parameter_missing(e)
-  rescue StandardError => e
-    handle_standard_error(e)
+  rescue ActiveRecord::RecordNotFound => error
+    handle_record_not_found(error)
+  rescue ActiveModel::ValidationError, ActiveRecord::RecordInvalid,
+         ArgumentError, ActiveRecord::InvalidForeignKey,
+         OpenSSL::PKey::RSAError, OpenSSL::X509::CertificateError => error
+    handle_validation_error(error)
+  rescue ActionController::ParameterMissing => error
+    handle_parameter_missing(error)
+  rescue => error
+    handle_standard_error(error)
   end
 
   private
 
   def handle_record_not_found(exception)
     message = I18n.t(error_path(exception))
-    render_not_found_response(message:, errors: [exception], code:, data: { message: }) # TODO: leave 'data' for backward compatibility, remove it in future
+    render_not_found_response(
+      message:, errors: [ exception ], code:, data: { message: }
+    ) # TODO: leave 'data' for backward compatibility, remove it in future
   end
 
   def handle_validation_error(exception)
-    render_error_response(message: I18n.t(locale_path(exception)), errors: [exception], status: 422, code:)
+    render_error_response(message: I18n.t(locale_path(exception)),
+                          errors: [ exception ], status: 422, code:)
   end
 
   def handle_parameter_missing(exception)
@@ -46,7 +48,10 @@ module ApiExceptionsHandler
 
   def handle_standard_error(exception)
     log_exception(exception)
-    render_error_response(message: I18n.t('errors.common.internal_server_error'), errors: [exception], status: 500, code:)
+    render_error_response(
+      message: I18n.t("errors.common.internal_server_error"),
+      errors: [ exception ], status: 500, code:
+    )
   end
 
   def log_exception(exception)
@@ -57,13 +62,13 @@ module ApiExceptionsHandler
 
   def error_path(exception)
     exception_model = exception.model.underscore
-    exception_type = exception.class.to_s.split('::').last.underscore
+    exception_type = exception.class.to_s.split("::").last.underscore
     "errors.#{exception_model}.#{exception_type}"
   end
 
   def locale_path(exception)
-    controller_path = params[:controller].tr('/', '.')
-    exception_type = exception.class.to_s.split('::').last.underscore
+    controller_path = params[:controller].tr("/", ".")
+    exception_type = exception.class.to_s.split("::").last.underscore
     "controllers.#{controller_path}.#{action_name}.#{exception_type}"
   end
 end

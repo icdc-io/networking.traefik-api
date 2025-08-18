@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class DeleteServicesJob < ApplicationJob
   include RequestHelper
 
@@ -11,13 +9,13 @@ class DeleteServicesJob < ApplicationJob
   end
 
   def active_services_ids
-    resp = request_compute('services', 'expand=resources')
+    resp = request_compute("services", "expand=resources")
     return [] unless resp.code == 200
 
     body = JSON.parse(resp.body)
-    body['resources'].filter_map { |service| service['id'] }
-  rescue StandardError => e
-    Rails.logger.debug { "Something went wrong, #{e.message}" }
+    body["resources"].filter_map { |service| service["id"] }
+  rescue => error
+    Rails.logger.debug { "Something went wrong, #{error.message}" }
     []
   end
 end
