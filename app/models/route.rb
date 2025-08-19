@@ -14,11 +14,15 @@ class Route < ApplicationRecord
   alias_attribute :cloudgateway, :cloud_gateway
 
   before_validation { self.tls_termination = tls_termination.to_s.downcase }
+  before_validation { self.insecure = insecure.to_s.downcase }
 
   validates :name, uniqueness: { scope: :cloud_gateway }
+  validates :insecure, inclusion: { in: [ "", "allow", "redirect" ] }
   validates :tls_termination,
-            inclusion: { in: %w[edge re-encrypt passthrough] }
-  # TODO: if: https_route?
+            inclusion: { in: [ "", "edge", "re-encrypt", "passthrough" ] }
+  validates :tls_termination,
+            inclusion: { in: %w[edge re-encrypt] },
+            if:        -> { insecure.in? %w[allow redirect] }
 
   def update(data, new_services)
     update!(data)
@@ -48,4 +52,12 @@ class Route < ApplicationRecord
   end
 
   delegate :account, to: :cloud_gateway
+
+  def http?
+    tls_termination == "" || insecure != ""
+  end
+
+  def https?
+    tls_termination != "" && tls_termination != "passthrough"
+  end
 end

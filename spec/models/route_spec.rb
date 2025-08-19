@@ -30,8 +30,8 @@ RSpec.describe Route, :aggregate_failures do
       hostname:            "route-15sl7k.dev.example.com",
       path:                "/",
       target_port:         5555,
-      insecure:            "None",
-      tls_termination:     "passthrough",
+      insecure:            "",
+      tls_termination:     "",
       labels:              "6X",
       cloud_gateway_id:    cloud_gateway.id,
       certificate_id:      nil,
@@ -45,43 +45,216 @@ RSpec.describe Route, :aggregate_failures do
   let(:route) { described_class.new(valid_attributes) }
 
   it "is valid with valid attributes" do
-    expect(route.valid?).to be(true)
-    expect(create(:route)&.valid?).to be(true)
+    expect(route).to be_valid
+    expect(create(:route)).to be_valid
   end
 
-  # Validating name
+  # Validating insecure & tls_termination:
 
-  # Validating hostname
+  it "validates insecure value" do
+    route.insecure = 'invalid_value'
+    expect(route).not_to be_valid
+  end
 
-  # Validating path
+  it "validates tls_termination value" do
+    route.tls_termination = 'invalid_value'
+    expect(route).not_to be_valid
+  end
 
-  # Validating target_port
+  # |insecure|tls_termination|valid|http|https|
+  # |--------|---------------|-----|----|-----|
+  # |""      |""             |+    |+   |     |
+  # |""      |re-encrypt     |+    |    |+    |
+  # |""      |edge           |+    |    |+    |
+  # |""      |passthrough    |+    |    |     |
+  # |allow   |""             |     |    |     |
+  # |allow   |re-encrypt     |+    |+   |+    |
+  # |allow   |edge           |+    |+   |+    |
+  # |allow   |passthrough    |     |    |     |
+  # |redirect|""             |     |    |     |
+  # |redirect|re-encrypt     |+    |+   |+    |
+  # |redirect|edge           |+    |+   |+    |
+  # |redirect|passthrough    |     |    |     |
 
-  # Validating insecure
+  context "with insecure and tls_termination validation" do
+    let(:insecure)        { "" }
+    let(:tls_termination) { "" }
 
-  # Validating tls_termination
+    before do
+      route.insecure = insecure
+      route.tls_termination = tls_termination
+    end
 
-  it "validates valid tsl_termination values" do
-    %w[edge re-encrypt passthrough].each do |value|
-      route.tls_termination = value
-      expect(route.valid?).to be(true)
+    context "with insecure = \"\"" do
+      let(:insecure) { "" }
+
+      context "with tls_termination = \"\"" do
+        let(:tls_termination) { "" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is http" do
+          expect(route.http?).to be(true)
+        end
+
+        it "is not https" do
+          expect(route.https?).to be(false)
+        end
+      end
+
+      context "with tls_termination = \"re-encrypt\"" do
+        let(:tls_termination) { "re-encrypt" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is not http" do
+          expect(route.http?).to be(false)
+        end
+
+        it "is https" do
+          expect(route.https?).to be(true)
+        end
+      end
+
+      context "with tls_termination = \"edge\"" do
+        let(:tls_termination) { "edge" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is not http" do
+          expect(route.http?).to be(false)
+        end
+
+        it "is https" do
+          expect(route.https?).to be(true)
+        end
+      end
+
+      context "with tls_termination = \"passthrough\"" do
+        let(:tls_termination) { "passthrough" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is not http" do
+          expect(route.http?).to be(false)
+        end
+
+        it "is not https" do
+          expect(route.https?).to be(false)
+        end
+      end
+    end
+
+    context "with insecure = \"allow\"" do
+      let(:insecure) { "allow" }
+
+      context "with tls_termination = \"\"" do
+        let(:tls_termination) { "" }
+
+        it "is not valid" do
+          expect(route).not_to be_valid
+        end
+      end
+
+      context "with tls_termination = \"re-encrypt\"" do
+        let(:tls_termination) { "re-encrypt" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is http" do
+          expect(route.http?).to be(true)
+        end
+
+        it "is https" do
+          expect(route.https?).to be(true)
+        end
+      end
+
+      context "with tls_termination = \"edge\"" do
+        let(:tls_termination) { "edge" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is http" do
+          expect(route.http?).to be(true)
+        end
+
+        it "is https" do
+          expect(route.https?).to be(true)
+        end
+      end
+
+      context "with tls_termination = \"passthrough\"" do
+        let(:tls_termination) { "passthrough" }
+
+        it "is not valid" do
+          expect(route).not_to be_valid
+        end
+      end
+    end
+
+    context "with insecure = \"redirect\"" do
+      let(:insecure) { "redirect" }
+
+      context "with tls_termination = \"\"" do
+        let(:tls_termination) { "" }
+
+        it "is not valid" do
+          expect(route).not_to be_valid
+        end
+      end
+
+      context "with tls_termination = \"re-encrypt\"" do
+        let(:tls_termination) { "re-encrypt" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is http" do
+          expect(route.http?).to be(true)
+        end
+
+        it "is https" do
+          expect(route.https?).to be(true)
+        end
+      end
+
+      context "with tls_termination = \"edge\"" do
+        let(:tls_termination) { "edge" }
+
+        it "is valid" do
+          expect(route).to be_valid
+        end
+
+        it "is http" do
+          expect(route.http?).to be(true)
+        end
+
+        it "is https" do
+          expect(route.https?).to be(true)
+        end
+      end
+
+      context "with tls_termination = \"passthrough\"" do
+        let(:tls_termination) { "passthrough" }
+
+        it "is not valid" do
+          expect(route).not_to be_valid
+        end
+      end
     end
   end
-
-  it "validates invalid tsl_termination values" do
-    [ "none", "", nil ].each do |value|
-      route.tls_termination = value
-      expect(route.valid?).to be(false)
-    end
-  end
-
-  # Validating labels
-
-  # Validating source_proto
-
-  # Validating destination_proto
-
-  # Validating ip_version
-
-  # Validating healthcheck_enabled
 end

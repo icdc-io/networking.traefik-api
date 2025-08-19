@@ -369,7 +369,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
         cloud_gateway_id: gateway.id,
         owner:            'test_member@test.com',
         certificate_id:   cert.id,
-        tls_termination:  "passthrough",
+        tls_termination:  "edge",
         insecure:         "redirect"
       )
       routes_service = add_routes_services(route, services.map do |service|
@@ -396,18 +396,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
                                 }
                               })
       end
-      expect(yaml["tcp"]).to eq(
-        {
-          "routers"  => {
-            route.name.to_s => {
-              "service" => routes_service.first.group_name,
-              "rule"    => "HostSNI(`#{route.hostname}`)",
-              "tls"     => { "passthrough" => true }
-            }
-          },
-          "services" => services_block
-        }
-      )
+      expect(yaml["tcp"]).to be_nil
       services_block.each do |key, value|
         if services_block[key]["loadBalancer"]
           services_block[key]["loadBalancer"]["servers"] =
@@ -417,16 +406,22 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       expect(yaml["http"]).to eq(
         {
           "routers"     => {
-            "alb-ping-internal"  => {
+            "alb-ping-internal"   => {
               "service"     => "ping@internal",
               "rule"        => "Host(`#{gateway.account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) && Path(`/alb/ping`)",
               "entryPoints" => [ "web" ]
             },
-            "#{route.name}-http" => {
+            "#{route.name}-http"  => {
               "service"     => routes_service.first.group_name,
               "rule"        => "Host(`#{route.hostname}`)",
               "middlewares" => [ "#{route.name}-redirect" ],
               "entryPoints" => [ "web" ]
+            },
+            "#{route.name}-https" => {
+              "entryPoints" => [ "websecure" ],
+              "rule"        => "Host(`#{route.hostname}`)",
+              "service"     => routes_service.first.group_name,
+              "tls"         => true
             }
           },
           "middlewares" => {
