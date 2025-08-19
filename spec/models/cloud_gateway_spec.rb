@@ -49,5 +49,38 @@ RSpec.describe CloudGateway, :aggregate_failures do
           )
       end
     end
+
+    context "with tcp passthrough route" do
+      let!(:route) do
+        create(:route, cloud_gateway:, insecure: "",
+          tls_termination: "passthrough")
+      end
+      let!(:service) { create(:service) }
+      let!(:route_service) { create(:route_service, route:, service:) }
+
+      it "returns yaml config with service and tcp router" do
+        config = YAML.load(cloud_gateway.config)
+        expect(config["http"])
+          .to eq({
+                   "routers" => {
+                     "alb-ping-internal" => {
+                       "service"     => "ping@internal",
+                       "rule"        => "Host(`#{cloud_gateway.account}.alb.#{ENV.fetch('LOCATION_DOMAIN')}`) " \
+                                        "&& Path(`/alb/ping`)",
+                       "entryPoints" => [ "web" ]
+                     }
+                   }
+                 })
+        expect(config.dig("tcp", "routers"))
+          .to eq({
+                   route.name => {
+                     "service" => route_service.name,
+                     "rule"    => "HostSNI(`#{route.hostname}`)",
+                     "tls"     => { "passthrough"=>true }
+                   }
+                 })
+        expect(config.dig("tcp", "services").keys).to eq([ route_service.name ])
+      end
+    end
   end
 end
