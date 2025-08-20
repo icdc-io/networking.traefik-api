@@ -7,7 +7,7 @@ class RoutesService < ApplicationRecord
 
   def self.generate_name
     name = Haikunator.haikunate(0)
-    name if RoutesService.where(name:).empty?
+    name if RoutesService.where(name:).none?
   end
 
   def self.unique_name(name)

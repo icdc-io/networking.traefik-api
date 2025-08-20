@@ -172,27 +172,23 @@ class Route < ApplicationRecord
   end
 
   def add_services(generated_config)
-    generated_config[route_type]["services"] = services_section
-  end
-
-  def services_section
-    outp = {}
+    services_section = generated_config[route_type]["services"]
     route_service = routes_services.first
 
     if route_service.balance_type == "loadbalancer"
-      outp[route_service.name] = {
+      services_section[route_service.name] = {
         "loadBalancer" => {
           "servers" => lb_server(route_service.service)
         }
       }
     else
-      outp[route_service.group_name] = {
+      services_section[route_service.group_name] = {
         "weighted" => {
           "services" => weighted(routes_services)
         }
       }
       routes_services.each do |routes_service|
-        outp[routes_service.name.to_s] = {
+        services_section[routes_service.name.to_s] = {
           "loadBalancer" => {
             "servers" => lb_server(routes_service.service)
           }
@@ -200,11 +196,7 @@ class Route < ApplicationRecord
       end
     end
 
-    outp.delete_if { |_key, value| value.empty? }
-
-    healthcheck_section(outp) if healthcheck_enabled
-
-    outp
+    healthcheck_section(services_section) if healthcheck_enabled
   end
 
   def lb_server(service)

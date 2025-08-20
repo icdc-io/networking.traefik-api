@@ -112,5 +112,19 @@ RSpec.describe CloudGateway, :aggregate_failures do
           )
       end
     end
+
+    context "with multiple routes/services" do
+      let!(:route_services) do
+        Array.new(2) do
+          create(:route_service, route: create(:route, cloud_gateway:))
+        end
+      end
+
+      it "returns config with multiple services" do
+        config = YAML.load(cloud_gateway.config)
+        expect(config.dig("http", "services").keys)
+          .to match_array(route_services.pluck(:name))
+      end
+    end
   end
 end
