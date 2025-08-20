@@ -293,7 +293,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              "x-icdc-role":    'member',
              Authorization:    JWT_MEMBER
            }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     rescue ActiveRecord::RecordInvalid => error
       expect(error)
     end
@@ -323,7 +323,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              "x-icdc-role":    'member',
              Authorization:    JWT_MEMBER
            }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     rescue ActiveRecord::RecordInvalid => error
       expect(error)
     end
