@@ -1,5 +1,4 @@
 require 'rails_helper'
-require './spec/factories/certificate_helper'
 
 describe 'Api::V1::CertificatesController', :aggregate_failures do
   before do

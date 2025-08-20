@@ -251,8 +251,8 @@ class Route < ApplicationRecord
                     .except("id", "route_id", "created_at", "updated_at")
                     .compact
 
-    hc["interval"] += "s" if hc["interval"]
-    hc["timeout"]  += "s" if hc["timeout"]
+    hc["interval"] = "#{hc['interval']}s" if hc["interval"]
+    hc["timeout"]  = "#{hc['timeout']}s" if hc["timeout"]
 
     hc["followRedirects"] = hc.delete("follow_redirects")
 

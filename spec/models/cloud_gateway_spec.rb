@@ -82,5 +82,35 @@ RSpec.describe CloudGateway, :aggregate_failures do
         expect(config.dig("tcp", "services").keys).to eq([ route_service.name ])
       end
     end
+
+    context "with healthcheck route" do
+      let!(:route) do
+        create(:route, cloud_gateway:, healthcheck_enabled: true)
+      end
+      let!(:service) { create(:service) }
+      let!(:route_service) { create(:route_service, route:, service:) }
+      let!(:healthcheck) { create(:healthcheck, route:, path: "/up") }
+
+      it "returns yaml config with healthcheck" do
+        config = YAML.load(cloud_gateway.config)
+        service_section = config.dig("http", "services", route_service.name)
+        expect(service_section["loadBalancer"].keys).to include("healthCheck")
+        healthcheck_section = service_section.dig("loadBalancer", "healthCheck")
+        expect(healthcheck_section)
+          .to eq(
+            {
+              "path"            => healthcheck.path,
+              "scheme"          => healthcheck.scheme,
+              "port"            => healthcheck.port,
+              "interval"        => "#{healthcheck.interval}s",
+              "timeout"         => "#{healthcheck.timeout}s",
+              "hostname"        => healthcheck.hostname,
+              "headers"         => healthcheck.headers,
+              "followRedirects" => healthcheck.follow_redirects,
+              "method"          => healthcheck.method
+            }
+          )
+      end
+    end
   end
 end
