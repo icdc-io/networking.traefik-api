@@ -22,7 +22,7 @@ module AuthHelper
 
   def decoded_token(token = nil)
     set_error_code("007")
-    JWT.decode(token, Rails.application.secrets.sso_public_key, true,
+    JWT.decode(token, Rails.application.credentials.sso_public_key, true,
                algorithm: "RS256")[0]
   rescue JWT::DecodeError => error
     render_error_response(

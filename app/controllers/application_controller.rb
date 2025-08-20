@@ -8,8 +8,7 @@ class ApplicationController < ActionController::API
   include Rbac
 
   around_action :switch_locale
-  before_action :authorize, :authorize_action,
-                except: %i[traefik_config download]
+  before_action :authorize, :authorize_action
 
   def authorize
     set_error_code("001")

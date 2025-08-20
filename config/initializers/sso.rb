@@ -11,4 +11,4 @@ def set_public_key
   JSON::JWK.new(key).to_key
 end
 
-Rails.application.secrets.sso_public_key = set_public_key unless Rails.env.test?
+Rails.application.credentials.sso_public_key = set_public_key unless Rails.env.test?
