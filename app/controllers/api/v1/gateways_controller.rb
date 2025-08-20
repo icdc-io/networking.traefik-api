@@ -1,6 +1,7 @@
 module Api
   module V1
     class GatewaysController < ApplicationController
+      skip_before_action :authorize, :authorize_action, only: %i[traefik_config]
       before_action :set_gateway, only: %i[show update_cloudgw delete_cloudgw]
 
       def index

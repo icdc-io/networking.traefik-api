@@ -89,8 +89,8 @@ RSpec.configure do |config|
 end
 
 private_key = OpenSSL::PKey::RSA.generate 2048
-Rails.application.secrets.sso_private_key = private_key
-Rails.application.secrets.sso_public_key = private_key.public_key
+Rails.application.credentials.sso_private_key = private_key
+Rails.application.credentials.sso_public_key = private_key.public_key
 
 JWT_MEMBER = 'Bearer ' + JWT.encode({
                                       external: {

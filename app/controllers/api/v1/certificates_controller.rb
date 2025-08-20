@@ -1,6 +1,7 @@
 module Api
   module V1
     class CertificatesController < ApplicationController
+      skip_before_action :authorize, :authorize_action, only: %i[download]
       before_action :validate_certificate, only: %i[create update]
       before_action :set_certificate, only: %i[show update delete]
 
