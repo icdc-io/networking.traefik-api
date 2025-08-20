@@ -95,17 +95,22 @@ module Api
 
       def check_params
         @route_params = params[:route]
-        return render json: @route unless @route_params
+        render json: @route unless @route_params
 
-        cloud_gateway_id = @route_params[:cloud_gateway_id]
-        CloudGateway.filtered.find(cloud_gateway_id) if cloud_gateway_id
+        id = @route_params[:cloud_gateway_id]
+        return unless id && !CloudGateway.filtered.exists?(id:)
+
+        message = I18n.t("errors.cloud_gateway.record_not_found")
+        render_not_found_response(message:, code: "032", data: { message: })
       end
 
       def update_certificate
         set_error_code("029")
+        return unless @route_params.include?(:certificate_id)
+
         certificate_id = @route_params[:certificate_id]
-        if certificate_id
-          if Certificate.filtered.find_by(id: certificate_id)
+        if certificate_id.present?
+          if Certificate.filtered.exists?(id: certificate_id)
             @route.update!(certificate_id:)
           end
         else

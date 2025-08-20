@@ -27,8 +27,16 @@ class Route < ApplicationRecord
   def update(data, new_services)
     update!(data)
 
-    routes_services.each(&:destroy!)
-    name = RoutesService.generate_name
+    routes_services.destroy_all
+    RoutesService.generate_name
+    update_services(new_services)
+  end
+
+  private
+
+  def update_services(new_services)
+    return unless new_services
+
     if new_services.one?
       service = Service.find_by(id: new_services.first["id"])
       RoutesService.create!(
@@ -50,6 +58,8 @@ class Route < ApplicationRecord
       end
     end
   end
+
+  public
 
   delegate :account, to: :cloud_gateway
 
