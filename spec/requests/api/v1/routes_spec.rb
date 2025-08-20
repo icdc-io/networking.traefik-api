@@ -513,6 +513,30 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           }
       expect(response).to have_http_status(:not_found)
     end
+
+    it "sets certificate_id = nil when send certificate_id = \"\"" do
+      cert = create_certificate(account: 'test')
+      route = create(
+        :route,
+        cloud_gateway_id: create(:cloud_gateway, account: 'test').id,
+        owner:            'test_member@test.com',
+        certificate_id:   cert.id
+      )
+      add_routes_services(route, [ { id: create(:service).id } ])
+
+      request_body = { "route" => { "certificate_id" => "" } }
+
+      expect do
+        patch "/api/v1/routes/#{route.id}",
+              params:  request_body,
+              headers: {
+                "x-icdc-account": 'test',
+                "x-icdc-role":    'member',
+                Authorization:    JWT_MEMBER
+              }
+      end.to change { route.reload.certificate_id }.from(cert.id).to(nil)
+      expect(response).to have_http_status(:ok)
+    end
   end
 
   describe "DELETE /api/v1/routes/:id" do
