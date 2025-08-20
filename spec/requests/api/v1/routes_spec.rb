@@ -329,6 +329,60 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
     rescue ActiveRecord::RecordInvalid => error
       expect(error)
     end
+
+    it "renders 404 if cloud_gateway does not exist" do
+      create(:cloud_gateway, account: "test")
+      service = create(:service)
+      cert = create_certificate(account: "test")
+
+      request_body = {
+        "route" => $route
+                     .attributes
+                     .slice("name", "hostname", "target_port", "labels",
+                            "tls_termination", "owner", "path", "source_proto",
+                            "destination_proto", "ip_version", "insecure")
+                     .merge(cloud_gateway_id: 0,
+                            certificate_id:   cert.id,
+                            services:         [ { id: service.id } ])
+      }
+      expect do
+        post '/api/v1/routes',
+             params:  request_body,
+             headers: {
+               "x-icdc-account": 'test',
+               "x-icdc-role":    'member',
+               Authorization:    JWT_MEMBER
+             }
+      end.not_to change(Route, :count)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "renders 404 if cloud_gateway from another account" do
+      gateway = create(:cloud_gateway, account: "not_a_test")
+      service = create(:service)
+      cert = create_certificate(account: "test")
+
+      request_body = {
+        "route" => $route
+                     .attributes
+                     .slice("name", "hostname", "target_port", "labels",
+                            "tls_termination", "owner", "path", "source_proto",
+                            "destination_proto", "ip_version", "insecure")
+                     .merge(cloud_gateway_id: gateway.id,
+                            certificate_id:   cert.id,
+                            services:         [ { id: service.id } ])
+      }
+      expect do
+        post '/api/v1/routes',
+             params:  request_body,
+             headers: {
+               "x-icdc-account": 'test',
+               "x-icdc-role":    'member',
+               Authorization:    JWT_MEMBER
+             }
+      end.not_to change(Route, :count)
+      expect(response).to have_http_status(:not_found)
+    end
   end
 
   describe "GET /api/v1/routes/:id" do
