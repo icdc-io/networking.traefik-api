@@ -1,6 +1,4 @@
 require 'rails_helper'
-require './spec/factories/certificate_helper'
-require './spec/factories/route_helper'
 
 describe 'Api::V1::RoutesController', :aggregate_failures do
   before do
