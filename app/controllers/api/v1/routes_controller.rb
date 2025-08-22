@@ -119,7 +119,7 @@ module Api
       end
 
       def sanitize_params
-        params.expect(route: params_white_list)
+        params.permit(route: [ params_white_list ])
       end
 
       def params_white_list
