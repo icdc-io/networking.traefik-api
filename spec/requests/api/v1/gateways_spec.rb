@@ -33,9 +33,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
         "/api/v1/gateways",
         params:  nil,
         headers: {
-          "x-icdc-account": 'test',
-          "x-icdc-role":    'admin',
-          Authorization:    JWT_ADMIN
+          "X-Auth-Account": "test",
+          "X-Auth-Role":    "admin",
+          "X-Auth-User":    "test_admin@test.com"
         }
       )
       expect(response).to have_http_status(:ok)
@@ -52,9 +52,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       get "/api/v1/gateways",
           params:  nil,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 3)
@@ -71,9 +71,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       post '/api/v1/gateways',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'location',
-             "x-icdc-role":    'operator',
-             Authorization:    JWT_LOCATION_OPERATOR
+             "X-Auth-Account": "location",
+             "X-Auth-Role":    "operator",
+             "X-Auth-User":    "test_location_operator@test.com"
            }
       expect(response).to have_http_status(:created)
       expect(CloudGateway.count).to eq(1)
@@ -88,9 +88,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       post '/api/v1/gateways',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'test',
-             "x-icdc-role":    'admin',
-             Authorization:    JWT_ADMIN
+             "X-Auth-Account": "test",
+             "X-Auth-Role":    "admin",
+             "X-Auth-User":    "test_admin@test.com"
            }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(0)
@@ -105,9 +105,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       post '/api/v1/gateways',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'test',
-             "x-icdc-role":    'member',
-             Authorization:    JWT_MEMBER
+             "X-Auth-Account": "test",
+             "X-Auth-Role":    "member",
+             "X-Auth-User":    "test_member@test.com"
            }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(0)
@@ -124,9 +124,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       get "/api/v1/gateways/#{gateway.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -143,9 +143,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       get "/api/v1/gateways/#{gateway.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -162,9 +162,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       get "/api/v1/gateways/#{gateway.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -179,9 +179,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       get "/api/v1/gateways/#{rand(1..500)}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -191,9 +191,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       get "/api/v1/gateways/#{gateway.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -203,9 +203,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       get "/api/v1/gateways/#{gateway.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -221,9 +221,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       put "/api/v1/gateways/#{gateway.id}",
           params:  request_body,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -248,9 +248,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       put "/api/v1/gateways/#{gateway.id}",
           params:  request_body,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -270,9 +270,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       put "/api/v1/gateways/#{gateway.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:forbidden)
     end
@@ -282,9 +282,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       put "/api/v1/gateways/#{gateway.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:forbidden)
     end
@@ -293,9 +293,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       put "/api/v1/gateways/#{rand(1..500)}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -307,9 +307,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       delete "/api/v1/gateways/#{gateway.id}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'location',
-               "x-icdc-role":    'operator',
-               Authorization:    JWT_LOCATION_OPERATOR
+               "X-Auth-Account": "location",
+               "X-Auth-Role":    "operator",
+               "X-Auth-User":    "test_location_operator@test.com"
              }
       expect(response).to have_http_status(:no_content)
       expect(CloudGateway.count).to eq(0)
@@ -320,9 +320,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       delete "/api/v1/gateways/#{gateway.id}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'test',
-               "x-icdc-role":    'admin',
-               Authorization:    JWT_ADMIN
+               "X-Auth-Account": "test",
+               "X-Auth-Role":    "admin",
+               "X-Auth-User":    "test_admin@test.com"
              }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(1)
@@ -334,9 +334,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       delete "/api/v1/gateways/#{gateway.id}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'test',
-               "x-icdc-role":    'member',
-               Authorization:    JWT_MEMBER
+               "X-Auth-Account": "test",
+               "X-Auth-Role":    "member",
+               "X-Auth-User":    "test_member@test.com"
              }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(1)
@@ -346,9 +346,9 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       delete "/api/v1/gateways/#{rand(1..500)}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'location',
-               "x-icdc-role":    'operator',
-               Authorization:    JWT_LOCATION_OPERATOR
+               "X-Auth-Account": "location",
+               "X-Auth-Role":    "operator",
+               "X-Auth-User":    "test_location_operator@test.com"
              }
       expect(response).to have_http_status(:not_found)
     end

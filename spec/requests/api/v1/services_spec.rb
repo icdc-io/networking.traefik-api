@@ -36,9 +36,9 @@ describe 'Api::V1::ServicesController', :aggregate_failures do
       get "/api/v1/services",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count)
@@ -57,9 +57,9 @@ describe 'Api::V1::ServicesController', :aggregate_failures do
       get "/api/v1/services",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 2)
@@ -78,9 +78,9 @@ describe 'Api::V1::ServicesController', :aggregate_failures do
       get "/api/v1/services",
           params:  nil,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 3)

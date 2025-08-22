@@ -25,24 +25,23 @@ gem "bootsnap", "~> 1.18", require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 gem "rack-cors", "~> 3.0"
 
-gem "fileutils", "~> 1.7"
-gem "haikunator", "~> 1.1"
-gem "json2yaml", "~> 0.0.3"
-gem "json-jwt", "~> 1.17"
-gem "jwt", "~> 3.1"
-gem "rbac-ruby", "1.0.1"
+gem "fileutils",   "~> 1.7"
+gem "haikunator",  "~> 1.1"
+gem "json2yaml",   "~> 0.0.3"
+gem "rbac-ruby",   "1.0.1"
 gem "rest-client", "~> 2.1"
-gem "rubyzip", "~> 3.0"
+gem "rubyzip",     "~> 3.0"
 
-gem "sidekiq", "~> 8.0"
+gem "sidekiq",      "~> 8.0"
 gem "sidekiq-cron", "~> 2.3"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem "byebug", platforms: %i[mri windows]
-  gem "dotenv-rails", "~> 3.1"
+
+  gem "dotenv-rails",      "~> 3.1"
   gem "factory_bot_rails", "~> 6.5"
-  gem "rspec-rails", "~> 8.0"
+  gem "rspec-rails",       "~> 8.0"
 
   gem "bullet", "~> 8.0"
 end

@@ -90,54 +90,7 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
 end
 
-private_key = OpenSSL::PKey::RSA.generate 2048
-Rails.application.credentials.sso_private_key = private_key
-Rails.application.credentials.sso_public_key = private_key.public_key
-
-JWT_MEMBER = 'Bearer ' + JWT.encode({
-                                      external: {
-                                        accounts: {
-                                          test: {
-                                            roles: [ 'member' ]
-                                          }
-                                        }
-                                      },
-                                      groups:   [ 'test.member' ],
-                                      user_id:  'test_member@test.com',
-                                      email:    'test_member@test.com',
-                                      name:     'Test Member'
-                                    }, private_key, 'RS256')
-
-JWT_ADMIN = 'Bearer ' + JWT.encode({
-                                     external: {
-                                       accounts: {
-                                         test: {
-                                           roles: [ 'admin' ]
-                                         }
-                                       }
-                                     },
-                                     groups:   [ 'test.admin' ],
-                                     user_id:  'test_admin@test.com',
-                                     email:    'test_admin@test.com',
-                                     name:     'Test Admin'
-                                   }, private_key, 'RS256')
-
 ENV['OPERATOR_GROUP'] = 'location.operator'
-JWT_LOCATION_OPERATOR = 'Bearer ' + JWT.encode({
-                                                 external: {
-                                                   accounts: {
-                                                     location: {
-                                                       roles: [ 'operator' ]
-                                                     }
-                                                   }
-                                                 },
-                                                 groups:   [ 'location.operator' ],
-                                                 user_id:  'test_location_operator@test.com',
-                                                 email:    'test_location_operator@test.com',
-                                                 name:     'Test Location Operator'
-                                               }, private_key, 'RS256')
-ENV['ACCOUNT_HEADER']  = 'x-icdc-account'
-ENV['ROLE_HEADER']     = 'x-icdc-role'
 ENV['LOCATION_DOMAIN'] = 'dcz.lab.icdc.io'
 ENV['SCOPES_MAP_FILE'] = 'config/rbac/rbac_scopes.yml'
 ENV['ROUTES_MAP_FILE'] = 'config/rbac/rbac_routes.yml'
