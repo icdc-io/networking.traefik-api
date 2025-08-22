@@ -18,8 +18,7 @@ module Api
       def create
         set_error_code("010")
         certificate_params =
-          params.require("certificate")
-                .permit("cert", "key", "ca", "dest_ca", "owner", "name")
+          params.expect(certificate: %w[cert key ca dest_ca owner name])
         certificate = Certificate.store(certificate_params)
         render json: certificate, status: :created
       end
@@ -28,8 +27,7 @@ module Api
         set_error_code("011")
         if params["certificate"]
           @certificate.update_content(
-            params.require("certificate")
-                  .permit("cert", "key", "ca", "dest_ca", "owner", "name")
+            params.expect(certificate: %w[cert key ca dest_ca owner name])
           )
         end
         render json: @certificate, status: :ok
@@ -58,7 +56,7 @@ module Api
 
       def validate_certificate
         set_error_code("014")
-        cert_params = params.require("certificate").permit("cert", "key")
+        cert_params = params.expect(certificate: %w[cert key])
         OpenSSL::X509::Certificate.new(cert_params["cert"])
         # maybe can fail in case of passphrase
         raise unless OpenSSL::PKey::RSA.new(cert_params["key"]).private?

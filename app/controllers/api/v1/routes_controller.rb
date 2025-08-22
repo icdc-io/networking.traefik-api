@@ -119,7 +119,7 @@ module Api
       end
 
       def sanitize_params
-        params.require(:route).permit(params_white_list)
+        params.expect(route: params_white_list)
       end
 
       def params_white_list
@@ -137,10 +137,10 @@ module Api
       end
 
       def route_create_params
-        params.require(:route).permit(
-          :name, :hostname, :path, :target_port, :insecure, :tls_termination,
-          :labels, :cloud_gateway_id, :owner, :source_proto, :destination_proto,
-          :ip_version, :certificate_id, :healthcheck_enabled
+        params.expect(
+          route: %i[name hostname path target_port insecure tls_termination
+                    labels cloud_gateway_id owner source_proto destination_proto
+                    ip_version certificate_id healthcheck_enabled]
         )
       end
     end
