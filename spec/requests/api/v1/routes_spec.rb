@@ -65,9 +65,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       get "/api/v1/routes",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count)
@@ -115,9 +115,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       get "/api/v1/routes",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 2)
@@ -165,9 +165,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       get "/api/v1/routes",
           params:  nil,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 3)
@@ -191,9 +191,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       post '/api/v1/routes',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'test',
-             "x-icdc-role":    'member',
-             Authorization:    JWT_MEMBER
+             "X-Auth-Account": "test",
+             "X-Auth-Role":    "member",
+             "X-Auth-User":    "test_member@test.com"
            }
       expect(response).to have_http_status(:created)
       expect(Route.count).to eq(1)
@@ -226,9 +226,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       post '/api/v1/routes',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'test',
-             "x-icdc-role":    'member',
-             Authorization:    JWT_MEMBER
+             "X-Auth-Account": "test",
+             "X-Auth-Role":    "member",
+             "X-Auth-User":    "test_member@test.com"
            }
       expect(response).to have_http_status(:created)
       expect(Route.count).to eq(1)
@@ -262,9 +262,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       post '/api/v1/routes',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'test',
-             "x-icdc-role":    'member',
-             Authorization:    JWT_MEMBER
+             "X-Auth-Account": "test",
+             "X-Auth-Role":    "member",
+             "X-Auth-User":    "test_member@test.com"
            }
       expect(response).to have_http_status(:created)
     end
@@ -289,11 +289,11 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       post '/api/v1/routes',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'test',
-             "x-icdc-role":    'member',
-             Authorization:    JWT_MEMBER
+             "X-Auth-Account": "test",
+             "X-Auth-Role":    "member",
+             "X-Auth-User":    "test_member@test.com"
            }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     rescue ActiveRecord::RecordInvalid => error
       expect(error)
     end
@@ -319,11 +319,11 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       post '/api/v1/routes',
            params:  request_body,
            headers: {
-             "x-icdc-account": 'test',
-             "x-icdc-role":    'member',
-             Authorization:    JWT_MEMBER
+             "X-Auth-Account": "test",
+             "X-Auth-Role":    "member",
+             "X-Auth-User":    "test_member@test.com"
            }
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     rescue ActiveRecord::RecordInvalid => error
       expect(error)
     end
@@ -347,9 +347,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         post '/api/v1/routes',
              params:  request_body,
              headers: {
-               "x-icdc-account": 'test',
-               "x-icdc-role":    'member',
-               Authorization:    JWT_MEMBER
+               "X-Auth-Account": "test",
+               "X-Auth-Role":    "member",
+               "X-Auth-User":    "test_member@test.com"
              }
       end.not_to change(Route, :count)
       expect(response).to have_http_status(:not_found)
@@ -374,9 +374,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         post '/api/v1/routes',
              params:  request_body,
              headers: {
-               "x-icdc-account": 'test',
-               "x-icdc-role":    'member',
-               Authorization:    JWT_MEMBER
+               "X-Auth-Account": "test",
+               "X-Auth-Role":    "member",
+               "X-Auth-User":    "test_member@test.com"
              }
       end.not_to change(Route, :count)
       expect(response).to have_http_status(:not_found)
@@ -399,9 +399,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       get "/api/v1/routes/#{route.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['route']
@@ -425,9 +425,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       get "/api/v1/routes/#{rand { 1..100 }}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -446,9 +446,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       get "/api/v1/routes/#{route.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -467,9 +467,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       get "/api/v1/routes/#{route.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -502,9 +502,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       put "/api/v1/routes/#{route.id}",
           params:  request_body,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
 
       expect(response).to have_http_status(:ok)
@@ -517,9 +517,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       put "/api/v1/routes/#{rand { 1..100 }}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'location',
-            "x-icdc-role":    'operator',
-            Authorization:    JWT_LOCATION_OPERATOR
+            "X-Auth-Account": "location",
+            "X-Auth-Role":    "operator",
+            "X-Auth-User":    "test_location_operator@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -538,9 +538,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       put "/api/v1/routes/#{route.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'admin',
-            Authorization:    JWT_ADMIN
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "admin",
+            "X-Auth-User":    "test_admin@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -559,9 +559,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       put "/api/v1/routes/#{route.id}",
           params:  nil,
           headers: {
-            "x-icdc-account": 'test',
-            "x-icdc-role":    'member',
-            Authorization:    JWT_MEMBER
+            "X-Auth-Account": "test",
+            "X-Auth-Role":    "member",
+            "X-Auth-User":    "test_member@test.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -582,9 +582,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         patch "/api/v1/routes/#{route.id}",
               params:  request_body,
               headers: {
-                "x-icdc-account": 'test',
-                "x-icdc-role":    'member',
-                Authorization:    JWT_MEMBER
+                "X-Auth-Account": "test",
+                "X-Auth-Role":    "member",
+                "X-Auth-User":    "test_member@test.com"
               }
       end.to change { route.reload.certificate_id }.from(cert.id).to(nil)
       expect(response).to have_http_status(:ok)
@@ -606,9 +606,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       delete "/api/v1/routes/#{route.id}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'test',
-               "x-icdc-role":    'member',
-               Authorization:    JWT_MEMBER
+               "X-Auth-Account": "test",
+               "X-Auth-Role":    "member",
+               "X-Auth-User":    "test_member@test.com"
              }
       expect(response).to have_http_status(:no_content)
       expect(Route.count).to eq(0)
@@ -619,9 +619,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       delete "/api/v1/routes/#{rand { 1..100 }}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'location',
-               "x-icdc-role":    'operator',
-               Authorization:    JWT_LOCATION_OPERATOR
+               "X-Auth-Account": "location",
+               "X-Auth-Role":    "operator",
+               "X-Auth-User":    "test_location_operator@test.com"
              }
       expect(response).to have_http_status(:not_found)
     end
@@ -640,9 +640,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       delete "/api/v1/routes/#{route.id}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'test',
-               "x-icdc-role":    'admin',
-               Authorization:    JWT_ADMIN
+               "X-Auth-Account": "test",
+               "X-Auth-Role":    "admin",
+               "X-Auth-User":    "test_admin@test.com"
              }
       expect(response).to have_http_status(:not_found)
     end
@@ -661,9 +661,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       delete "/api/v1/routes/#{route.id}",
              params:  nil,
              headers: {
-               "x-icdc-account": 'test',
-               "x-icdc-role":    'member',
-               Authorization:    JWT_MEMBER
+               "X-Auth-Account": "test",
+               "X-Auth-Role":    "member",
+               "X-Auth-User":    "test_member@test.com"
              }
       expect(response).to have_http_status(:not_found)
     end
