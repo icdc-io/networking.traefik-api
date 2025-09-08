@@ -1,6 +1,8 @@
 class CloudGateway < ApplicationRecord
   attribute :cloudgw_instance, :string
   has_many :routes, dependent: :destroy
+  has_many :account_certificates, class_name: "Certificate",
+                                  primary_key: :account, foreign_key: :account
   validates :cloudgw_id, uniqueness: true
 
   after_destroy do
@@ -16,7 +18,7 @@ class CloudGateway < ApplicationRecord
     generated_config = config_template
     routes.each { |route| route.merge_config(generated_config) }
 
-    generated_config["tls"] = tls if Certificate.where(account:).any?
+    generated_config["tls"] = tls if account_certificates.any?
     generated_config.each do |name, section|
       section.delete_if { |_key, value| value.empty? }
 
@@ -47,18 +49,10 @@ class CloudGateway < ApplicationRecord
   end
 
   def tls
-    certificates_path = "#{ENV.fetch('TRAEFIK_CERT_PATH', '/etc/traefik')}" \
-                        "/certificates/#{cloudgw_id}/"
-    {
-      "certificates" => Certificate.where(account:).map do |certificate|
-        {
-          "certFile" => "#{certificates_path}#{certificate.name}/" \
-                        "#{certificate.cert_path.split('/').last}",
-          "keyFile"  => "#{certificates_path}#{certificate.name}/" \
-                        "#{certificate.key_path.split('/').last}"
-        }
-      end
-    }
+    path = "#{ENV.fetch('TRAEFIK_CERT_PATH', '/etc/traefik')}" \
+           "/certificates/#{cloudgw_id}/"
+
+    { "certificates" => account_certificates.config(path:) }
   end
 
   def internal_ping_router

@@ -405,10 +405,12 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['route']
-             .except('created_at', 'updated_at', 'routes_services', 'services', 'cloud_gateway')).to eq(
-               route.attributes.except('created_at', 'updated_at',
-                                       'routes_services', 'services', 'cloud_gateway')
-             )
+             .except(*%w[created_at updated_at routes_services services
+                         cloud_gateway type]))
+        .to eq(route.attributes.except(
+                 *%w[created_at updated_at routes_services services
+                     cloud_gateway type]
+               ))
       expect(response.parsed_body['route']['services'][0].except(
                'created_at', 'updated_at'
              )).to eq(
