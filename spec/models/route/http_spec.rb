@@ -89,6 +89,11 @@ RSpec.describe Route::Http, :aggregate_failures do
         it "is not https" do
           expect(route.https?).to be(false)
         end
+
+        it "does not create RedirectScheme middleware" do
+          expect { route.save }
+            .not_to change(Middleware::RedirectScheme, :count)
+        end
       end
 
       context "with tls_termination = \"re-encrypt\"" do
@@ -105,6 +110,11 @@ RSpec.describe Route::Http, :aggregate_failures do
         it "is https" do
           expect(route.https?).to be(true)
         end
+
+        it "does not create RedirectScheme middleware" do
+          expect { route.save }
+            .not_to change(Middleware::RedirectScheme, :count)
+        end
       end
 
       context "with tls_termination = \"edge\"" do
@@ -120,6 +130,11 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "is https" do
           expect(route.https?).to be(true)
+        end
+
+        it "does not create RedirectScheme middleware" do
+          expect { route.save }
+            .not_to change(Middleware::RedirectScheme, :count)
         end
       end
     end
@@ -149,6 +164,11 @@ RSpec.describe Route::Http, :aggregate_failures do
         it "is https" do
           expect(route.https?).to be(true)
         end
+
+        it "does not create RedirectScheme middleware" do
+          expect { route.save }
+            .not_to change(Middleware::RedirectScheme, :count)
+        end
       end
 
       context "with tls_termination = \"edge\"" do
@@ -164,6 +184,11 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "is https" do
           expect(route.https?).to be(true)
+        end
+
+        it "does not create RedirectScheme middleware" do
+          expect { route.save }
+            .not_to change(Middleware::RedirectScheme, :count)
         end
       end
     end
@@ -193,6 +218,11 @@ RSpec.describe Route::Http, :aggregate_failures do
         it "is https" do
           expect(route.https?).to be(true)
         end
+
+        it "creates RedirectScheme middleware" do
+          expect { route.save }
+            .to change(Middleware::RedirectScheme, :count).by(1)
+        end
       end
 
       context "with tls_termination = \"edge\"" do
@@ -208,6 +238,11 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "is https" do
           expect(route.https?).to be(true)
+        end
+
+        it "creates RedirectScheme middleware" do
+          expect { route.save }
+            .to change(Middleware::RedirectScheme, :count).by(1)
         end
       end
     end

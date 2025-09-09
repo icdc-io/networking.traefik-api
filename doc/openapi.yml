@@ -1,6 +1,6 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  version: "1.0"
+  version: "1.3.0"
   title: Appication LoadBalancer API
   description: >
     # Introduction
@@ -19,6 +19,7 @@ info:
 
 
     In case of using multiple virtual machines in the `Instance Group` by default all requests are balanced by round-robin algorithm:
+
       - first request goes to first instance;
       - second request goes to second instance;
       - so on until we reach end of the list of the `Instance Group` then starting again with the first instance.
@@ -29,14 +30,14 @@ info:
 
     **Web-route** is a rule created on ALB which defines what hostname traffic should be accepted and what target webservers and port the public traffic should be routed to.
 
-    Web-routes can have overlap hostnames as far they have different `/path` specified.
-    Also web-routes defines health-check rules to find live members of `Instance Group`.
+    Web-routes can have overlap hostnames as far they have different `/path` specified. Also web-routes defines health-check rules to find live members of `Instance Group`.
 
     ## Cloud Gateways
 
     **Application LoadBalancer** software installed on an instance of **CloudGateway** which is a special-purposed small multi-functional virtual machine attached to account's network.
 
     By default each organizational account has at least one `Cloud Gateway`.
+
   contact:
     email: support@icdc.io
   license:
@@ -47,7 +48,7 @@ servers:
     url: https://api.{loc}.icdc.io/api/traefik_manager/v1
     variables:
       loc:
-        default: dcz
+        default: dcz.lab
         description: 3-letter code of location
   - description: Location-local URL
     url: http://traefik.cloud-networking.svc:3000/api/v1
@@ -56,23 +57,20 @@ servers:
 tags:
   - name: ALB Gateways
     description: >
-      **Application LoadBalancer** functionality allows to configure accepting of public HTTP traffic from internet and sending it to webservers or applications hosted on virtual machines. So in terms of networking it works as gateway for public web traffic to your account workloads.
-      ALB Gateway is hosted on special-purposed managed virtual machines, **CloudGateway** instances.
-      Sending requests to the `/gateways` endpoint, you can list account's ALB, retrieve details or update configuration of specific ALB.
+      **Application LoadBalancer** functionality allows to configure accepting of public HTTP traffic from internet and sending it to webservers or applications hosted on virtual machines. So in terms of networking it works as gateway for public web traffic to your account workloads. ALB Gateway is hosted on special-purposed managed virtual machines, **CloudGateway** instances. Sending requests to the `/gateways` endpoint, you can list account's ALB, retrieve details or update configuration of specific ALB.
+
   - name: Certificates
     description: >
-      **Certificates** allow to secure communication to the website and allows to terminate (decrypt) HTTPS traffic on ALB Gateway and then send to un-encrypted port on the VM (`edge` termination) or encrypted port on the VM (`re-encrypt` termination).
-      Long-term certificates for your domains can be purchased from vendors.
-      Sending requests to the `/certificates` endpoint, you can list uploaded certificates, upload new one or delete.
+      **Certificates** allow to secure communication to the website and allows to terminate (decrypt) HTTPS traffic on ALB Gateway and then send to un-encrypted port on the VM (`edge` termination) or encrypted port on the VM (`re-encrypt` termination). Long-term certificates for your domains can be purchased from vendors. Sending requests to the `/certificates` endpoint, you can list uploaded certificates, upload new one or delete.
+
   - name: Routes
     description: >
-      **Routes** enable the creation of public HTTP routes for sites or web applications deployed on virtual machines.
-      Routes also facilitate TLS termination, health checks, and load balancing between **Instance Groups (Services)** using weights.
-      Sending requests to the /routes endpoint, you can list created routes, retrieve details, update existing ones, or create new routes.
+      **Routes** enable the creation of public HTTP routes for sites or web applications deployed on virtual machines. Routes also facilitate TLS termination, health checks, and load balancing between **Instance Groups (Services)** using weights. Sending requests to the /routes endpoint, you can list created routes, retrieve details, update existing ones, or create new routes.
+
   - name: Services
     description: >
-      The **Services** functionality enables users to view configurations of owned services/instance groups deployed within the Compute application.
-      Sending requests to the /services endpoint, you can list owned services.
+      The **Services** functionality enables users to view configurations of owned services/instance groups deployed within the Compute application. Sending requests to the /services endpoint, you can list owned services.
+
 paths:
   /gateways:
     get:
@@ -85,6 +83,7 @@ paths:
 
 
         Role-based access:
+
           - `admin` role in`operator` account see all gateways of all accounts
           - `admin`/`owner`, `member` roles see gateways in attached to account
       security:
@@ -103,14 +102,7 @@ paths:
           $ref: "#/components/responses/server_error"
       x-codeSamples:
         - lang: cURL
-          source: |-
-            curl -X GET \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer $TOKEN" \
-              -H "x-icdc-account: $ACCOUNT" \
-              -H "x-icdc-role: $ROLE" \
-              https://api.$LOC.icdc.io/api/traefik_manager/v1/gateways
-              
+          source: "curl -X GET \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H \"x-icdc-account: $ACCOUNT\" \\\n  -H \"x-icdc-role: $ROLE\" \\\n  https://api.$LOC.icdc.io/api/traefik_manager/v1/gateways\n  "
         - lang: Python
           source: |-
             import requests
@@ -125,7 +117,6 @@ paths:
 
             response = requests.get(url, headers=headers)
             print(response.json())
-
         - lang: JavaScript (Axios)
           source: |-
             const axios = require('axios');
@@ -146,7 +137,6 @@ paths:
             .catch(error => {
                 console.error(error);
             });
-
         - lang: Node.js (HTTPS)
           source: |-
             const https = require('https');
@@ -180,7 +170,6 @@ paths:
             });
 
             req.end();
-
         - lang: Go
           source: |-
             package main
@@ -211,7 +200,6 @@ paths:
                 body, _ := ioutil.ReadAll(resp.Body)
                 fmt.Println(string(body))
             }
-
         - lang: Ruby
           source: |-
             require 'net/http'
@@ -230,7 +218,6 @@ paths:
             end
 
             puts response.body
-
         - lang: Java
           source: |-
             import java.io.BufferedReader;
@@ -281,11 +268,11 @@ paths:
           Account: []
           Role: []
       description: >
-        This endpoint is called from CloudGateway Automation only.
-        So we are not going to provide ability to Account Admins to create new gateways
+        This endpoint is called from CloudGateway Automation only. So we are not going to provide ability to Account Admins to create new gateways
 
 
         Role-based access:
+
           - `operator` role can send requests to the endpoint
           - other roles does have to access the endpoint
       requestBody:
@@ -338,9 +325,9 @@ paths:
           Role: []
       description: >
         Role-based access:
+
           - `admin` role in`operator` account see all gateways of all accounts
           - `admin`/`owner`, `member` roles see gateways in attached to account
-
       parameters:
         - name: id
           in: path
@@ -372,7 +359,6 @@ paths:
               -H "x-icdc-account: $ACCOUNT" \
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
-
     put:
       operationId: gateways.update
       tags:
@@ -381,6 +367,7 @@ paths:
       summary: Update Traefik Gateway. Usually use to assign Traefik Gateway to account.
       description: >
         Role-based access:
+
           - `operator` role can send requests to the endpoint
           - other roles does have to access the endpoint
       security:
@@ -420,7 +407,6 @@ paths:
           $ref: "#/components/responses/unprocessable_entity"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -445,11 +431,11 @@ paths:
           Account: []
           Role: []
       description: >
-        This endpoint is called from CloudGateway Automation only.
-        So we are not going to provide ability to Account Admins to delete gateways
+        This endpoint is called from CloudGateway Automation only. So we are not going to provide ability to Account Admins to delete gateways
 
 
         Role-based access:
+
           - `operator` role can send requests to the endpoint
           - other roles does have to access the endpoint
       parameters:
@@ -487,8 +473,8 @@ paths:
         - Private
       summary: Return YAML config for Traefik Gateway
       description: >
-        This endpoint is called from CloudGateway Automation only.
-        So we are not going to provide ability to Account Admins to see a Gateway Config
+        This endpoint is called from CloudGateway Automation only. So we are not going to provide ability to Account Admins to see a Gateway Config
+
       parameters:
         - $ref: "#/components/parameters/CloudGatewayId"
       responses:
@@ -513,6 +499,7 @@ paths:
 
 
         Role-based access:
+
           - `operator` role can see all certificates in location
           - `admin`/`owner` role can see all certificates in account
           - `member` role can see only own certificates
@@ -536,7 +523,6 @@ paths:
           $ref: "#/components/responses/forbidden"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -559,12 +545,11 @@ paths:
           Role: []
       summary: Create a new certificate
       description: >
-        This endpoint is used for creating a new SSL certificate and uploading it to a **CloudGateway**.
-        The server automatically checks the validity of the uploaded certificate.
-        After the certificate has been successfully uploaded via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
+        This endpoint is used for creating a new SSL certificate and uploading it to a **CloudGateway**. The server automatically checks the validity of the uploaded certificate. After the certificate has been successfully uploaded via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
 
 
         Role-based access:
+
           - `operator` role can create certificate in any account per location
           - `admin`/`owner` role can create certificate only in the account space
           - `member` role can create certificate only in the account space
@@ -588,7 +573,6 @@ paths:
           $ref: "#/components/responses/unprocessable_entity"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -624,6 +608,7 @@ paths:
 
 
         Role-based access:
+
           - `operator` role can see all certificates in location
           - `admin`/`owner` role can see all certificates in account
           - `member` role can see only own certificates
@@ -650,7 +635,6 @@ paths:
           $ref: "#/components/responses/not_found"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -673,12 +657,11 @@ paths:
           Role: []
       summary: update cert
       description: >
-        The endpoint is called for updating a certificate.
-        The server automatically checks the validity of the updated certificate.
-        After the certificate has been successfully updated via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
+        The endpoint is called for updating a certificate. The server automatically checks the validity of the updated certificate. After the certificate has been successfully updated via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
 
 
         Role-based access:
+
           - `operator` role can manage all certificates in location
           - `admin`/`owner` role can manage all certificates in account
           - `member` role can manage only own certificates
@@ -713,7 +696,6 @@ paths:
           $ref: "#/components/responses/not_found"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -748,6 +730,7 @@ paths:
 
 
         Role-based access:
+
           - `operator` role can manage all certificates in location
           - `admin`/`owner` role can manage all certificates in account
           - `member` role can manage only own certificates
@@ -770,7 +753,6 @@ paths:
           $ref: "#/components/responses/not_found"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -787,12 +769,11 @@ paths:
         - Services
       summary: Show all service endpoints for target workload
       description: >
-        This endpoint is called to retrieve the list of services along with information about VMs' IP addresses.
-        It is typically used for fetching the service_id when users create routes using the API.
-        The information is synchronized with the Compute application automatically every 15 minutes.
+        This endpoint is called to retrieve the list of services along with information about VMs' IP addresses. It is typically used for fetching the service_id when users create routes using the API. The information is synchronized with the Compute application automatically every 15 minutes.
 
 
         Role-based access:
+
           - `operator` role can see all services in the location
           - `admin`/`owner` role can see all services in account
           - `member` role can see only own services
@@ -814,7 +795,6 @@ paths:
           $ref: "#/components/responses/unauthorized"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -832,6 +812,7 @@ paths:
       summary: Get info about existing routes
       description: >
         Role-based access:
+
           - `operator` role can see all routes in the location
           - `admin`/`owner` role can see all routes in account
           - `member` role can see only own routes
@@ -869,6 +850,7 @@ paths:
       summary: Create a new route
       description: >
         Role-based access:
+
           - `operator` role can create routes in any account per location
           - `admin`/`owner` role can create route only in the account space
           - `member` role can create route only in the account space
@@ -898,7 +880,6 @@ paths:
           $ref: "#/components/responses/unprocessable_entity"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -916,9 +897,7 @@ paths:
                   "owner": " user@example.com",
                   "cloud_gateway_id": "1",
                   "path": "/",
-                  "source_proto": "tcp",
-                  "destination_proto": "tcp",
-                  "ip_version": "4",
+                  "ip_version": 4,
                   "services": [
                     {
                       "id": "1"
@@ -943,7 +922,6 @@ paths:
                 }
               }' \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes
-
   /routes/{id}:
     get:
       operationId: routes.get
@@ -952,6 +930,7 @@ paths:
       summary: Show info about selected route
       description: >
         Role-based access:
+
           - `operator` role can see all routes in the location
           - `admin`/`owner` role can see all routes in account
           - `member` role can see only own routes
@@ -984,7 +963,6 @@ paths:
           $ref: "#/components/responses/not_found"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -1001,6 +979,7 @@ paths:
       summary: Add routes
       description: >
         Role-based access:
+
           - `operator` role can modify all routes in the location
           - `admin`/`owner` role can  modify routes in the account space
           - `member` role can modify only own routes
@@ -1041,7 +1020,6 @@ paths:
           $ref: "#/components/responses/unprocessable_entity"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -1059,9 +1037,7 @@ paths:
                   "owner": " user@example.com",
                   "cloud_gateway_id": "1",
                   "path": "/",
-                  "source_proto": "tcp",
-                  "destination_proto": "tcp",
-                  "ip_version": "4",
+                  "ip_version": 4,
                   "services": [
                     {
                       "id": "1"
@@ -1086,7 +1062,6 @@ paths:
                 }
               }' \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
-
     delete:
       operationId: routes.delete
       tags:
@@ -1094,10 +1069,10 @@ paths:
       summary: Delete route
       description: >
         Role-based access:
+
           - `operator` role can delete each route in the location
           - `admin`/`owner` role can delete routes only in the account space
           - `member` role can delete only own routes
-
       security:
         - JWT: []
           Account: []
@@ -1124,7 +1099,6 @@ paths:
           $ref: "#/components/responses/not_found"
         "500":
           $ref: "#/components/responses/server_error"
-
       x-codeSamples:
         - lang: cURL
           source: |-
@@ -1156,7 +1130,6 @@ components:
       type: apiKey
       in: path
       name: UUID
-
   schemas:
     error:
       type: object
@@ -1394,13 +1367,10 @@ components:
           example: 6587
         insecure:
           type: string
-          example: None
+          example: ""
         tls_termination:
           type: string
-          example: Edge
-        labels:
-          type: string
-          example: KV
+          example: edge
         cloud_gateway:
           $ref: "#/components/schemas/Gateway"
         cloud_gateway_id:
@@ -1409,12 +1379,6 @@ components:
         certificate_id:
           type: integer
           example: 1
-        source_proto:
-          type: string
-          example: tcp
-        destination_proto:
-          type: string
-          example: tcp
         ip_version:
           type: integer
           example: 4
@@ -1429,35 +1393,66 @@ components:
           type: boolean
           example: true
         healthcheck:
-          type: object
-          properties:
-            path:
-              type: string
-              example: "/"
-            scheme:
-              type: string
-              example: https
-            hostname:
-              type: string
-              example: check-cors.loc.icdc.io
-            port:
-              type: integer
-              example: 8080
-            interval:
-              type: integer
-              example: 15
-            timeout:
-              type: integer
-              example: 3
-            headers:
-              type: string
-              example: { "x-icdc-account": "devel", "x-icdc-role": "admin" }
-            method:
-              type: string
-              example: POST
-            follow_redirects:
-              type: boolean
-              example: true
+          $ref: "#/components/schemas/Healthcheck"
+        middlewares:
+          type: array
+          items:
+            $ref: "#/components/schemas/Middleware"
+    Healthcheck:
+      type: object
+      properties:
+        path:
+          type: string
+          example: "/"
+        scheme:
+          type: string
+          example: https
+        hostname:
+          type: string
+          example: check-cors.loc.icdc.io
+        port:
+          type: integer
+          example: 8080
+        interval:
+          type: integer
+          example: 15
+        timeout:
+          type: integer
+          example: 3
+        headers:
+          type: string
+          example: {"x-auth-account": "devel", "x-auth-role": "admin"}
+        method:
+          type: string
+          example: POST
+        follow_redirects:
+          type: boolean
+          example: true
+    Middleware:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          readOnly: true
+        route_id:
+          type: integer
+          example: 1
+          readOnly: true
+        type:
+          type: string
+          example: RedirectScheme
+        options:
+          type: string
+          example: {"scheme": "https", "permanent": true}
+        created_at:
+          type: string
+          example: "2025-09-09T11:42:15.168Z"
+          readOnly: true
+        updated_at:
+          type: string
+          example: "2025-09-09T11:42:15.168Z"
+          readOnly: true
   responses:
     apigw_not_allowed:
       description: This API gateway error means selected operation is not supported
@@ -1477,11 +1472,10 @@ components:
             message: Unexpected server-side error
             data:
               message: Unexpected server-side error
-
     unauthorized:
       description: >
-        Request is not authorized, usually because of:
-        bad credentials, expired JWT token, account role is not assigned to authenticated user.
+        Request is not authorized, usually because of: bad credentials, expired JWT token, account role is not assigned to authenticated user.
+
       content:
         application/json:
           schema:
@@ -1494,6 +1488,7 @@ components:
     forbidden:
       description: >
         Request authorized, but current user doesn't have access rights to perform action.
+
       content:
         application/json:
           schema:
@@ -1506,19 +1501,21 @@ components:
     not_found:
       description: >
         Requested object is not found
+
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/error"
           example:
             status: 404
-              #TODO: [DS] maybe rename message as bad request is a 400 code, means that object attributes are malformed or can not be applied
+            #TODO: [DS] maybe rename message as bad request is a 400 code, means that object attributes are malformed or can not be applied
             message: Bad request, not found {object}
             data:
               message: Bad request, not found {object}
     unprocessable_entity:
       description: >
         Unprocessable entity.
+
       content:
         application/json:
           schema:
