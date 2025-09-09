@@ -408,7 +408,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['route']
              .except(*%w[created_at updated_at routes_services services
-                         cloud_gateway type]))
+                         cloud_gateway type middlewares]))
         .to eq(route.attributes.except(
                  *%w[created_at updated_at routes_services services
                      cloud_gateway type]

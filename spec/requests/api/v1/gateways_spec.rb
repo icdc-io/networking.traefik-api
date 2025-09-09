@@ -365,13 +365,14 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       end
       cert = create_certificate(account: 'test')
       route = create(
-        :route,
-        cloud_gateway_id: gateway.id,
-        owner:            'member@example.com',
-        certificate_id:   cert.id,
-        tls_termination:  "edge",
-        insecure:         "redirect"
+        :route_http,
+        cloud_gateway:   gateway,
+        owner:           'member@example.com',
+        certificate:     cert,
+        tls_termination: "edge",
+        insecure:        "redirect"
       )
+      middleware = route.middlewares.last
       routes_service = add_routes_services(route, services.map do |service|
         { id: service[:service].id, weight: service[:weight] }
       end)
@@ -414,7 +415,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
             "#{route.name}-http"  => {
               "service"     => routes_service.first.group_name,
               "rule"        => "Host(`#{route.hostname}`)",
-              "middlewares" => [ "#{route.name}-redirect" ],
+              "middlewares" => [ middleware.name ],
               "entryPoints" => [ "web" ]
             },
             "#{route.name}-https" => {
@@ -425,7 +426,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
             }
           },
           "middlewares" => {
-            "#{route.name}-redirect" => {
+            middleware.name => {
               "redirectScheme" => {
                 "scheme"    => "https",
                 "permanent" => true
