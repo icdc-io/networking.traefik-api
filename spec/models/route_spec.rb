@@ -12,7 +12,7 @@ RSpec.describe Route, :aggregate_failures do
   # certificate_id: nil,
   # created_at: Mon, 15 Apr 2024 09:47:49.737346000 UTC +00:00,
   # updated_at: Mon, 15 Apr 2024 09:47:49.737346000 UTC +00:00,
-  # owner: "test_member@test.com",
+  # owner: "user@example.com",
   # ip_version: 4,
   # healthcheck_enabled: false,
   # services: nil,

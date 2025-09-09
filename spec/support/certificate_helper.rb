@@ -83,7 +83,7 @@ def create_certificate(params = {})
                                             "-----END PRIVATE KEY-----\n"
   params['ca']      ||= params[:ca]      || ""
   params['dest_ca'] ||= params[:dest_ca] || ""
-  params['owner']   ||= params[:owner]   || "test_member@test.com"
+  params['owner']   ||= params[:owner]   || "user@example.com"
   params['name']    ||= params[:name]    || rand(1_000_000_000..9_999_999_999).to_s(36)
   params['account'] ||= params[:account] || 'test'
   User.current_user = User.new(account: params['account'])

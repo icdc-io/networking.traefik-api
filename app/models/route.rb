@@ -5,7 +5,7 @@ class Route < ApplicationRecord
 
   has_many :routes_services, dependent: :destroy
   has_many :services, through: :routes_services
-  has_many :middlewares, dependent: :destroy
+  # has_many :middlewares, dependent: :destroy
 
   attribute :services
   attribute :routes_services
@@ -14,9 +14,9 @@ class Route < ApplicationRecord
 
   alias_attribute :cloudgateway, :cloud_gateway
 
-  before_validation { self.ip_version ||= "4" }
+  before_validation { self.ip_version ||= 4 }
 
-  before_save do
+  before_save do # TODO: API backward capatibility, should be removed
     self.type ||= tls_termination == "passthrough" ? "Route::Tcp" : "Route::Http"
   end
 
@@ -25,7 +25,6 @@ class Route < ApplicationRecord
   validates :target_port, numericality: { in: 0..65_535 }, allow_nil: true
   validates :owner, presence: true
   validates :ip_version, inclusion: { in: [ 4, 6 ] }
-  # validates :healthcheck_enabled
 
   def update(data, new_services)
     update!(data)
@@ -134,7 +133,7 @@ class Route < ApplicationRecord
     route_services.map do |route_service|
       {
         "name"   => route_service.name,
-        "weight" => route_service.value
+        "weight" => route_service.value || 1
       }
     end
   end

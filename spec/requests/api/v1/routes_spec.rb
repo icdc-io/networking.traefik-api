@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe 'Api::V1::RoutesController', :aggregate_failures do
   before do
-    User.current_user = User.new(userid: 'test_member@test.com', token: nil,
+    User.current_user = User.new(userid: 'member@example.com', token: nil,
                                  account: 'test', role: 'member')
     $gateway = create(:cloud_gateway, account: 'test')
     $certificate = create_certificate(account: 'test')
@@ -11,7 +11,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
     $route = create(
       :route,
       cloud_gateway_id: $gateway.id,
-      owner:            'test_member@test.com',
+      owner:            'member@example.com',
       certificate_id:   $certificate.id
     )
     $routes_service = create(:routes_service, route:   $route,
@@ -29,34 +29,34 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       test_count = rand(1..5)
       test_count.times do
         # Member's account + member's email
-        service = create(:service)
+        service = create(:service, owner: 'member@example.com')
         cert = create_certificate(account: 'test')
         route = create(
           :route,
           cloud_gateway_id: gateway_test.id,
-          owner:            'test_member@test.com',
+          owner:            'member@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
 
         # Member's account + other email
-        service = create(:service)
+        service = create(:service, owner: 'not_member@example.com')
         cert = create_certificate(account: 'test')
         route = create(
           :route,
           cloud_gateway_id: gateway_test.id,
-          owner:            'not_member@test.com',
+          owner:            'not_member@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
 
         # Other account + member's email
-        service = create(:service)
+        service = create(:service, owner: 'member@example.com')
         cert = create_certificate(account: 'icdc')
         route = create(
           :route,
           cloud_gateway_id: gateway_icdc.id,
-          owner:            'test_member@test.com',
+          owner:            'member@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
@@ -67,7 +67,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count)
@@ -79,34 +79,34 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       test_count = rand(1..5)
       test_count.times do
         # Member's account + member's email
-        service = create(:service)
+        service = create(:service, owner: 'member@example.com')
         cert = create_certificate(account: 'test')
         route = create(
           :route,
           cloud_gateway_id: gateway_test.id,
-          owner:            'test_admin@test.com',
+          owner:            'admin@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
 
         # Member's account + other email
-        service = create(:service)
+        service = create(:service, owner: 'not_member@example.com')
         cert = create_certificate(account: 'test')
         route = create(
           :route,
           cloud_gateway_id: gateway_test.id,
-          owner:            'not_member@test.com',
+          owner:            'not_member@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
 
         # Other account + member's email
-        service = create(:service)
+        service = create(:service, owner: 'admin@example.com')
         cert = create_certificate(account: 'icdc')
         route = create(
           :route,
           cloud_gateway_id: gateway_icdc.id,
-          owner:            'test_admin@test.com',
+          owner:            'admin@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
@@ -117,7 +117,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "admin",
-            "X-Auth-User":    "test_admin@test.com"
+            "X-Auth-User":    "admin@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 2)
@@ -129,34 +129,34 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       test_count = rand(1..5)
       test_count.times do
         # Member's account + member's email
-        service = create(:service)
+        service = create(:service, owner: 'member@example.com')
         cert = create_certificate(account: 'test')
         route = create(
           :route,
           cloud_gateway_id: gateway_test.id,
-          owner:            'test_member@test.com',
+          owner:            'member@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
 
         # Member's account + other email
-        service = create(:service)
+        service = create(:service, owner: 'not_member@example.com')
         cert = create_certificate(account: 'test')
         route = create(
           :route,
           cloud_gateway_id: gateway_test.id,
-          owner:            'not_member@test.com',
+          owner:            'not_member@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
 
         # Other account + member's email
-        service = create(:service)
+        service = create(:service, owner: 'member@example.com')
         cert = create_certificate(account: 'icdc')
         route = create(
           :route,
           cloud_gateway_id: gateway_icdc.id,
-          owner:            'test_member@test.com',
+          owner:            'member@example.com',
           certificate_id:   cert.id
         )
         add_routes_services(route, [ { id: service.id } ])
@@ -167,7 +167,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 3)
@@ -177,13 +177,14 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
   describe "POST /api/v1/routes" do
     it 'creates a new route' do
       gateway = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: "member@example.com")
       cert = create_certificate(account: 'test')
 
       request_body = { 'route' => $route.attributes
                                         .slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
                                                'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels')
                                         .merge(
+                                          'owner' => "member@example.com",
                                           cloud_gateway_id: gateway.id,
                                           certificate_id:   cert.id,
                                           services:         [ { id: service.id } ]
@@ -193,7 +194,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "test",
              "X-Auth-Role":    "member",
-             "X-Auth-User":    "test_member@test.com"
+             "X-Auth-User":    "member@example.com"
            }
       expect(response).to have_http_status(:created)
       expect(Route.count).to eq(1)
@@ -205,17 +206,15 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
 
     it 'creates a new route with multiple services' do
       gateway = create(:cloud_gateway, account: 'test')
-      services = []
-      test_count = rand(2..7)
-      test_count.times do
-        services << create(:service)
-      end
+      test_count = 3
+      services = create_list(:service, test_count, owner: 'member@example.com')
       cert = create_certificate(account: 'test')
 
       request_body = { 'route' => $route.attributes
                                         .slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
                                                'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels')
                                         .merge(
+                                          'owner' => "member@example.com",
                                           cloud_gateway_id: gateway.id,
                                           certificate_id:   cert.id,
                                           services:         services.map do |service|
@@ -228,7 +227,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "test",
              "X-Auth-Role":    "member",
-             "X-Auth-User":    "test_member@test.com"
+             "X-Auth-User":    "member@example.com"
            }
       expect(response).to have_http_status(:created)
       expect(Route.count).to eq(1)
@@ -247,14 +246,15 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         :route,
         target_port:      11_111,
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com'
+        owner:            'member@example.com'
       )
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       add_routes_services(route, [ { id: service.id } ])
       request_body = { 'route' => $route.attributes
                                         .slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
                                                'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels')
                                         .merge(
+                                          'owner'           => "member@example.com",
                                           'target_port'     => 22_222,
                                           :cloud_gateway_id => gateway.id,
                                           :services         => [ { id: service.id } ]
@@ -264,24 +264,25 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "test",
              "X-Auth-Role":    "member",
-             "X-Auth-User":    "test_member@test.com"
+             "X-Auth-User":    "member@example.com"
            }
       expect(response).to have_http_status(:created)
     end
 
     it 'valdates route name on uniqueness among gateway' do
       gateway = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       create(
         :route,
         name:             'test_name',
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com'
+        owner:            'member@example.com'
       )
       request_body = { 'route' => $route.attributes
                                         .slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
                                                'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels')
                                         .merge(
+                                          'owner'           => "member@example.com",
                                           'name'            => 'test_name',
                                           :cloud_gateway_id => gateway.id,
                                           :services         => [ { id: service.id } ]
@@ -291,7 +292,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "test",
              "X-Auth-Role":    "member",
-             "X-Auth-User":    "test_member@test.com"
+             "X-Auth-User":    "member@example.com"
            }
       expect(response).to have_http_status(:unprocessable_content)
     rescue ActiveRecord::RecordInvalid => error
@@ -304,14 +305,15 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         :route,
         target_port:      11_111,
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com'
+        owner:            'member@example.com'
       )
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       add_routes_services(route, [ { id: service.id } ])
       request_body = { 'route' => route.attributes
                                        .slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
                                               'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels')
                                        .merge(
+                                         'owner'           => "member@example.com",
                                          'target_port'     => 11_111,
                                          :cloud_gateway_id => gateway.id,
                                          :services         => [ { id: service.id } ]
@@ -321,7 +323,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "test",
              "X-Auth-Role":    "member",
-             "X-Auth-User":    "test_member@test.com"
+             "X-Auth-User":    "member@example.com"
            }
       expect(response).to have_http_status(:unprocessable_content)
     rescue ActiveRecord::RecordInvalid => error
@@ -330,7 +332,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
 
     it "renders 404 if cloud_gateway does not exist" do
       create(:cloud_gateway, account: "test")
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       cert = create_certificate(account: "test")
 
       request_body = {
@@ -349,7 +351,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "test",
                "X-Auth-Role":    "member",
-               "X-Auth-User":    "test_member@test.com"
+               "X-Auth-User":    "member@example.com"
              }
       end.not_to change(Route, :count)
       expect(response).to have_http_status(:not_found)
@@ -357,8 +359,8 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
 
     it "renders 404 if cloud_gateway from another account" do
       gateway = create(:cloud_gateway, account: "not_a_test")
-      service = create(:service)
-      cert = create_certificate(account: "test")
+      service = create(:service, owner: 'member@example.com')
+      cert = create_certificate(account: "not_a_test")
 
       request_body = {
         "route" => $route
@@ -376,7 +378,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "test",
                "X-Auth-Role":    "member",
-               "X-Auth-User":    "test_member@test.com"
+               "X-Auth-User":    "member@example.com"
              }
       end.not_to change(Route, :count)
       expect(response).to have_http_status(:not_found)
@@ -386,12 +388,12 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
   describe "GET /api/v1/routes/:id" do
     it 'shows route details' do
       gateway_test = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       cert = create_certificate(account: 'test')
       route = create(
         :route,
         cloud_gateway_id: gateway_test.id,
-        owner:            'test_member@test.com',
+        owner:            'member@example.com',
         certificate_id:   cert.id
       )
       routes_service = add_routes_services(route, [ { id: service.id } ])
@@ -401,7 +403,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body['route']
@@ -429,19 +431,19 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
 
     it 'doesn\'t show routes from different account' do
       gateway = create(:cloud_gateway, account: 'not_test')
-      service = create(:service)
+      service = create(:service, owner: 'admin@example.com')
       cert = create_certificate(account: 'not_test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com',
+        owner:            'member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
@@ -450,19 +452,19 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "admin",
-            "X-Auth-User":    "test_admin@test.com"
+            "X-Auth-User":    "admin@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
 
     it 'doesn\'t show not own route to member' do
       gateway = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: 'not_member@example.com')
       cert = create_certificate(account: 'test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'not_test_member@test.com',
+        owner:            'not_member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
@@ -471,7 +473,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -480,17 +482,17 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
   describe "PUT /api/v1/routes/:id" do
     it 'updates route' do
       gateway = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       cert = create_certificate(account: 'test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com',
+        owner:            'member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
 
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       cert = create_certificate(account: 'test')
 
       request_body = { 'route' => $route.attributes
@@ -506,7 +508,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
 
       expect(response).to have_http_status(:ok)
@@ -521,19 +523,19 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
 
     it 'doesn\'t update routes from different account' do
       gateway = create(:cloud_gateway, account: 'not_test')
-      service = create(:service)
+      service = create(:service, owner: 'admin@example.com')
       cert = create_certificate(account: 'not_test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com',
+        owner:            'member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
@@ -542,19 +544,19 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "admin",
-            "X-Auth-User":    "test_admin@test.com"
+            "X-Auth-User":    "admin@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
 
     it 'doesn\'t update not own route to member' do
       gateway = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: 'not_member@example.com')
       cert = create_certificate(account: 'test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'not_test_member@test.com',
+        owner:            'not_member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
@@ -563,7 +565,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -573,10 +575,12 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       route = create(
         :route,
         cloud_gateway_id: create(:cloud_gateway, account: 'test').id,
-        owner:            'test_member@test.com',
+        owner:            'member@example.com',
         certificate_id:   cert.id
       )
-      add_routes_services(route, [ { id: create(:service).id } ])
+      add_routes_services(route,
+                          [ { id: create(:service,
+                                         owner: 'member@example.com').id } ])
 
       request_body = { "route" => { "certificate_id" => "" } }
 
@@ -586,7 +590,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
               headers: {
                 "X-Auth-Account": "test",
                 "X-Auth-Role":    "member",
-                "X-Auth-User":    "test_member@test.com"
+                "X-Auth-User":    "member@example.com"
               }
       end.to change { route.reload.certificate_id }.from(cert.id).to(nil)
       expect(response).to have_http_status(:ok)
@@ -596,12 +600,12 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
   describe "DELETE /api/v1/routes/:id" do
     it 'deletes route' do
       gateway = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: 'member@example.com')
       cert = create_certificate(account: 'test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com',
+        owner:            'member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
@@ -610,7 +614,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "test",
                "X-Auth-Role":    "member",
-               "X-Auth-User":    "test_member@test.com"
+               "X-Auth-User":    "member@example.com"
              }
       expect(response).to have_http_status(:no_content)
       expect(Route.count).to eq(0)
@@ -623,19 +627,19 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "location",
                "X-Auth-Role":    "operator",
-               "X-Auth-User":    "test_location_operator@test.com"
+               "X-Auth-User":    "operator@example.com"
              }
       expect(response).to have_http_status(:not_found)
     end
 
     it 'doesn\'t delete routes from different account' do
       gateway = create(:cloud_gateway, account: 'not_test')
-      service = create(:service)
+      service = create(:service, owner: 'admin@example.com')
       cert = create_certificate(account: 'not_test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com',
+        owner:            'member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
@@ -644,19 +648,19 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "test",
                "X-Auth-Role":    "admin",
-               "X-Auth-User":    "test_admin@test.com"
+               "X-Auth-User":    "admin@example.com"
              }
       expect(response).to have_http_status(:not_found)
     end
 
     it 'doesn\'t delete not own route to member' do
       gateway = create(:cloud_gateway, account: 'test')
-      service = create(:service)
+      service = create(:service, owner: 'not_member@example.com')
       cert = create_certificate(account: 'test')
       route = create(
         :route,
         cloud_gateway_id: gateway.id,
-        owner:            'not_test_member@test.com',
+        owner:            'not_member@example.com',
         certificate_id:   cert.id
       )
       add_routes_services(route, [ { id: service.id } ])
@@ -665,7 +669,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "test",
                "X-Auth-Role":    "member",
-               "X-Auth-User":    "test_member@test.com"
+               "X-Auth-User":    "member@example.com"
              }
       expect(response).to have_http_status(:not_found)
     end
