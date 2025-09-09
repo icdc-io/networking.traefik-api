@@ -67,7 +67,7 @@ module Api
         services = @route_params.delete(:services)
         Route.transaction do
           update_certificate
-          @route.update(sanitize_params, services)
+          @route.update(sanitize_params[:route], services)
           if @route.healthcheck_enabled
             if @route.healthcheck
               @route.healthcheck.update!(healthcheck_params)
@@ -119,7 +119,7 @@ module Api
       end
 
       def sanitize_params
-        params.permit(route: [ params_white_list ])
+        params.permit(route: params_white_list)
       end
 
       def params_white_list

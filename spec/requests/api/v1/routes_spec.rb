@@ -508,9 +508,16 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
           }
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body).to eq(route.reload.as_json)
-      expect(response.parsed_body['services'][0]).to eq(service.reload.as_json)
-      expect(response.parsed_body['routes_services'][0]).to eq(route.routes_services.first.as_json)
+      body = response.parsed_body
+      expect(body).to eq(route.reload.as_json)
+      expect(body.slice(
+               'name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
+               'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels'
+             )).to eq(request_body['route'].except(
+                        :cloud_gateway_id, :certificate_id, :services
+                      ))
+      expect(body['services'][0]).to eq(service.reload.as_json)
+      expect(body['routes_services'][0]).to eq(route.routes_services.first.as_json)
     end
 
     it 'returns \'404\' if route doesn\'t exist' do
