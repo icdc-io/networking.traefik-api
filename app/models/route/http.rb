@@ -1,7 +1,11 @@
 class Route
   class Http < Route
+    has_one :redirect_middleware, class_name:  "Middleware::RedirectScheme",
+                                  foreign_key: :route_id
+
     before_validation { self.insecure = insecure.to_s.downcase }
     before_validation { self.tls_termination = tls_termination.to_s.downcase }
+    before_validation { update_redirect_middleware }
 
     validates :path, presence: true
     validates :insecure, inclusion: { in: [ "" ] },
@@ -20,7 +24,8 @@ class Route
 
       add_http_router(generated_config) if http?
       add_https_router(generated_config) if https?
-      add_redirect_middleware(generated_config) if redirect?
+
+      add_middlewares(generated_config)
 
       add_services(generated_config)
 
@@ -36,7 +41,11 @@ class Route
         "entryPoints" => [ "web" ]
       }
 
-      router["middlewares"] = [ "#{name}-redirect" ] if redirect?
+      if redirect?
+        router["middlewares"] = [ redirect_middleware.name ]
+      elsif middlewares.any?
+        router["middlewares"] = middlewares.names
+      end
 
       generated_config["http"]["routers"]["#{name}-http"] = router
     end
@@ -48,6 +57,13 @@ class Route
         "tls"         => certificate ? true : { "certResolver" => "default" },
         "entryPoints" => [ "websecure" ]
       }
+
+      mws = if redirect?
+        middlewares.where.not(type: "Middleware::RedirectScheme")
+      else
+        middlewares
+      end
+      router["middlewares"] = mws.names if mws.any?
 
       generated_config["http"]["routers"]["#{name}-https"] = router
     end
@@ -71,6 +87,15 @@ class Route
 
     def schema
       tls_termination == "re-encrypt" ? "https" : "http"
+    end
+
+    def update_redirect_middleware
+      return redirect_middleware&.destroy! unless redirect?
+
+      return if redirect_middleware
+
+      middlewares.new(type:    "Middleware::RedirectScheme",
+                      options: { "scheme" => "https", "permanent" => true })
     end
   end
 end

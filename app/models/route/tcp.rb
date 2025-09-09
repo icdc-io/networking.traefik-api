@@ -26,6 +26,7 @@ class Route
         "rule"    => "HostSNI(`#{hostname}`)",
         "tls"     => { "passthrough" => true }
       }
+      router["middlewares"] = middlewares.names if middlewares.any?
 
       generated_config["tcp"]["routers"][name] = router
     end

@@ -5,7 +5,7 @@ class Route < ApplicationRecord
 
   has_many :routes_services, dependent: :destroy
   has_many :services, through: :routes_services
-  # has_many :middlewares, dependent: :destroy
+  has_many :middlewares, dependent: :destroy
 
   attribute :services
   attribute :routes_services
@@ -34,10 +34,42 @@ class Route < ApplicationRecord
     update_services(new_services)
   end
 
+  def as_json
+    super.merge("middlewares" => middlewares.where(type: show_middlewares))
+  end
+
   private
 
-  def pretty_type
+  def config_type
     self.class.name.split("::").last.downcase
+  end
+
+  def show_middlewares
+    [
+      "Middleware::AddPrefix",
+      "Middleware::BasicAuth",
+      # "Middleware::Buffering",
+      # "Middleware::Chain",
+      # "Middleware::CircuitBreaker",
+      # "Middleware::Compress",
+      # "Middleware::ContentType",
+      # "Middleware::DigestAuth",
+      # "Middleware::Errors",
+      # "Middleware::ForwardAuth",
+      # "Middleware::GrpcWeb",
+      "Middleware::Header",
+      # "Middleware::InFlightReq",
+      "Middleware::IpAllowList",
+      # "Middleware::PassTlsClientCert",
+      "Middleware::RateLimit",
+      # "Middleware::RedirectRegex",
+      # "Middleware::RedirectScheme",
+      # "Middleware::ReplacePath",
+      # "Middleware::ReplacePathRegex",
+      # "Middleware::Retry",
+      "Middleware::StripPrefix",
+      "Middleware::StripPrefixRegex"
+    ]
   end
 
   def update_services(new_services)
@@ -75,20 +107,6 @@ class Route < ApplicationRecord
 
   private
 
-  def add_redirect_middleware(generated_config)
-    generated_config["http"]["middlewares"]["#{name}-redirect"] =
-      redirect_middleware
-  end
-
-  def redirect_middleware
-    {
-      "redirectScheme" => {
-        "scheme"    => "https",
-        "permanent" => true
-      }
-    }
-  end
-
   def service_name
     if services.one?
       routes_services.first.name
@@ -98,7 +116,7 @@ class Route < ApplicationRecord
   end
 
   def add_services(generated_config)
-    services_section = generated_config[pretty_type]["services"]
+    services_section = generated_config[config_type]["services"]
     route_service = routes_services.first
 
     if route_service.balance_type == "loadbalancer"
@@ -157,5 +175,9 @@ class Route < ApplicationRecord
         lb["weighted"]["healthCheck"] = {}
       end
     end
+  end
+
+  def add_middlewares(generated_config)
+    generated_config[config_type]["middlewares"].merge!(middlewares.config)
   end
 end
