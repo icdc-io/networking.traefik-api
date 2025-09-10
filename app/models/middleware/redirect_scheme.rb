@@ -1,14 +1,26 @@
 class Middleware
   class RedirectScheme < Middleware
-    ALLOWED_OPTIONS  = %i[scheme permanent port].freeze
-    REQUIRED_OPTIONS = %i[scheme].freeze
-
-    # # Redirect to https
-    # http:
-    #   middlewares:
-    #     test-redirectscheme:
-    #       redirectScheme:
-    #         scheme: https
-    #         permanent: true
+    SCHEME = {
+      name:        "RedirectScheme",
+      description: "The RedirectScheme middleware redirects the request if the request scheme is different from the configured scheme.",
+      link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/redirectscheme/",
+      options:     {
+        scheme:    {
+          description: "Scheme of the new URL.",
+          default:     "",
+          required:    true
+        },
+        permanent: {
+          description: "Enable a permanent redirection.",
+          default:     "false",
+          required:    true
+        },
+        port:      {
+          description: "Port of the new URL",
+          default:     "",
+          required:    true
+        }
+      }
+    }.freeze
   end
 end

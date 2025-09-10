@@ -6,6 +6,9 @@ class Route < ApplicationRecord
   has_many :routes_services, dependent: :destroy
   has_many :services, through: :routes_services
   has_many :middlewares, dependent: :destroy
+  has_many :user_middlewares,
+           -> { where.not(type: "Middleware::RedirectScheme") },
+           class_name: "Middleware", inverse_of: :route
 
   attribute :services
   attribute :routes_services
@@ -34,6 +37,9 @@ class Route < ApplicationRecord
     update_services(new_services)
   end
 
+  # NOTE: We do not show RedirectScheme middleware because it only applies to
+  # http router if insecure == redirect, and all user middlewares appliy to
+  # https router in this case.
   def as_json
     super.merge("middlewares" => middlewares.where(type: show_middlewares))
   end
@@ -63,7 +69,7 @@ class Route < ApplicationRecord
       # "Middleware::PassTlsClientCert",
       "Middleware::RateLimit",
       # "Middleware::RedirectRegex",
-      # "Middleware::RedirectScheme",
+      # "Middleware::RedirectScheme", # NOTE: Do not show
       # "Middleware::ReplacePath",
       # "Middleware::ReplacePathRegex",
       # "Middleware::Retry",

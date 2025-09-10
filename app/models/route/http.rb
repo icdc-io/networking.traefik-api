@@ -58,11 +58,7 @@ class Route
         "entryPoints" => [ "websecure" ]
       }
 
-      mws = if redirect?
-        middlewares.where.not(type: "Middleware::RedirectScheme")
-      else
-        middlewares
-      end
+      mws = redirect? ? user_middlewares : middlewares
       router["middlewares"] = mws.names if mws.any?
 
       generated_config["http"]["routers"]["#{name}-https"] = router

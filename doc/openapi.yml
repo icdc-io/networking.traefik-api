@@ -20,6 +20,7 @@ info:
 
     In case of using multiple virtual machines in the `Instance Group` by default all requests are balanced by round-robin algorithm:
 
+
       - first request goes to first instance;
       - second request goes to second instance;
       - so on until we reach end of the list of the `Instance Group` then starting again with the first instance.
@@ -67,6 +68,7 @@ tags:
     description: >
       **Routes** enable the creation of public HTTP routes for sites or web applications deployed on virtual machines. Routes also facilitate TLS termination, health checks, and load balancing between **Instance Groups (Services)** using weights. Sending requests to the /routes endpoint, you can list created routes, retrieve details, update existing ones, or create new routes.
 
+  - name: Middlewares
   - name: Services
     description: >
       The **Services** functionality enables users to view configurations of owned services/instance groups deployed within the Compute application. Sending requests to the /services endpoint, you can list owned services.
@@ -1108,6 +1110,47 @@ paths:
               -H "x-icdc-account: $ACCOUNT" \
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
+  /options/middlewares:
+    get:
+      operationId: options.middlewares.list
+      tags:
+        - Middlewares
+      summary: Get list of available middlewares for drop-down menus
+      description: >
+        Role-based access:
+
+          - `operator` role can see all options
+          - `admin`/`owner` role can see all options
+          - `member` role can see all options
+      security:
+        - JWT: []
+          Account: []
+          Role: []
+        - basicAuth: []
+          Account: []
+          Role: []
+      responses:
+        "200":
+          description: "Operation successful"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MiddlewareOption"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "500":
+          $ref: "#/components/responses/server_error"
+      x-codeSamples:
+        - lang: cURL
+          source: |-
+            curl -X DELETE \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "x-icdc-account: $ACCOUNT" \
+              -H "x-icdc-role: $ROLE" \
+              https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
 components:
   securitySchemes:
     JWT:
@@ -1453,6 +1496,21 @@ components:
           type: string
           example: "2025-09-09T11:42:15.168Z"
           readOnly: true
+    MiddlewareOption:
+      type: object
+      properties:
+        name:
+          type: string
+          example: RedirectScheme
+        description:
+          type: string
+          example: The RedirectScheme middleware redirects the request if the request scheme is different from the configured scheme.
+        link:
+          type: string
+          example: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/redirectscheme/
+        options:
+          type: string
+          example: {"scheme": {"description": "Scheme of the new URL.", "default": "", "required": true}, "permanent": {"description": "Enable a permanent redirection.", "default": false, "required": true}, "port": {"description": "Port of the new URL", "default": "", "required": true}}
   responses:
     apigw_not_allowed:
       description: This API gateway error means selected operation is not supported
