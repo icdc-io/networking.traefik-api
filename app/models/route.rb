@@ -7,7 +7,7 @@ class Route < ApplicationRecord
   has_many :services, through: :routes_services
   has_many :middlewares, dependent: :destroy
   has_many :user_middlewares,
-           -> { where.not(type: "Middleware::RedirectScheme") },
+           -> { where.not(type: "Middleware::Http::RedirectScheme") },
            class_name: "Middleware", inverse_of: :route
 
   attribute :services

@@ -90,7 +90,7 @@ class Route
 
       return if redirect_middleware
 
-      middlewares.new(type:    "Middleware::RedirectScheme",
+      middlewares.new(type:    "Middleware::Http::RedirectScheme",
                       options: { "scheme" => "https", "permanent" => true })
     end
   end

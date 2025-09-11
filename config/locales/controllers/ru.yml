@@ -1,6 +1,6 @@
 ru:
   errors:
-    cloud_gateway: 
+    cloud_gateway:
       record_not_found: 'Неверный запрос, облачный шлюз не найден'
     certificate:
       record_not_found: 'Неверный запрос, сертификат не найден'
@@ -41,3 +41,6 @@ ru:
           update:
             record_invalid: 'Ошибка обновления веб-маршрута. Данные некорректны'
             invalid_foreign_key: 'Ошибка обновления веб-маршрута. Выбранный сертификат не существует'
+        options:
+          middlewares:
+            invalid_route_type: 'Некорректный тип веб-маршрута'

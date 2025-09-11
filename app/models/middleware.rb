@@ -1,4 +1,6 @@
 class Middleware < ApplicationRecord
+  USER_MIDDLEWARES = Http::USER_MIDDLEWARES + Tcp::USER_MIDDLEWARES
+
   belongs_to :route
 
   before_save { self.options = options_hash(options_lines) }
@@ -7,12 +9,14 @@ class Middleware < ApplicationRecord
     name.split("::").last
   end
 
+  delegate :pretty_type, to: :class
+
   def name
-    "#{self.class.pretty_type.gsub(/([a-z])([A-Z])/, '\1-\2').downcase}-#{id}"
+    "#{pretty_type.gsub(/([a-z])([A-Z])/, '\1-\2').downcase}-#{id}"
   end
 
   def config
-    middleware = self.class.pretty_type.sub(/^(.)/, &:downcase)
+    middleware = pretty_type.sub(/^(.)/, &:downcase)
     { name => { middleware => options } }
   end
 
@@ -32,7 +36,7 @@ class Middleware < ApplicationRecord
   end
 
   def as_json
-    super.merge("type"    => self.class.pretty_type,
+    super.merge("type"    => pretty_type,
                 "options" => options_lines.to_h)
   end
 

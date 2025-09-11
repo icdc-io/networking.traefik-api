@@ -92,7 +92,7 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "does not create RedirectScheme middleware" do
           expect { route.save }
-            .not_to change(Middleware::RedirectScheme, :count)
+            .not_to change(Middleware::Http::RedirectScheme, :count)
         end
       end
 
@@ -113,7 +113,7 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "does not create RedirectScheme middleware" do
           expect { route.save }
-            .not_to change(Middleware::RedirectScheme, :count)
+            .not_to change(Middleware::Http::RedirectScheme, :count)
         end
       end
 
@@ -134,7 +134,7 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "does not create RedirectScheme middleware" do
           expect { route.save }
-            .not_to change(Middleware::RedirectScheme, :count)
+            .not_to change(Middleware::Http::RedirectScheme, :count)
         end
       end
     end
@@ -167,7 +167,7 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "does not create RedirectScheme middleware" do
           expect { route.save }
-            .not_to change(Middleware::RedirectScheme, :count)
+            .not_to change(Middleware::Http::RedirectScheme, :count)
         end
       end
 
@@ -188,7 +188,7 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "does not create RedirectScheme middleware" do
           expect { route.save }
-            .not_to change(Middleware::RedirectScheme, :count)
+            .not_to change(Middleware::Http::RedirectScheme, :count)
         end
       end
     end
@@ -221,7 +221,7 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "creates RedirectScheme middleware" do
           expect { route.save }
-            .to change(Middleware::RedirectScheme, :count).by(1)
+            .to change(Middleware::Http::RedirectScheme, :count).by(1)
         end
       end
 
@@ -242,7 +242,7 @@ RSpec.describe Route::Http, :aggregate_failures do
 
         it "creates RedirectScheme middleware" do
           expect { route.save }
-            .to change(Middleware::RedirectScheme, :count).by(1)
+            .to change(Middleware::Http::RedirectScheme, :count).by(1)
         end
       end
     end

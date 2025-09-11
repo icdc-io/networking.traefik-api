@@ -2,7 +2,7 @@ class Middleware
   module Http
     class RateLimit < Middleware
       SCHEME = {
-        type:        pretty_type,
+        type:        "RateLimit",
         description: "The rateLimit middleware ensures that services will receive a fair amount of requests, and allows you to define what fair is.",
         link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/ratelimit/",
         options:     {
@@ -146,10 +146,6 @@ When Redis is not configured, Traefik uses in-memory storage for rate limiting, 
           }
         }
       }.freeze
-      ALLOWED_OPTIONS = %i[
-      ].freeze
-      REQUIRED_OPTIONS = %i[].freeze
-
       # # Here, an average of 100 requests per second is allowed.
       # # In addition, a burst of 200 requests is allowed.
       # # Redis distributed rate limiting is configured with all available options.
