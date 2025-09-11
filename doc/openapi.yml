@@ -1499,7 +1499,7 @@ components:
           readOnly: true
         options:
           type: string
-          example: {"id": 31, "route_id": 1524, "options": {"average": "100", "period": "1s", "burst": "200", "redis.endpoints": "redis-primary.example.com:6379,redis-replica.example.com:6379", "redis.username": "ratelimit-user", "redis.password": "secure-password", "redis.db": "2", "redis.poolSize": "50", "redis.minIdleConns": "10", "redis.maxActiveConns": "200", "redis.readTimeout": "3s", "redis.writeTimeout": "3s", "redis.dialTimeout": "5s", "redis.tls.ca": "/etc/ssl/redis-ca.crt", "redis.tls.cert": "/etc/ssl/redis-client.crt", "redis.tls.key": "/etc/ssl/redis-client.key", "redis.tls.insecureSkipVerify": "false"}, "created_at": "2025-09-11T07:35:25.568Z", "updated_at": "2025-09-11T07:35:25.568Z", "type": "RateLimit"}
+          example: {"average": "100", "period": "1s", "burst": "200", "redis.endpoints": "redis-primary.example.com:6379,redis-replica.example.com:6379", "redis.username": "ratelimit-user", "redis.password": "secure-password", "redis.db": "2", "redis.poolSize": "50", "redis.minIdleConns": "10", "redis.maxActiveConns": "200", "redis.readTimeout": "3s", "redis.writeTimeout": "3s", "redis.dialTimeout": "5s", "redis.tls.ca": "/etc/ssl/redis-ca.crt", "redis.tls.cert": "/etc/ssl/redis-client.crt", "redis.tls.key": "/etc/ssl/redis-client.key", "redis.tls.insecureSkipVerify": "false"}
         created_at:
           type: string
           example: '2025-09-11T07:35:25.568Z'
