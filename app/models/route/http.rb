@@ -1,6 +1,6 @@
 class Route
   class Http < Route
-    has_one :redirect_middleware, class_name:  "Middleware::RedirectScheme",
+    has_one :redirect_middleware, class_name:  "Middleware::Http::RedirectScheme",
                                   foreign_key: :route_id
 
     before_validation { self.insecure = insecure.to_s.downcase }

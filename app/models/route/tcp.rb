@@ -13,6 +13,8 @@ class Route
 
       add_tcp_router(generated_config)
 
+      add_middlewares(generated_config)
+
       add_services(generated_config)
 
       generated_config
