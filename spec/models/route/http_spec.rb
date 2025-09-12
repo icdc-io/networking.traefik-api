@@ -223,6 +223,13 @@ RSpec.describe Route::Http, :aggregate_failures do
           expect { route.save }
             .to change(Middleware::Http::RedirectScheme, :count).by(1)
         end
+
+        it "creates RedirectScheme middleware after update" do
+          route.save
+          expect(route.middlewares.where(type: "Middleware::Http::RedirectScheme").any?).to be(true)
+          route.update_middlewares([])
+          expect(route.middlewares.where(type: "Middleware::Http::RedirectScheme").any?).to be(true)
+        end
       end
 
       context "with tls_termination = \"edge\"" do

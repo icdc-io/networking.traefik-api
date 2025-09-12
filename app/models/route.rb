@@ -7,6 +7,7 @@ class Route < ApplicationRecord
   has_many :services, through: :routes_services
   has_many :middlewares, dependent: :destroy
   has_many :user_middlewares,
+           # -> { where(type: Route.show_middlewares) },
            -> { where.not(type: "Middleware::Http::RedirectScheme") },
            class_name: "Middleware", inverse_of: :route
 
@@ -19,8 +20,13 @@ class Route < ApplicationRecord
 
   before_validation { self.ip_version ||= 4 }
 
-  before_save do # TODO: API backward capatibility, should be removed
+  before_validation do
+    # TODO: API backward capatibility, should be removed
     self.type ||= tls_termination == "passthrough" ? "Route::Tcp" : "Route::Http"
+
+    unless !type || type&.starts_with?("Route::")
+      self.type = "Route::#{type.capitalize}"
+    end
   end
 
   validates :name, presence: true, uniqueness: { scope: :cloud_gateway }
@@ -28,6 +34,7 @@ class Route < ApplicationRecord
   validates :target_port, numericality: { in: 0..65_535 }, allow_nil: true
   validates :owner, presence: true
   validates :ip_version, inclusion: { in: [ 4, 6 ] }
+  validates :type, presence: true
 
   def update(data, new_services)
     update!(data)
@@ -40,43 +47,55 @@ class Route < ApplicationRecord
   # NOTE: We do not show RedirectScheme middleware because it only applies to
   # http router if insecure == redirect, and all user middlewares appliy to
   # https router in this case.
-  def as_json
-    super.merge("middlewares" => middlewares.where(type: show_middlewares))
+  def as_json(options = nil)
+    super.merge("middlewares" => user_middlewares.as_json,
+                "type"        => pretty_type)
+  end
+
+  def update_middlewares(params)
+    self.middlewares = params.to_a.map do |middleware|
+      middleware[:type] = "Middleware::" \
+                          "#{pretty_type.capitalize}::" \
+                          "#{middleware[:type]}"
+      Middleware.new(middleware)
+    end
   end
 
   private
 
-  def config_type
-    self.class.name.split("::").last.downcase
+  def pretty_type
+    type&.delete_prefix("Route::")&.downcase || type
   end
 
-  def show_middlewares
+  def self.show_middlewares
     [
-      "Middleware::AddPrefix",
-      "Middleware::BasicAuth",
-      # "Middleware::Buffering",
-      # "Middleware::Chain",
-      # "Middleware::CircuitBreaker",
-      # "Middleware::Compress",
-      # "Middleware::ContentType",
-      # "Middleware::DigestAuth",
-      # "Middleware::Errors",
-      # "Middleware::ForwardAuth",
-      # "Middleware::GrpcWeb",
-      "Middleware::Header",
-      # "Middleware::InFlightReq",
-      "Middleware::IpAllowList",
-      # "Middleware::PassTlsClientCert",
-      "Middleware::RateLimit",
-      # "Middleware::RedirectRegex",
-      # "Middleware::RedirectScheme", # NOTE: Do not show
-      # "Middleware::ReplacePath",
-      # "Middleware::ReplacePathRegex",
-      # "Middleware::Retry",
-      "Middleware::StripPrefix",
-      "Middleware::StripPrefixRegex"
+      "Middleware::Http::AddPrefix",
+      "Middleware::Http::BasicAuth",
+      # "Middleware::Http::Buffering",
+      # "Middleware::Http::Chain",
+      # "Middleware::Http::CircuitBreaker",
+      # "Middleware::Http::Compress",
+      # "Middleware::Http::ContentType",
+      # "Middleware::Http::DigestAuth",
+      # "Middleware::Http::Errors",
+      # "Middleware::Http::ForwardAuth",
+      # "Middleware::Http::GrpcWeb",
+      "Middleware::Http::Header",
+      # "Middleware::Http::InFlightReq",
+      "Middleware::Http::IpAllowList",
+      # "Middleware::Http::PassTlsClientCert",
+      "Middleware::Http::RateLimit",
+      # "Middleware::Http::RedirectRegex",
+      # "Middleware::Http::RedirectScheme", # NOTE: Do not show
+      # "Middleware::Http::ReplacePath",
+      # "Middleware::Http::ReplacePathRegex",
+      # "Middleware::Http::Retry",
+      "Middleware::Http::StripPrefix",
+      "Middleware::Http::StripPrefixRegex"
     ]
   end
+
+  delegate :show_middlewares, to: :class
 
   def update_services(new_services)
     return unless new_services
@@ -122,7 +141,7 @@ class Route < ApplicationRecord
   end
 
   def add_services(generated_config)
-    services_section = generated_config[config_type]["services"]
+    services_section = generated_config[pretty_type]["services"]
     route_service = routes_services.first
 
     if route_service.balance_type == "loadbalancer"
@@ -184,6 +203,6 @@ class Route < ApplicationRecord
   end
 
   def add_middlewares(generated_config)
-    generated_config[config_type]["middlewares"].merge!(middlewares.config)
+    generated_config[pretty_type]["middlewares"].merge!(middlewares.config)
   end
 end

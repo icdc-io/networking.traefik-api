@@ -15,8 +15,7 @@ class Route
     validates :tls_termination, inclusion: { in: [ "", "re-encrypt", "edge" ] }
 
     def http? =tls_termination == "" || insecure != ""
-    def https? =tls_termination != "" && tls_termination != "passthrough"
-    def passthrough? =tls_termination == "passthrough"
+    def https? =tls_termination != ""
     def redirect? =insecure == "redirect"
 
     def merge_config(generated_config)
@@ -30,6 +29,11 @@ class Route
       add_services(generated_config)
 
       generated_config
+    end
+
+    def update_middlewares(params)
+      super
+      update_redirect_middleware
     end
 
     private
@@ -88,10 +92,10 @@ class Route
     def update_redirect_middleware
       return redirect_middleware&.destroy! unless redirect?
 
-      return if redirect_middleware
+      return if reload_redirect_middleware
 
-      middlewares.new(type:    "Middleware::Http::RedirectScheme",
-                      options: { "scheme" => "https", "permanent" => true })
+      middlewares << Middleware::Http::RedirectScheme
+                     .new(options: { "scheme" => "https", "permanent" => true })
     end
   end
 end

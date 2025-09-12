@@ -22,8 +22,7 @@ module Api
         end
         route_params = route_create_params
         if User.current_user.role == "member"
-          route_params[:owner] =
-            User.current_user.userid
+          route_params[:owner] = User.current_user.userid
         end
         Route.transaction do
           @route = Route.create!(route_params)
@@ -58,6 +57,8 @@ module Api
               )
             end
           end
+
+          @route.update_middlewares(middleware_params)
         end
         render json: @route, status: :created
       end
@@ -77,6 +78,7 @@ module Api
           else
             @route.healthcheck&.destroy!
           end
+          @route.update_middlewares(middleware_params) if middleware_params
         end
         render json: @route.reload, status: :ok
       end
@@ -142,6 +144,12 @@ module Api
                     labels cloud_gateway_id owner source_proto destination_proto
                     ip_version certificate_id healthcheck_enabled]
         )
+      end
+
+      def middleware_params
+        @middleware_params ||=
+          @route_params
+          .permit(middlewares: [ :type, options: {} ])[:middlewares]
       end
     end
   end

@@ -43,6 +43,8 @@ class Middleware < ApplicationRecord
   private
 
   def options_lines(hash = options, output = [], prefix = nil)
+    return [] unless hash
+
     hash.each do |key, value|
       key_with_prefix = prefix ? "#{prefix}.#{key}" : key
       if value.is_a? Hash
@@ -73,6 +75,9 @@ class Middleware < ApplicationRecord
     insert_line_to_hash(postfix, value, hash[prefix])
   end
 
+  # FIXME: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/redirectscheme/#port
+  # Set a string, not a numeric value.
+  # What does it mean? Use use value like `port: "3000"` or `port: ":3000"` ?
   def transform_option_value(_key, value)
     case value
     when "true"
