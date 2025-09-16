@@ -41,6 +41,19 @@ RSpec.describe Middleware, :aggregate_failures do
     expect(create(:middleware)).to be_valid
   end
 
+  it "validates route type" do
+    route = create(:route_tcp)
+    mw = described_class.new(
+      type:    "Middleware::Http::RedirectScheme",
+      route:,
+      options: { "scheme" => "https" }
+    )
+    expect(mw).not_to be_valid
+
+    mw.route = create(:route_http)
+    expect(mw).to be_valid
+  end
+
   describe "before_save" do
     let(:middleware) do
       create(
@@ -145,6 +158,45 @@ RSpec.describe Middleware, :aggregate_failures do
 
     it "returns json with option lines (nested keys are joined with dots)" do
       expect(middleware.as_json).to eq(expected)
+    end
+  end
+
+  describe "Options vaidation" do
+    let(:middleware) { create(:middleware_http_rate_limit) }
+
+    it "validates keys list" do
+      middleware.options = { "invalid_key" => "invalid_value" }
+      expect(middleware).not_to be_valid
+    end
+
+    it "validates required keys" do
+      middleware = create(:middleware_http_add_prefix)
+      expect(middleware).to be_valid
+      middleware.options = {}
+      expect(middleware).not_to be_valid
+    end
+
+    it "validates integer value type" do
+      middleware.options = { "average" => "100" }
+      expect(middleware).to be_valid
+      middleware.options = { "average" => "string" }
+      expect(middleware).not_to be_valid
+    end
+
+    it "validates time interval value type" do
+      middleware.options = { "period" => "1s" }
+      expect(middleware).to be_valid
+      middleware.options = { "period" => "string" }
+      expect(middleware).not_to be_valid
+    end
+
+    it "validates boolean value type" do
+      middleware.options = { "redis.tls.insecureSkipVerify" => "false" }
+      expect(middleware).to be_valid
+      middleware.options = { "redis.tls.insecureSkipVerify" => "true" }
+      expect(middleware).to be_valid
+      middleware.options = { "redis.tls.insecureSkipVerify" => "string" }
+      expect(middleware).not_to be_valid
     end
   end
 end

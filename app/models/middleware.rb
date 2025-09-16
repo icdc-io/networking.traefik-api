@@ -1,9 +1,13 @@
 class Middleware < ApplicationRecord
-  USER_MIDDLEWARES = Http::USER_MIDDLEWARES + Tcp::USER_MIDDLEWARES
+  USER_MIDDLEWARES = (Http::USER_MIDDLEWARES + Tcp::USER_MIDDLEWARES).freeze
 
   belongs_to :route
 
-  before_save { self.options = options_hash(options_lines) }
+  before_save { self.options = options_hash }
+
+  validates_with MiddlewareRawKeysValidator
+  validates_with MiddlewareRawTypesValidator
+  validates_with MiddlewareRouteTypeValidator
 
   def self.pretty_type
     name.split("::").last
@@ -40,8 +44,6 @@ class Middleware < ApplicationRecord
                 "options" => options_lines.to_h)
   end
 
-  private
-
   def options_lines(hash = options, output = [], prefix = nil)
     return [] unless hash
 
@@ -58,7 +60,9 @@ class Middleware < ApplicationRecord
     output
   end
 
-  def options_hash(lines = options)
+  private
+
+  def options_hash(lines = options_lines)
     hash = {}
     lines.each do |key, value|
       value = transform_option_value(key, value)

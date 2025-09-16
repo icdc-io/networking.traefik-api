@@ -6,20 +6,20 @@ class Middleware
         description: "The RedirectScheme middleware redirects the request if the request scheme is different from the configured scheme.",
         link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/redirectscheme/",
         options:     {
-          scheme:    {
+          "scheme"    => {
             description: "Scheme of the new URL.",
             default:     "",
             required:    true
           },
-          permanent: {
+          "permanent" => {
             description: "Enable a permanent redirection.",
             default:     "false",
-            required:    true
+            required:    false
           },
-          port:      {
+          "port"      => {
             description: "Port of the new URL",
             default:     "",
-            required:    true
+            required:    false
           }
         }
       }.freeze
