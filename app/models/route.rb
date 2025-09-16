@@ -61,11 +61,11 @@ class Route < ApplicationRecord
     end
   end
 
-  private
-
   def pretty_type
     type&.delete_prefix("Route::")&.downcase || type
   end
+
+  private
 
   def self.show_middlewares
     [
@@ -156,7 +156,7 @@ class Route < ApplicationRecord
           "services" => weighted(routes_services)
         }
       }
-      routes_services.each do |routes_service|
+      routes_services.includes(:service).find_each do |routes_service|
         services_section[routes_service.name.to_s] = {
           "loadBalancer" => {
             "servers" => lb_server(routes_service.service)

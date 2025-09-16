@@ -6,7 +6,11 @@ module Api
 
       def index
         set_error_code("023")
-        render json: Route.filtered, status: :ok
+        routes = Route.filtered.includes(
+          %i[cloud_gateway healthcheck routes_services services
+             user_middlewares]
+        )
+        render json: routes, status: :ok
       end
 
       def show
