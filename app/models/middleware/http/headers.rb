@@ -157,6 +157,52 @@ class Middleware
       #           X-Script-Name: "test"
       #         customResponseHeaders:
       #           X-Custom-Response-Header: "value"
+
+      def options_lines(hash = options.dup, output = [], prefix = nil)
+        format_header_options_lines(hash, output) unless prefix
+        super
+      end
+
+      private
+
+      def transform_option_value(key, value)
+        if %w[customRequestHeaders
+              customResponseHeaders
+              sslProxyHeaders].include?(key)
+          return transform_header_option_value(key, value)
+        end
+
+        super
+      end
+
+      def format_header_options_lines(hash, output)
+        return [] unless hash
+
+        %w[customRequestHeaders
+           customResponseHeaders
+           sslProxyHeaders].each do |key|
+          next unless hash.include?(key)
+
+          headers_value = hash.delete(key)
+          output << if headers_value.is_a? Hash
+            [ key, headers_value.map { |k, v| "#{k}=#{v}" }.join(",") ]
+          elsif headers_value.is_a? Array
+            [ key, headers_value.join(",") ]
+          else
+            [ key, headers_value ]
+          end
+        end
+
+        output
+      end
+
+      def transform_header_option_value(_key, value)
+        value.split(",").to_h do |key_value|
+          header = key_value.split("=")
+          header[1] = header[1].to_s
+          header
+        end
+      end
     end
   end
 end
