@@ -3,11 +3,13 @@ class Middleware
     class IpAllowList < Middleware
       SCHEME = {
         type:        "IpAllowList",
-        description: "iPAllowList limits allowed requests based on the client IP.",
+        description: "IpAllowList limits allowed requests based on the " \
+                     "client IP.",
         link:        "https://doc.traefik.io/traefik/reference/routing-configuration/tcp/middlewares/ipallowlist/",
         options:     {
           "sourceRange" => {
-            description: "The sourceRange option sets the allowed IPs (or ranges of allowed IPs by using CIDR notation).",
+            description: "The sourceRange option sets the allowed IPs " \
+                         "(or ranges of allowed IPs by using CIDR notation).",
             default:     "",
             required:    true
           }

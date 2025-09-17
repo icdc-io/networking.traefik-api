@@ -3,11 +3,16 @@ class Middleware
     class StripPrefixRegex < Middleware
       SCHEME = {
         type:        "StripPrefixRegex",
-        description: "The stripPrefixRegex middleware strips the matching path prefix and stores it in an X-Forwarded-Prefix header.",
+        description: "The StripPrefixRegex middleware strips the matching " \
+                     "path prefix and stores it in an X-Forwarded-Prefix " \
+                     "header.",
         link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/stripprefixregex/",
         options:     {
           "regex" => {
-            description: "List of regular expressions to match the path prefix from the request URL. For instance, /products also matches /products/shoes and /products/shirts.",
+            description: "List of regular expressions to match the path " \
+                         "prefix from the request URL. " \
+                         "For instance, /products also matches " \
+                         "/products/shoes and /products/shirts.",
             default:     "",
             required:    false
           }

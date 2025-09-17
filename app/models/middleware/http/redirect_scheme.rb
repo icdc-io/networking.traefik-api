@@ -3,7 +3,9 @@ class Middleware
     class RedirectScheme < Middleware
       SCHEME = {
         type:        "RedirectScheme",
-        description: "The RedirectScheme middleware redirects the request if the request scheme is different from the configured scheme.",
+        description: "The RedirectScheme middleware redirects the request if " \
+                     "the request scheme is different from the configured " \
+                     "scheme.",
         link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/redirectscheme/",
         options:     {
           "scheme"    => {

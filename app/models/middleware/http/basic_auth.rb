@@ -3,16 +3,20 @@ class Middleware
     class BasicAuth < Middleware
       SCHEME = {
         type:        "BasicAuth",
-        description: "The basicAuth middleware grants access to services to authorized users only.",
+        description: "The BasicAuth middleware grants access to services to " \
+                     "authorized users only.",
         link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/",
         options:     {
           "users"        => {
-            description: "Array of authorized users. Each user must be declared using the name:hashed-password format.",
+            description: "Array of authorized users. Each user must be " \
+                         "declared using the name:hashed-password format.",
             default:     "",
             required:    false
           },
           "usersFile"    => {
-            description: "Path to an external file that contains the authorized users for the middleware. The file content is a list of name:hashed-password.",
+            description: "Path to an external file that contains the " \
+                         "authorized users for the middleware. " \
+                         "The file content is a list of name:hashed-password.",
             default:     "",
             required:    false
           },
@@ -22,12 +26,14 @@ class Middleware
             required:    false
           },
           "headerField"  => {
-            description: "Allow defining a header field to store the authenticated user.",
+            description: "Allow defining a header field to store the " \
+                         "authenticated user.",
             default:     "",
             required:    false
           },
           "removeHeader" => {
-            description: "Allow removing the authorization header before forwarding the request to your service.",
+            description: "Allow removing the authorization header before " \
+                         "forwarding the request to your service.",
             default:     "",
             required:    false
           }

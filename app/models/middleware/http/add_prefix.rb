@@ -3,11 +3,14 @@ class Middleware
     class AddPrefix < Middleware
       SCHEME = {
         type:        "AddPrefix",
-        description: "The addPrefix middleware updates the path of a request before forwarding it.",
+        description: "The AddPrefix middleware updates the path of a request " \
+                     "before forwarding it.",
         link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/addprefix/",
         options:     {
           "prefix" => {
-            description: "String to add before the current path in the requested URL. It should include a leading slash (/).",
+            description: "String to add before the current path in the " \
+                         "requested URL. It should include a leading slash " \
+                         "(/).",
             default:     "",
             required:    true
           }
