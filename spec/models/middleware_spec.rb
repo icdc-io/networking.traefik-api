@@ -187,6 +187,8 @@ RSpec.describe Middleware, :aggregate_failures do
       expect(middleware).to be_valid
       middleware.options = {}
       expect(middleware).not_to be_valid
+      middleware.options = { "prefix" => "" }
+      expect(middleware).not_to be_valid
     end
 
     it "validates integer value type" do

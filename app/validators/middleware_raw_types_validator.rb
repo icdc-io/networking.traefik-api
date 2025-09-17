@@ -37,7 +37,7 @@ class MiddlewareRawTypesValidator < ActiveModel::Validator
   end
 
   def validate_time_interval(record, key, value, scheme)
-    return if /^\d+(ms|s|m|h)$/.match?(value)
+    return if /^\d+(ms|s|m|h)$/.match?(value) || value == "0"
 
     message = "option is expected to have time interval value " \
               "for #{record.pretty_type} middleware " \

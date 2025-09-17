@@ -5,7 +5,7 @@ class Route
 
     before_validation { self.insecure = insecure.to_s.downcase }
     before_validation { self.tls_termination = tls_termination.to_s.downcase }
-    before_validation { update_redirect_middleware }
+    after_validation { update_redirect_middleware }
 
     validates :path, presence: true
     validates :insecure, inclusion: { in: [ "" ] },
