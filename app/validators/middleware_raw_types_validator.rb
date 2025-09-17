@@ -21,8 +21,6 @@ class MiddlewareRawTypesValidator < ActiveModel::Validator
       validate_time_interval(record, key, value, scheme)
     when /^[-+]?(\d*\.)?\d+$/
       validate_number(record, key, value, scheme)
-    when /^-\d+$/
-      validate_signed_integer(record, key, value, scheme)
     end
   end
 
