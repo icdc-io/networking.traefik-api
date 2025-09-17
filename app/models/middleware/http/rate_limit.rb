@@ -54,8 +54,7 @@ class Middleware
 
           },
           "redis"                                  => {
-            description: "The redis configuration enables distributed rate limiting by using Redis to store rate limit tokens across multiple Traefik instances. This allows you to enforce consistent rate limits across a cluster of Traefik proxies.
-When Redis is not configured, Traefik uses in-memory storage for rate limiting, which works only for the individual Traefik instance.",
+            description: "The redis configuration enables distributed rate limiting by using Redis to store rate limit tokens across multiple Traefik instances. This allows you to enforce consistent rate limits across a cluster of Traefik proxies. When Redis is not configured, Traefik uses in-memory storage for rate limiting, which works only for the individual Traefik instance.",
             default:     "",
             required:    false
 
@@ -146,6 +145,7 @@ When Redis is not configured, Traefik uses in-memory storage for rate limiting, 
           }
         }
       }.freeze
+
       # # Here, an average of 100 requests per second is allowed.
       # # In addition, a burst of 200 requests is allowed.
       # # Redis distributed rate limiting is configured with all available options.
@@ -174,8 +174,6 @@ When Redis is not configured, Traefik uses in-memory storage for rate limiting, 
       #             cert: "/etc/ssl/redis-client.crt"
       #             key: "/etc/ssl/redis-client.key"
       #             insecureSkipVerify: false
-
-      # before_validation { errors.add(:type, "not implemented") }
     end
   end
 end

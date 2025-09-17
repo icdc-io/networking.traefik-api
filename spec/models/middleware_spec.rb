@@ -41,7 +41,7 @@ RSpec.describe Middleware, :aggregate_failures do
     expect(create(:middleware)).to be_valid
   end
 
-  it "validates route type" do
+  it "validates http route type" do
     route = create(:route_tcp)
     mw = described_class.new(
       type:    "Middleware::Http::RedirectScheme",
@@ -51,6 +51,19 @@ RSpec.describe Middleware, :aggregate_failures do
     expect(mw).not_to be_valid
 
     mw.route = create(:route_http)
+    expect(mw).to be_valid
+  end
+
+  it "validates tcp route type" do
+    route = create(:route_http)
+    mw = described_class.new(
+      type:    "Middleware::Tcp::IpAllowList",
+      route:,
+      options: { "sourceRange" => "127.0.0.1/32" }
+    )
+    expect(mw).not_to be_valid
+
+    mw.route = create(:route_tcp)
     expect(mw).to be_valid
   end
 
