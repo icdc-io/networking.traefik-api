@@ -709,9 +709,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       let!(:middlewares) do
         [
           create(
-            :middleware_http_rate_limit,
+            :middleware_http_add_prefix,
             route:,
-            options: { "redis.username" => "old_username" }
+            options: { "prefix" => "/old_prefix" }
           ).as_json.slice("type", "options")
         ]
       end
@@ -720,8 +720,8 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         let(:new_middlewares) do
           [
             {
-              "type"    => "RateLimit",
-              "options" => { "redis.username" => "new_username" }
+              "type"    => "AddPrefix",
+              "options" => { "prefix" => "/new_prefix" }
             }
           ]
         end
@@ -769,8 +769,8 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         let(:new_middlewares) do
           [
             {
-              "type"    => "RateLimit",
-              "options" => { "redis.username" => "new_username" }
+              "type"    => "AddPrefix",
+              "options" => { "prefix" => "/new_prefix" }
             }
           ]
         end
