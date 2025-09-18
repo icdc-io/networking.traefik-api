@@ -1,5 +1,10 @@
-class Api::V1::ServicesController < ApplicationController
-  def index
-    render json: Service.filtered, status: :ok
+module Api
+  module V1
+    class ServicesController < ApplicationController
+      def index
+        set_error_code("030")
+        render json: Service.filtered, status: :ok
+      end
+    end
   end
 end

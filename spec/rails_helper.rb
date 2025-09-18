@@ -1,14 +1,34 @@
-# frozen_string_literal: true
+require 'simplecov'
+require 'simplecov-cobertura'
+
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
+  [
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::CoberturaFormatter
+  ]
+)
+SimpleCov.start do
+  add_group "Controllers", "app/controllers"
+  add_group "Mailers",     "app/mailers"
+  add_group "Models",      "app/models"
+  add_group "Sidkiq",      "app/sidekiq"
+  add_group "Validators",  "app/validators"
+  add_group "Views",       "app/views"
+
+  add_filter "config/"
+  add_filter "spec/"
+end
 
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../config/environment', __dir__)
 # Prevent database truncation if the environment is production
-abort('The Rails environment is running in production mode!') if Rails.env.production?
+if Rails.env.production?
+  abort('The Rails environment is running in production mode!')
+end
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
-require 'sidekiq/testing'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -22,20 +42,22 @@ require 'sidekiq/testing'
 # of increasing the boot-up time by auto-requiring all files in the support
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
-#
-# Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+
+Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
 
 # Checks for pending migrations and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove these lines.
 begin
   ActiveRecord::Migration.maintain_test_schema!
-rescue ActiveRecord::PendingMigrationError => e
-  puts e.to_s.strip
+rescue ActiveRecord::PendingMigrationError => error
+  puts error.to_s.strip
   exit 1
 end
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = Rails.root.join('spec/fixtures')
+  config.fixture_paths = [
+    Rails.root.join('spec/fixtures')
+  ]
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
@@ -65,49 +87,10 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 
-  private_key = OpenSSL::PKey::RSA.generate 2048
-  Rails.application.secrets.sso_private_key = private_key
-  Rails.application.secrets.sso_public_key = private_key.public_key
-
-  JWT_MEMBER = 'Bearer ' + JWT.encode({
-                                        external: {
-                                          accounts: {
-                                            test: {
-                                              roles: ['member']
-                                            }
-                                          }
-                                        },
-                                        groups: ['test.member'],
-                                        user_id: 'test_member@test.com',
-                                        email: 'test_member@test.com',
-                                        name: 'Test Member'
-                                      }, private_key, 'RS256')
-
-  JWT_ADMIN = 'Bearer ' + JWT.encode({
-                                       external: {
-                                         accounts: {
-                                           test: {
-                                             roles: ['admin']
-                                           }
-                                         }
-                                       },
-                                       groups: ['test.admin'],
-                                       user_id: 'test_admin@test.com',
-                                       email: 'test_admin@test.com',
-                                       name: 'Test Admin'
-                                     }, private_key, 'RS256')
+  config.include FactoryBot::Syntax::Methods
+end
 
 ENV['OPERATOR_GROUP'] = 'location.operator'
-JWT_LOCATION_OPERATOR = 'Bearer ' + JWT.encode({
-                                              external: {
-                                                accounts: {
-                                                  location: {
-                                                    roles: ['operator']
-                                                  }
-                                                }
-                                              },
-                                              groups: ['location.operator'],
-                                              user_id: 'test_location_operator@test.com',
-                                              email: 'test_location_operator@test.com',
-                                              name: 'Test Location Operator'
-                                            }, nil)
+ENV['LOCATION_DOMAIN'] = 'dcz.lab.icdc.io'
+ENV['SCOPES_MAP_FILE'] = 'config/rbac/rbac_scopes.yml'
+ENV['ROUTES_MAP_FILE'] = 'config/rbac/rbac_routes.yml'

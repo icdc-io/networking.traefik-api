@@ -1,83 +1,54 @@
-# frozen_string_literal: true
-
-require 'json/jwt'
-require 'rbac'
+require "rbac"
 
 class ApplicationController < ActionController::API
-  include ResponseHelper
-  include AuthHelper
+  include ApiResponseHandler
+  include ApiExceptionsHandler
   include Rbac
 
-  before_action :authorize, :authorize_action, except: %i[traefik_config download]
+  around_action :switch_locale
+  before_action :authorize, :authorize_action
 
   def authorize
-    return not_authorized unless request.authorization
+    set_error_code("001")
 
-    auth_method, token = request.authorization.split
-    case auth_method
-    when 'Bearer'
-      bearer_auth(token)
-    when 'Basic'
-      basic_auth(token)
-    end
+    username = request.headers["X-Auth-User"]
+    account = request.headers["X-Auth-Account"]
+    role = request.headers["X-Auth-Role"]
+
+    return unauthorized unless username && account && role
+
+    User.current_user = User.new(userid: username, account:, role:)
   end
 
   def authorize_action
-    return if Rbac::Authorizer.new('./config/rbac/rbac_routes.yml').role_allows?(request)
-
-    forbidden('You are not authorized to perform this action.')
+    set_error_code("002")
+    unless Rbac::Authorizer.new(
+      ENV.fetch("ROUTES_MAP_FILE", "./config/rbac/rbac_routes.yml")
+    ).role_allows?(request)
+      render_forbidden_response(
+        message: I18n.t("controllers.application.forbidden"), code:,
+        data: I18n.t("controllers.application.forbidden")
+      ) # TODO: leave 'data' for backward compatibility, remove it in future
+    end
   end
 
-  def bearer_auth(pure_token)
-    token = decoded_token pure_token
-    role = fetch_role
-    account = fetch_account
-    return not_authorized unless validate(token, account, role)
-
-    User.current_user = User.new(userid: token['email'], token: pure_token, account:, role: setup_role(account, role))
-  rescue JWT::DecodeError => e
-    Rails.logger.warn "Unauthorized! Can't decode JWT token! #{e.message}"
-    not_authorized
-  end
-
-  def basic_auth(token)
-    login, password = Base64.decode64(token).split(':')
-    role = fetch_role
-    account = fetch_account
-    pure_token = get_jwt_token(login, password)
-    token = decoded_token pure_token
-    return not_authorized unless validate(token, account, role)
-
-    User.current_user = User.new(userid: token['email'], token: pure_token, account:, role: setup_role(account, role))
-  rescue JWT::DecodeError => e
-    Rails.logger.warn "Unauthorized! Can't decode JWT token! #{e.message}"
-    not_authorized
+  def switch_locale(&)
+    set_error_code("003")
+    locale = extract_locale_from_accept_language_header || I18n.default_locale
+    I18n.with_locale(locale, &)
   end
 
   private
 
-  def fetch_account
-    request.headers[ENV.fetch('ACCOUNT_HEADER')]
+  def extract_locale_from_accept_language_header
+    request.env["HTTP_ACCEPT_LANGUAGE"]&.scan(/^[a-z]{2}/)&.first
   end
 
-  def fetch_role
-    request.headers[ENV.fetch('ROLE_HEADER')]
-  end
-
-  def setup_role(account, role)
-    return role unless ['operator', 'admin'].include?(role)
-
-    # if role is an operator or admin
-    if ENV.fetch('OPERATOR_GROUP') == "#{account}.#{role}"
-      'operator'
-    else
-      'admin'
-    end
-  end
-
-  def validate(token, account, role)
-    token.dig('external', 'accounts', account, 'roles').include?(role)
-  rescue StandardError
-    false
+  def unauthorized
+    set_error_code("006")
+    render_unauthorized_response(
+      message: I18n.t("controllers.application.unauthorized"), code:,
+      data: { message: I18n.t("controllers.application.unauthorized") }
+    ) # TODO: leave 'data' for backward compatibility, remove it in future
   end
 end

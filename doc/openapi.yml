@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   version: "1.0"
-  title: ICDC Appication LoadBalancer API1
+  title: Appication LoadBalancer API
   description: >
     # Introduction
 
@@ -76,12 +76,13 @@ tags:
 paths:
   /gateways:
     get:
-      operationId: alb_list
+      operationId: gateways.list
       tags:
         - ALB Gateways
       summary: List of ALB Gateways
       description: >
         By sending request to this endpoint you can get list of ALB Gateways which are currently attached to account network infrastructure (VPC).
+
 
         Role-based access:
           - `admin` role in`operator` account see all gateways of all accounts
@@ -267,7 +268,7 @@ paths:
                 }
             }
     post:
-      operationId: alb_attach
+      operationId: gateways.create
       tags:
         - ALB Gateways
         - Private
@@ -282,6 +283,7 @@ paths:
       description: >
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to create new gateways
+
 
         Role-based access:
           - `operator` role can send requests to the endpoint
@@ -323,7 +325,7 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways
   /gateways/{id}:
     get:
-      operationId: alb_show
+      operationId: gateways.get
       tags:
         - ALB Gateways
       summary: Display ALB gateway details
@@ -372,7 +374,7 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
 
     put:
-      operationId: alb_modify
+      operationId: gateways.update
       tags:
         - ALB Gateways
         - Private
@@ -430,7 +432,7 @@ paths:
               -d '{"account":"devel", "name": "alb-special"}' \
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
     delete:
-      operationId: alb_unregister
+      operationId: gateways.delete
       tags:
         - ALB Gateways
         - Private
@@ -445,6 +447,7 @@ paths:
       description: >
         This endpoint is called from CloudGateway Automation only.
         So we are not going to provide ability to Account Admins to delete gateways
+
 
         Role-based access:
           - `operator` role can send requests to the endpoint
@@ -478,6 +481,7 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/gateways/{id}
   /gateways/{uuid}/config:
     get:
+      operationId: gateways.config.get
       tags:
         - ALB Gateways
         - Private
@@ -500,12 +504,13 @@ paths:
           $ref: "#/components/responses/server_error"
   /certificates:
     get:
-      operationId: certificates_list
+      operationId: certificates.list
       tags:
         - Certificates
       summary: List of certificates attached to an account gateways
       description: >
         This endpoint is called to retrieve the list of certificates attached to an account's gateways.
+
 
         Role-based access:
           - `operator` role can see all certificates in location
@@ -542,7 +547,7 @@ paths:
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates
     post:
-      operationId: certificates_create
+      operationId: certificates.create
       tags:
         - Certificates
       security:
@@ -557,6 +562,7 @@ paths:
         This endpoint is used for creating a new SSL certificate and uploading it to a **CloudGateway**.
         The server automatically checks the validity of the uploaded certificate.
         After the certificate has been successfully uploaded via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
+
 
         Role-based access:
           - `operator` role can create certificate in any account per location
@@ -602,7 +608,7 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates
   /certificates/{id}:
     get:
-      operationId: certificate_show
+      operationId: certificates.get
       tags:
         - Certificates
       security:
@@ -615,6 +621,7 @@ paths:
       summary: Show certificate record
       description: >
         This endpoint is used to explore the details of a certificate.
+
 
         Role-based access:
           - `operator` role can see all certificates in location
@@ -654,7 +661,7 @@ paths:
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
     put:
-      operationId: certificate_update
+      operationId: certificates.update
       tags:
         - Certificates
       security:
@@ -669,6 +676,7 @@ paths:
         The endpoint is called for updating a certificate.
         The server automatically checks the validity of the updated certificate.
         After the certificate has been successfully updated via the API, CloudGateway Automation automatically downloads and applies it to a route defined in the hostnames field.
+
 
         Role-based access:
           - `operator` role can manage all certificates in location
@@ -724,7 +732,7 @@ paths:
               }' \
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
     delete:
-      operationId: certificate_delete
+      operationId: certificates.delete
       tags:
         - Certificates
       security:
@@ -737,6 +745,7 @@ paths:
       summary: Delete certificate
       description: >
         The endpoint is called to delete a certificate from the system.
+
 
         Role-based access:
           - `operator` role can manage all certificates in location
@@ -773,14 +782,15 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/certificates/{id}
   /services:
     get:
-      operationId: services_list
+      operationId: services.list
       tags:
         - Services
-      summary: Show all existing certificates
+      summary: Show all service endpoints for target workload
       description: >
         This endpoint is called to retrieve the list of services along with information about VMs' IP addresses.
         It is typically used for fetching the service_id when users create routes using the API.
         The information is synchronized with the Compute application automatically every 15 minutes.
+
 
         Role-based access:
           - `operator` role can see all services in the location
@@ -816,7 +826,7 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/services
   /routes:
     get:
-      operationId: routes_list
+      operationId: routes.list
       tags:
         - Routes
       summary: Get info about existing routes
@@ -853,7 +863,7 @@ paths:
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes
     post:
-      operationId: route_create
+      operationId: routes.create
       tags:
         - Routes
       summary: Create a new route
@@ -935,9 +945,8 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/routes
 
   /routes/{id}:
-    
     get:
-      operationId: route_show
+      operationId: routes.get
       tags:
         - Routes
       summary: Show info about selected route
@@ -946,7 +955,6 @@ paths:
           - `operator` role can see all routes in the location
           - `admin`/`owner` role can see all routes in account
           - `member` role can see only own routes
-
       security:
         - JWT: []
           Account: []
@@ -987,7 +995,7 @@ paths:
               -H "x-icdc-role: $ROLE" \
               https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
     put:
-      operationId: route_update
+      operationId: routes.update
       tags:
         - Routes
       summary: Add routes
@@ -996,7 +1004,6 @@ paths:
           - `operator` role can modify all routes in the location
           - `admin`/`owner` role can  modify routes in the account space
           - `member` role can modify only own routes
-
       security:
         - JWT: []
           Account: []
@@ -1081,7 +1088,7 @@ paths:
               https://api.loc.icdc.io/api/traefik_manager/v1/routes/{id}
 
     delete:
-      operationId: route_delete
+      operationId: routes.delete
       tags:
         - Routes
       summary: Delete route

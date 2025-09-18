@@ -1,4 +1,4 @@
-require 'zip'
+require "zip"
 
 # Usage:
 #   directory_to_zip = "/tmp/input"
@@ -14,9 +14,9 @@ class ZipFileGenerator
 
   def write
     entries = Dir.entries(@input_dir) - %w[. ..]
-    File.delete(@output_file) if File.exist?(@output_file)
+    FileUtils.rm_f(@output_file)
     ::Zip::File.open(@output_file, create: true) do |zipfile|
-      write_entries entries, '', zipfile
+      write_entries entries, "", zipfile
     end
   end
 
@@ -24,7 +24,7 @@ class ZipFileGenerator
 
   def write_entries(entries, path, zipfile)
     entries.each do |e|
-      zipfile_path = path == '' ? e : File.join(path, e)
+      zipfile_path = path == "" ? e : File.join(path, e)
       disk_file_path = File.join(@input_dir, zipfile_path)
 
       if File.directory? disk_file_path

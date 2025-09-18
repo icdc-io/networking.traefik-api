@@ -22,7 +22,21 @@ Bundler.require(*Rails.groups)
 module TraefikManagerApi
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
+    config.load_defaults 8.0
+
+    # Internalization settings
+
+    # Where the I18n library should search for translation files
+    config.i18n.load_path += Rails.root.glob("config/locales/**/*.{rb,yml}")
+
+    # Set default locale to something other than :en
+    config.i18n.default_locale = :en
+
+    # Use default locale as fallback
+    config.i18n.fallbacks = true
+
+    # Permitted locales available for the application
+    config.i18n.available_locales = %i[en ru]
 
     # Configuration for the application, engines, and railties goes here.
     #

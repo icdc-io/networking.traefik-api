@@ -1,0 +1,49 @@
+directories:
+  "app/controllers":
+    InstanceVariableAssumption:
+      enabled: false
+  "app/mailers":
+    InstanceVariableAssumption:
+      enabled: false
+  "app/sidekiq":
+    UtilityFunction:
+      exclude:
+        - perform
+  "db/migrate":
+    UncommunicativeVariableName:
+      accept:
+        - t
+    FeatureEnvy:
+      exclude:
+        - change
+    TooManyStatements:
+      exclude:
+        - change
+        - up
+        - down
+    NestedIterators:
+      ignore_iterators:
+        - reversible
+        - up
+        - down
+  "spec/mailers/previews":
+    UtilityFunction:
+      enabled: false
+  "spec/support":
+    UtilityFunction:
+      enabled: false
+exclude_paths:
+  - vendor
+detectors:
+  FeatureEnvy:
+    exclude:
+      - 'ErrorHandler#render_error'
+      - 'ResponseHeaders#expose_headers'
+  IrresponsibleModule:
+    enabled: false
+  UncommunicativeModuleName:
+    accept:
+      - V1
+  UtilityFunction:
+    exclude:
+      - 'ErrorHandler#log_error'

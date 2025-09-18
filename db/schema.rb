@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_02_17_124807) do
+ActiveRecord::Schema.define(version: 2025_08_19_120235) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -56,8 +56,8 @@ ActiveRecord::Schema.define(version: 2023_02_17_124807) do
     t.string "hostname"
     t.string "path"
     t.integer "target_port"
-    t.string "insecure"
-    t.string "tls_termination"
+    t.string "insecure", null: false
+    t.string "tls_termination", null: false
     t.jsonb "labels"
     t.bigint "cloud_gateway_id", null: false
     t.bigint "certificate_id"

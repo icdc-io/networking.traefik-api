@@ -1,7 +1,5 @@
-# frozen_string_literal: true
-
 FactoryBot.define do
-  factory :routes_service do
+  factory :routes_service, aliases: %i[route_service] do
     route
     service
     name         { rand(39_284_024).to_s(36) }

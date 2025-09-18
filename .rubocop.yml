@@ -1,61 +1,102 @@
----
-require:
+# Omakase Ruby styling for Rails
+inherit_gem: {rubocop-rails-omakase: rubocop.yml}
+# Overwrite or add rules to create your own house style
+#
+# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
+# Layout/SpaceInsideArrayLiteralBrackets:
+#   Enabled: false
+#
+plugins:
+  - rubocop-factory_bot
+  - rubocop-performance
   - rubocop-rails
   - rubocop-rspec
-  - rubocop-performance
-  - rubocop-factory_bot
-
+  - rubocop-rspec_rails
 AllCops:
-  Include:
-    - app/**/*.rb
-    - spec/**/*.rb
-    - config/**/*.rb
+  TargetRubyVersion: 3.2
+  SuggestExtensions: true
   NewCops: enable
-
-Style/Documentation:
-  Enabled: false
-
+Bundler:
+  Enabled: true
+Layout:
+  Enabled: true
+Lint:
+  Enabled: true
+Metrics:
+  Enabled: true
+Naming:
+  Enabled: true
+Performance:
+  Enabled: true
+Rails:
+  Enabled: true
+Security:
+  Enabled: true
+Style:
+  Enabled: true
+####### Layout #######
+Layout/HashAlignment:
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
+Layout/IndentationConsistency:
+  Enabled: true
+  EnforcedStyle: normal
+Layout/IndentationWidth:
+  Enabled: true
 Layout/LineLength:
-  Max: 125
-
-Metrics/MethodLength:
-  Max: 25
-
-Metrics/AbcSize:
-  Max: 30
-  
-Metrics/PerceivedComplexity:
-  Max: 15
-
-Metrics/CyclomaticComplexity:
-  Max: 15
-
-Metrics/ClassLength:
-  Max: 125
-
+  Exclude:
+    - 'config/environments/*'
+    - 'config/routes.rb'
+    - 'Gemfile'
+    - 'Rakefile'
+  AllowedPatterns:
+    - '(SELECT|INSERT|UPDATE|DELETE)'
+    - '^\s*#'
+  Max: 80
+####### Metrics #######
 Metrics/BlockLength:
-  Max: 45
-
-Rails/UniqueValidationWithoutIndex:
-  Enabled: false
-
-Rails/HasAndBelongsToMany:
-  Enabled: false
-
-Rails/I18nLocaleTexts:
-  Enabled: false
-
+  AllowedMethods:
+    - configure
+Metrics/ClassLength:
+  Max: 200
+Metrics/MethodLength:
+  AllowedMethods:
+    - change
+####### Naming #######
+Naming/PredicateMethod:
+  AllowedPatterns:
+    - update.*
+Naming/RescuedExceptionsVariableName:
+  PreferredName: error
+####### Rails #######
 Rails/SkipsModelValidations:
   Enabled: false
-
-RSpec/NamedSubject:
-  Enabled: false
-
-RSpec/ExampleLength:
-  Max: 20
-
+####### RSpec #######
+RSpec/ContextWording:
+  Prefixes:
+    - when
+    - with
+    - without
+    - if
+    - unless
+    - for
 RSpec/NestedGroups:
-  Max: 6
-
-RSpec/AnyInstance:
   Enabled: false
+RSpec/ExampleLength:
+  Max: 10
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+####### Style #######
+Style/AndOr:
+  Enabled: true
+  EnforcedStyle: always
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+Style/HashAsLastArrayItem:
+  EnforcedStyle: no_braces
+Style/HashSyntax:
+  EnforcedShorthandSyntax: always
+Style/RescueStandardError:
+  EnforcedStyle: implicit
