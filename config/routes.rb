@@ -31,6 +31,8 @@ Rails.application.routes.draw do
       get    "services",              to: "services#index"
 
       resources :routes
+
+      get "options/middlewares"
     end
   end
 end

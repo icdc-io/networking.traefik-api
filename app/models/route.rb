@@ -5,6 +5,10 @@ class Route < ApplicationRecord
 
   has_many :routes_services, dependent: :destroy
   has_many :services, through: :routes_services
+  has_many :middlewares, dependent: :destroy
+  has_many :user_middlewares,
+           -> { where.not(type: "Middleware::Http::RedirectScheme") },
+           class_name: "Middleware", inverse_of: :route
 
   attribute :services
   attribute :routes_services
@@ -13,16 +17,23 @@ class Route < ApplicationRecord
 
   alias_attribute :cloudgateway, :cloud_gateway
 
-  before_validation { self.tls_termination = tls_termination.to_s.downcase }
-  before_validation { self.insecure = insecure.to_s.downcase }
+  before_validation { self.ip_version ||= 4 }
 
-  validates :name, uniqueness: { scope: :cloud_gateway }
-  validates :insecure, inclusion: { in: [ "", "allow", "redirect" ] }
-  validates :tls_termination,
-            inclusion: { in: [ "", "edge", "re-encrypt", "passthrough" ] }
-  validates :tls_termination,
-            inclusion: { in: %w[edge re-encrypt] },
-            if:        -> { insecure.in? %w[allow redirect] }
+  before_validation do
+    # TODO: API backward capatibility, should be removed
+    self.type ||= tls_termination == "passthrough" ? "Route::Tcp" : "Route::Http"
+
+    unless !type || type&.starts_with?("Route::")
+      self.type = "Route::#{type.capitalize}"
+    end
+  end
+
+  validates :name, presence: true, uniqueness: { scope: :cloud_gateway }
+  validates :hostname, presence: true
+  validates :target_port, numericality: { in: 0..65_535 }, allow_nil: true
+  validates :owner, presence: true
+  validates :ip_version, inclusion: { in: [ 4, 6 ] }
+  validates :type, presence: true
 
   def update(data, new_services)
     update!(data)
@@ -30,6 +41,27 @@ class Route < ApplicationRecord
     routes_services.destroy_all
     RoutesService.generate_name
     update_services(new_services)
+  end
+
+  # NOTE: We do not show RedirectScheme middleware because it only applies to
+  # http router if insecure == redirect, and all user middlewares appliy to
+  # https router in this case.
+  def as_json(options = nil)
+    super.merge("middlewares" => user_middlewares.as_json,
+                "type"        => pretty_type)
+  end
+
+  def update_middlewares(params)
+    self.middlewares = params.to_a.map do |middleware|
+      middleware[:type] = "Middleware::" \
+                          "#{pretty_type.capitalize}::" \
+                          "#{middleware[:type]}"
+      Middleware.new(middleware)
+    end
+  end
+
+  def pretty_type
+    type&.delete_prefix("Route::")&.downcase || type
   end
 
   private
@@ -63,97 +95,11 @@ class Route < ApplicationRecord
 
   delegate :account, to: :cloud_gateway
 
-  def http?
-    tls_termination == "" || insecure != ""
-  end
-
-  def https?
-    tls_termination != "" && tls_termination != "passthrough"
-  end
-
-  def passthrough?
-    tls_termination == "passthrough"
-  end
-
-  def redirect?
-    insecure == "redirect"
-  end
-
-  def route_type
-    @route_type ||=
-      if passthrough?
-        # TODO: UDP?
-        "tcp"
-      else
-        "http"
-      end
-  end
-
   def merge_config(generated_config)
-    return if services.none?
-
-    case route_type
-    when "http"
-      add_http_router(generated_config) if http?
-      add_https_router(generated_config) if https?
-      add_redirect_middleware(generated_config) if redirect?
-    when "tcp"
-      add_tcp_router(generated_config) if passthrough?
-    end
-
-    add_services(generated_config)
-
-    generated_config
+    raise NotImplementedError
   end
 
   private
-
-  def add_http_router(generated_config)
-    router = {
-      "service"     => service_name,
-      "rule"        => rule,
-      "entryPoints" => [ "web" ]
-    }
-
-    router["middlewares"] = [ "#{name}-redirect" ] if redirect?
-
-    generated_config["http"]["routers"]["#{name}-http"] = router
-  end
-
-  def add_https_router(generated_config)
-    router = {
-      "service"     => service_name,
-      "rule"        => rule,
-      "tls"         => certificate ? true : { "certResolver" => "default" },
-      "entryPoints" => [ "websecure" ]
-    }
-
-    generated_config["http"]["routers"]["#{name}-https"] = router
-  end
-
-  def add_tcp_router(generated_config)
-    router = {
-      "service" => service_name,
-      "rule"    => "HostSNI(`#{hostname}`)",
-      "tls"     => { "passthrough" => true }
-    }
-
-    generated_config["tcp"]["routers"][name] = router
-  end
-
-  def add_redirect_middleware(generated_config)
-    generated_config["http"]["middlewares"]["#{name}-redirect"] =
-      redirect_middleware
-  end
-
-  def redirect_middleware
-    {
-      "redirectScheme" => {
-        "scheme"    => "https",
-        "permanent" => true
-      }
-    }
-  end
 
   def service_name
     if services.one?
@@ -163,16 +109,8 @@ class Route < ApplicationRecord
     end
   end
 
-  def rule
-    if path == "/"
-      "Host(`#{hostname}`)"
-    else
-      "Host(`#{hostname}`) && PathPrefix(`#{path}`)"
-    end
-  end
-
   def add_services(generated_config)
-    services_section = generated_config[route_type]["services"]
+    services_section = generated_config[pretty_type]["services"]
     route_service = routes_services.first
 
     if route_service.balance_type == "loadbalancer"
@@ -187,7 +125,7 @@ class Route < ApplicationRecord
           "services" => weighted(routes_services)
         }
       }
-      routes_services.each do |routes_service|
+      routes_services.includes(:service).find_each do |routes_service|
         services_section[routes_service.name.to_s] = {
           "loadBalancer" => {
             "servers" => lb_server(routes_service.service)
@@ -200,40 +138,14 @@ class Route < ApplicationRecord
   end
 
   def lb_server(service)
-    ip_version ||= 4
-    case route_type
-    when "http"
-      service.addresses(ip_version).split(",").map do |ip|
-        {
-          "url" => if target_port
-                     "#{schema}://#{ip}:#{target_port.to_i}"
-                   else
-                     "#{schema}://#{ip}"
-                   end
-        }
-      end
-    when "tcp"
-      service.addresses(ip_version).split(",").map do |ip|
-        {
-          "address" => if target_port
-                         "#{ip}:#{target_port.to_i}"
-                       else
-                         ip.to_s
-                       end
-        }
-      end
-    end
-  end
-
-  def schema
-    tls_termination == "re-encrypt" ? "https" : "http"
+    raise NotImplementedError
   end
 
   def weighted(route_services)
     route_services.map do |route_service|
       {
         "name"   => route_service.name,
-        "weight" => route_service.value
+        "weight" => route_service.value || 1
       }
     end
   end
@@ -257,5 +169,9 @@ class Route < ApplicationRecord
         lb["weighted"]["healthCheck"] = {}
       end
     end
+  end
+
+  def add_middlewares(generated_config)
+    generated_config[pretty_type]["middlewares"].merge!(middlewares.config)
   end
 end

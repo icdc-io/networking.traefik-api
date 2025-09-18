@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe 'Api::V1::GatewaysController', :aggregate_failures do
   before do
-    User.current_user = User.new(userid: 'test_member@test.com', token: nil,
+    User.current_user = User.new(userid: 'member@example.com', token: nil,
                                  account: 'test', role: 'member')
     $gateway = create(:cloud_gateway, account: 'test')
     $certificate = create_certificate(account: 'test')
@@ -11,7 +11,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
     $route = create(
       :route,
       cloud_gateway_id: $gateway.id,
-      owner:            'test_member@test.com',
+      owner:            'member@example.com',
       certificate_id:   $certificate.id
     )
     $routes_service = create(:routes_service, route:   $route,
@@ -35,7 +35,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
         headers: {
           "X-Auth-Account": "test",
           "X-Auth-Role":    "admin",
-          "X-Auth-User":    "test_admin@test.com"
+          "X-Auth-User":    "admin@example.com"
         }
       )
       expect(response).to have_http_status(:ok)
@@ -54,7 +54,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(test_count * 3)
@@ -73,7 +73,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "location",
              "X-Auth-Role":    "operator",
-             "X-Auth-User":    "test_location_operator@test.com"
+             "X-Auth-User":    "operator@example.com"
            }
       expect(response).to have_http_status(:created)
       expect(CloudGateway.count).to eq(1)
@@ -90,7 +90,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "test",
              "X-Auth-Role":    "admin",
-             "X-Auth-User":    "test_admin@test.com"
+             "X-Auth-User":    "admin@example.com"
            }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(0)
@@ -107,7 +107,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
            headers: {
              "X-Auth-Account": "test",
              "X-Auth-Role":    "member",
-             "X-Auth-User":    "test_member@test.com"
+             "X-Auth-User":    "member@example.com"
            }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(0)
@@ -126,7 +126,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -145,7 +145,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "admin",
-            "X-Auth-User":    "test_admin@test.com"
+            "X-Auth-User":    "admin@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -164,7 +164,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -181,7 +181,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "admin",
-            "X-Auth-User":    "test_admin@test.com"
+            "X-Auth-User":    "admin@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -193,7 +193,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "admin",
-            "X-Auth-User":    "test_admin@test.com"
+            "X-Auth-User":    "admin@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -205,7 +205,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -223,7 +223,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -250,7 +250,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.except('created_at',
@@ -272,7 +272,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "member",
-            "X-Auth-User":    "test_member@test.com"
+            "X-Auth-User":    "member@example.com"
           }
       expect(response).to have_http_status(:forbidden)
     end
@@ -284,7 +284,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "test",
             "X-Auth-Role":    "admin",
-            "X-Auth-User":    "test_admin@test.com"
+            "X-Auth-User":    "admin@example.com"
           }
       expect(response).to have_http_status(:forbidden)
     end
@@ -295,7 +295,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
           headers: {
             "X-Auth-Account": "location",
             "X-Auth-Role":    "operator",
-            "X-Auth-User":    "test_location_operator@test.com"
+            "X-Auth-User":    "operator@example.com"
           }
       expect(response).to have_http_status(:not_found)
     end
@@ -309,7 +309,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "location",
                "X-Auth-Role":    "operator",
-               "X-Auth-User":    "test_location_operator@test.com"
+               "X-Auth-User":    "operator@example.com"
              }
       expect(response).to have_http_status(:no_content)
       expect(CloudGateway.count).to eq(0)
@@ -322,7 +322,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "test",
                "X-Auth-Role":    "admin",
-               "X-Auth-User":    "test_admin@test.com"
+               "X-Auth-User":    "admin@example.com"
              }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(1)
@@ -336,7 +336,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "test",
                "X-Auth-Role":    "member",
-               "X-Auth-User":    "test_member@test.com"
+               "X-Auth-User":    "member@example.com"
              }
       expect(response).to have_http_status(:forbidden)
       expect(CloudGateway.count).to eq(1)
@@ -348,7 +348,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
              headers: {
                "X-Auth-Account": "location",
                "X-Auth-Role":    "operator",
-               "X-Auth-User":    "test_location_operator@test.com"
+               "X-Auth-User":    "operator@example.com"
              }
       expect(response).to have_http_status(:not_found)
     end
@@ -365,13 +365,14 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       end
       cert = create_certificate(account: 'test')
       route = create(
-        :route,
-        cloud_gateway_id: gateway.id,
-        owner:            'test_member@test.com',
-        certificate_id:   cert.id,
-        tls_termination:  "edge",
-        insecure:         "redirect"
+        :route_http,
+        cloud_gateway:   gateway,
+        owner:           'member@example.com',
+        certificate:     cert,
+        tls_termination: "edge",
+        insecure:        "redirect"
       )
+      middleware = route.middlewares.last
       routes_service = add_routes_services(route, services.map do |service|
         { id: service[:service].id, weight: service[:weight] }
       end)
@@ -414,7 +415,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
             "#{route.name}-http"  => {
               "service"     => routes_service.first.group_name,
               "rule"        => "Host(`#{route.hostname}`)",
-              "middlewares" => [ "#{route.name}-redirect" ],
+              "middlewares" => [ middleware.name ],
               "entryPoints" => [ "web" ]
             },
             "#{route.name}-https" => {
@@ -425,7 +426,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
             }
           },
           "middlewares" => {
-            "#{route.name}-redirect" => {
+            middleware.name => {
               "redirectScheme" => {
                 "scheme"    => "https",
                 "permanent" => true
