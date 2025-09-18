@@ -1,0 +1,174 @@
+ru:
+  middlewares:
+    http:
+      addPrefix:
+        scheme:
+          description: Модификатор AddPrefix обновляет путь запроса перед его перенаправлением.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/addprefix/
+          options:
+            prefix:
+              description: Строка, которую нужно добавить перед текущим путем в запрашиваемом URL. Она должна включать ведущий слеш (/).
+      basicAuth:
+        scheme:
+          description: Модификатор BasicAuth предоставляет доступ к сервисам только авторизованным пользователям.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/
+          options:
+            users:
+              description: Массив авторизованных пользователей. Каждый пользователь должен быть объявлен в формате имя:хешированный-пароль.
+            usersFile:
+              description: Путь к внешнему файлу, содержащему авторизованных пользователей для модификатора. Содержимое файла — это список имя:хешированный-пароль.
+            realm:
+              description: Позволяет настраивать область для аутентификации.
+            headerField:
+              description: Позволяет определить поле заголовка для хранения аутентифицированного пользователя.
+            removeHeader:
+              description: Позволяет удалять заголовок авторизации перед перенаправлением запроса к вашему сервису.
+      headers:
+        scheme:
+          description: Модификатор Headers управляет заголовками запросов и ответов.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/headers/
+          options:
+            customRequestHeaders:
+              description: Перечисляет имена заголовков и значения для запросов.
+            customResponseHeaders:
+              description: Перечисляет имена заголовков и значения для ответов.
+            accessControlAllowCredentials:
+              description: Указывает, могут ли запросы включать учетные данные пользователя.
+            accessControlAllowHeaders:
+              description: Указывает разрешенные имена заголовков запросов.
+            accessControlAllowMethods:
+              description: Указывает разрешенные методы запросов.
+            accessControlAllowOriginList:
+              description: Указывает разрешенные источники.
+            accessControlAllowOriginListRegex:
+              description: Позволяет источники, соответствующие регулярным выражениям.
+            accessControlExposeHeaders:
+              description: Указывает, какие заголовки безопасно раскрывать для API спецификации CORS.
+            accessControlMaxAge:
+              description: Время (в секундах) для кеширования предварительных запросов.
+            addVaryHeader:
+              description: Используется вместе с accessControlAllowOriginList, чтобы определить, должен ли быть добавлен или изменен заголовок Vary для демонстрации того, что ответы сервера могут отличаться в зависимости от значения заголовка origin.
+            allowedHosts:
+              description: Перечисляет разрешенные доменные имена.
+            hostsProxyHeaders:
+              description: Указывает ключи заголовков для проксированного имени хоста.
+            sslProxyHeaders:
+              description: >
+                Определяет набор ключей заголовков с сопоставленными значениями, которые будут указывать на допустимый HTTPS запрос. Это может быть полезно при использовании других прокси (например: "X-Forwarded-Proto": "https").
+
+            stsSeconds:
+              description: Максимальное время для заголовка Strict-Transport-Security.
+            stsIncludeSubdomains:
+              description: Если установлено в true, директива includeSubDomains добавляется к заголовку Strict-Transport-Security.
+            stsPreload:
+              description: Добавляет флаг preload к заголовку STS.
+            forceSTSHeader:
+              description: Добавляет заголовок STS для HTTP соединений.
+            frameDeny:
+              description: Установите frameDeny в true, чтобы добавить заголовок X-Frame-Options со значением DENY.
+            customFrameOptionsValue:
+              description: Позволяет установить значение заголовка X-Frame-Options с пользовательским значением. Это переопределяет опцию FrameDeny.
+            contentTypeNosniff:
+              description: Установите contentTypeNosniff в true, чтобы добавить заголовок X-Content-Type-Options со значением nosniff.
+            browserXssFilter:
+              description: Установите browserXssFilter в true, чтобы добавить заголовок X-XSS-Protection со значением 1; mode=block.
+            customBrowserXSSValue:
+              description: Позволяет установить значение заголовка X-XSS-Protection с пользовательским значением. Это переопределяет опцию BrowserXssFilter.
+            contentSecurityPolicy:
+              description: Позволяет установить значение заголовка Content-Security-Policy с пользовательским значением.
+            contentSecurityPolicyReportOnly:
+              description: Позволяет установить значение заголовка Content-Security-Policy-Report-Only с пользовательским значением.
+            publicKey:
+              description: Реализует HPKP для пиннинга сертификатов.
+            referrerPolicy:
+              description: Управляет передачей заголовка Referer.
+            permissionsPolicy:
+              description: Позволяет сайтам контролировать функции браузера.
+            isDevelopment:
+              description: Установите true при разработке, чтобы смягчить нежелательные эффекты опций AllowedHosts, SSL и STS. Обычно тестирование происходит с использованием HTTP, а не HTTPS, и на localhost, а не на вашем производственном домене.
+      ipAllowList:
+        scheme:
+          description: IpAllowList принимает/отказывает запросы на основе IP клиента.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/ipallowlist/
+          options:
+            sourceRange:
+              description: Список разрешенных IP (или диапазонов разрешенных IP с использованием CIDR нотации).
+            ipStrategy:
+              depth:
+                description: Глубина позиции IP для выбора в заголовке X-Forwarded-For (начиная с правой стороны). 0 означает отсутствие глубины. Если больше общего числа IP в X-Forwarded-For, то клиентский IP пуст. Если больше 0, опция excludedIPs не оценивается.
+              excludedIPs:
+                description: Позволяет Traefik сканировать заголовок X-Forwarded-For и выбирать первый IP, не входящий в список. Если указана глубина, excludedIPs игнорируется.
+              ipv6Subnet:
+                description: Если ipv6Subnet указан и выбранный IP является IPv6, IP преобразуется в первый IP подсети, к которой он принадлежит.
+      rateLimit:
+        scheme:
+          description: Модификатор RateLimit гарантирует, что сервисы будут получать разумное количество запросов и позволяет определить, что такое разумное количество.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/ratelimit/
+          options:
+            average:
+              description: Число запросов, используемое для определения лимита за период. 0 означает отсутствие ограничения по скорости.
+            period:
+              description: Период времени, используемый для определения лимита.
+            burst:
+              description: Максимальное количество запросов, разрешенных одновременно.
+            sourceCriterion:
+              requestHost:
+                description: Следует ли учитывать хост запроса как источник.
+              requestHeaderName:
+                description: Имя заголовка, используемого для группировки входящих запросов.
+              ipStrategy:
+                depth:
+                  description: Глубина позиции IP для выбора в заголовке X-Forwarded-For (начиная с правой стороны). 0 означает отсутствие глубины. Если больше общего числа IP в X-Forwarded-For, то клиентский IP пуст. Если больше 0, опция excludedIPs не оценивается.
+                excludedIPs:
+                  description: Позволяет сканировать заголовок X-Forwarded-For и выбирать первый IP, не входящий в список. Если указана глубина, excludedIPs игнорируется.
+                ipv6Subnet:
+                  description: Если ipv6Subnet указан и выбранный IP является IPv6, IP преобразуется в первый IP подсети, к которой он принадлежит.
+      redirectScheme:
+        scheme:
+          description: Модификатор RedirectScheme перенаправляет запрос, если схема запроса отличается от настроенной схемы.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/redirectscheme/
+          options:
+            scheme:
+              description: Схема нового URL.
+            permanent:
+              description: Включить постоянное перенаправление.
+            port:
+              description: Порт нового URL.
+      replacePath:
+        scheme:
+          description: Модификатор ReplacePath заменяет фактический путь на указанный и сохраняет оригинальный путь в заголовке X-Replaced-Path.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/replacepath/
+          options:
+            path:
+              description: Опция пути определяет путь, который использовать в качестве замены в URL запроса.
+      replacePathRegex:
+        scheme:
+          description: Модификатор ReplacePathRegex заменяет совпадающий путь на указанный и сохраняет оригинальный путь в заголовке X-Replaced-Path.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/replacepathregex/
+          options:
+            regex:
+              description: Регулярное выражение для сопоставления и захвата пути из URL запроса.
+            replacement:
+              description: Формат заменяющего пути, который может включать захваченные переменные. $1x эквивалентно ${1x}, а не ${1}x (см. Regexp.Expand), поэтому используйте синтаксис ${1}.
+      stripPrefix:
+        scheme:
+          description: Модификатор StripPrefix удаляет совпадающий префикс пути и сохраняет его в заголовке X-Forwarded-Prefix.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/stripprefix/
+          options:
+            prefixes:
+              description: Список префиксов для удаления из URL запроса. Если ваш бэкенд обслуживает ресурсы (например, изображения или файлы JavaScript), он может использовать заголовок X-Forwarded-Prefix для построения относительных URL.
+      stripPrefixRegex:
+        scheme:
+          description: Модификатор stripPrefixRegex удаляет совпадающий префикс пути и сохраняет его в заголовке X-Forwarded-Prefix.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/stripprefixregex/
+          options:
+            regex:
+              description: Список регулярных выражений для сопоставления префикса пути из URL запроса. Например, /products также соответствует /products/shoes и /products/shirts.
+    tcp:
+      ipAllowList:
+        scheme:
+          description: IpAllowList ограничивает разрешенные запросы на основе IP клиента.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/tcp/middlewares/ipallowlist/
+          options:
+            sourceRange:
+              description: Опция sourceRange устанавливает разрешенные IP (или диапазоны разрешенных IP с использованием CIDR нотации).

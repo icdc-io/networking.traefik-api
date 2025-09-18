@@ -15,6 +15,12 @@ class Middleware < ApplicationRecord
 
   delegate :pretty_type, to: :class
 
+  def self.route_type
+    name.split("::").second
+  end
+
+  delegate :route_type, to: :class
+
   def name
     "#{pretty_type.gsub(/([a-z])([A-Z])/, '\1-\2').downcase}-#{id}"
   end
@@ -58,6 +64,26 @@ class Middleware < ApplicationRecord
       end
     end
     output
+  end
+
+  def self.translated_scheme
+    scheme = self::SCHEME.deep_dup
+    t_key_prefix =
+      "middlewares.#{route_type.downcase}." \
+      "#{pretty_type.sub(/^(.)/, &:downcase)}.scheme"
+    t_key = "#{t_key_prefix}.description"
+    scheme[:description] =
+      I18n.t(t_key, fallback: I18n.t(t_key, locale: :en))
+    t_key = "#{t_key_prefix}.link"
+    scheme[:link] =
+      I18n.t(t_key, fallback: I18n.t(t_key, locale: :en))
+    option_keys = scheme[:options].keys
+    option_keys.each do |key|
+      t_key = "#{t_key_prefix}.options.#{key}.description"
+      scheme[:options][key][:description] =
+        I18n.t(t_key, fallback: I18n.t(t_key, locale: :en))
+    end
+    scheme
   end
 
   private

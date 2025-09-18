@@ -2,41 +2,13 @@ class Middleware
   module Http
     class BasicAuth < Middleware
       SCHEME = {
-        type:        "BasicAuth",
-        description: "The BasicAuth middleware grants access to services to " \
-                     "authorized users only.",
-        link:        "https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/",
-        options:     {
-          "users"        => {
-            description: "Array of authorized users. Each user must be " \
-                         "declared using the name:hashed-password format.",
-            default:     "",
-            required:    false
-          },
-          "usersFile"    => {
-            description: "Path to an external file that contains the " \
-                         "authorized users for the middleware. " \
-                         "The file content is a list of name:hashed-password.",
-            default:     "",
-            required:    false
-          },
-          "realm"        => {
-            description: "Allow customizing the realm for the authentication.",
-            default:     "traefik",
-            required:    false
-          },
-          "headerField"  => {
-            description: "Allow defining a header field to store the " \
-                         "authenticated user.",
-            default:     "",
-            required:    false
-          },
-          "removeHeader" => {
-            description: "Allow removing the authorization header before " \
-                         "forwarding the request to your service.",
-            default:     "",
-            required:    false
-          }
+        type:    "BasicAuth",
+        options: {
+          "users"        => { default:  "",        required: false },
+          "usersFile"    => { default:  "",        required: false },
+          "realm"        => { default:  "traefik", required: false },
+          "headerField"  => { default:  "",        required: false },
+          "removeHeader" => { default:  "",        required: false }
         }
       }.freeze
 

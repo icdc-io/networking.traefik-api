@@ -5,7 +5,7 @@ module Api
 
       def middlewares
         set_error_code("033")
-        schemes = @middleware_type::USER_MIDDLEWARES.map { _1::SCHEME }
+        schemes = @middleware_type::USER_MIDDLEWARES.map(&:translated_scheme)
         render json: schemes, status: :ok
       end
 

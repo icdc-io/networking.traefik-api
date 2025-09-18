@@ -1,7 +1,7 @@
 FactoryBot.define do
-  factory :middleware_http, class: "Middleware::Http::RedirectScheme" do
+  factory :middleware_http, class: "Middleware::Http::AddPrefix" do
     route factory: :route_http
-    type { "Middleware::Http::RedirectScheme" }
-    options { { "scheme" => "https" } }
+    type { "Middleware::Http::AddPrefix" }
+    options { { "prefix" => "/foo" } }
   end
 end
