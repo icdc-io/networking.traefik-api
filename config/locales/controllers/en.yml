@@ -29,6 +29,8 @@ en:
             certificate_error: 'Certificates updating failed. Invalid data'
           delete:
             invalid_foreign_key: 'Certificate deleting failed'
+          download:
+            file_not_found: 'Certificate downloading failed. File not found'
         gateways:
           create_cloudgw:
             record_invalid: 'Cloud gateway creation failed. Invalid data'
