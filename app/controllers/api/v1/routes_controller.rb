@@ -107,7 +107,7 @@ module Api
         return unless id && !CloudGateway.filtered.exists?(id:)
 
         message = I18n.t("errors.cloud_gateway.record_not_found")
-        render_not_found_response(message:, code: "032", data: { message: })
+        render_not_found_response(message:, code: "ENT032", data: { message: })
       end
 
       def update_certificate
@@ -129,9 +129,8 @@ module Api
       end
 
       def params_white_list
-        %w[name hostname path target_port insecure tls_termination labels
-           cloud_gateway_id owner source_proto destination_proto ip_version
-           healthcheck_enabled]
+        %w[name hostname path target_port insecure tls_termination
+           cloud_gateway_id owner ip_version healthcheck_enabled]
       end
 
       def healthcheck_params
@@ -145,8 +144,7 @@ module Api
       def route_create_params
         params.expect(
           route: %i[name hostname path target_port insecure tls_termination
-                    labels cloud_gateway_id owner source_proto destination_proto
-                    ip_version certificate_id healthcheck_enabled]
+                    cloud_gateway_id owner ip_version certificate_id healthcheck_enabled]
         )
       end
 
