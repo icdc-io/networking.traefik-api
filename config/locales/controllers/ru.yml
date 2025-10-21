@@ -29,6 +29,8 @@ ru:
             certificate_error: 'Ошибка обновления сертификата. Данные некорректны'
           delete:
             invalid_foreign_key: 'Ошибка удаления сертификата'
+          download:
+            file_not_found: 'Ошибка загрузки сертификата. Файл для загрузки не найден'
         gateways:
           create_cloudgw:
             record_invalid: 'Ошибка создания облачного шлюза. Данные некорректны'
