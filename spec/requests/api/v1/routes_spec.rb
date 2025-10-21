@@ -355,7 +355,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       )
       request_body = { 'route' => $route.attributes
                                         .slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
-                                               'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels')
+                                               'ip_version', 'insecure')
                                         .merge(
                                           'owner'           => "member@example.com",
                                           'name'            => 'test_name',
@@ -382,9 +382,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       request_body = {
         "route" => $route
                      .attributes
-                     .slice("name", "hostname", "target_port", "labels",
-                            "tls_termination", "owner", "path", "source_proto",
-                            "destination_proto", "ip_version", "insecure")
+                     .slice("name", "hostname", "target_port",
+                            "tls_termination", "owner", "path",
+                            "ip_version", "insecure")
                      .merge(cloud_gateway_id: 0,
                             certificate_id:   cert.id,
                             services:         [ { id: service.id } ])
@@ -409,9 +409,9 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       request_body = {
         "route" => $route
                      .attributes
-                     .slice("name", "hostname", "target_port", "labels",
-                            "tls_termination", "owner", "path", "source_proto",
-                            "destination_proto", "ip_version", "insecure")
+                     .slice("name", "hostname", "target_port",
+                            "tls_termination", "owner", "path",
+                            "ip_version", "insecure")
                      .merge(cloud_gateway_id: gateway.id,
                             certificate_id:   cert.id,
                             services:         [ { id: service.id } ])
@@ -595,7 +595,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
 
       request_body = { 'route' => $route.attributes
                                         .slice('name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
-                                               'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels')
+                                               'ip_version', 'insecure')
                                         .merge(
                                           cloud_gateway_id: gateway.id,
                                           certificate_id:   cert.id,
@@ -614,7 +614,7 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       expect(body).to eq(route.reload.as_json)
       expect(body.slice(
                'name', 'hostname', 'target_port', 'tls_termination', 'owner', 'path',
-               'source_proto', 'destination_proto', 'ip_version', 'insecure', 'labels'
+               'ip_version', 'insecure'
              )).to eq(request_body['route'].except(
                         :cloud_gateway_id, :certificate_id, :services
                       ))
