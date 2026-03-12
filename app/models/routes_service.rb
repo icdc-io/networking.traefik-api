@@ -3,7 +3,7 @@ class RoutesService < ApplicationRecord
   belongs_to :service
 
   validates :name, presence: true, uniqueness: true
-  validate :service_port_uniqueness
+  validates :service_id, uniqueness: { scope: :route_id }
 
   before_validation { self.name ||= self.class.unique_name }
 
@@ -18,16 +18,5 @@ class RoutesService < ApplicationRecord
 
   def group_name
     "#{name}-group"
-  end
-
-  private
-
-  def service_port_uniqueness
-    return if RoutesService
-              .joins(:route)
-              .where(service_id:, route: { target_port: route.target_port })
-              .none?
-
-    errors.add(:base, "Route to service port already created")
   end
 end
