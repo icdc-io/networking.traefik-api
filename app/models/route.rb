@@ -28,12 +28,17 @@ class Route < ApplicationRecord
     end
   end
 
-  validates :name, presence: true, uniqueness: { scope: :cloud_gateway }
+  validates :name, presence: true
+  validate :name_uniqueness_within_account
   validates :hostname, presence: true
   validates :target_port, numericality: { in: 0..65_535 }, allow_nil: true
   validates :owner, presence: true
   validates :ip_version, inclusion: { in: [ 4, 6 ] }
   validates :type, presence: true
+  validates :hostname, uniqueness: {
+    scope:   %i[cloud_gateway_id path],
+    message: "with this path already exists for this cloud gateway"
+  }
 
   def update(data, new_services)
     update!(data)
@@ -65,6 +70,16 @@ class Route < ApplicationRecord
   end
 
   private
+
+  def name_uniqueness_within_account
+    return if Route
+              .joins(:cloud_gateway)
+              .where(name:, cloud_gateways: { account: cloud_gateway.account })
+              .where.not(id:)
+              .none?
+
+    errors.add(:name, "already exists within this account")
+  end
 
   def update_services(new_services)
     return unless new_services

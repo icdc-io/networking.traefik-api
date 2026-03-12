@@ -318,33 +318,72 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         end
       end
 
-      context "with same target port in params" do
-        let(:port) { target_port }
+      context "hostname and path uniqueness within cloud gateway" do
+        let(:gateway1) { create(:cloud_gateway, account: "test") }
+        let(:request_body) do
+          {
+            "route" => attributes_for(:route_http).merge(
+              hostname:         "example.com",
+              path:             "/",
+              cloud_gateway_id: gateway1.id,
+              services:         [ { id: service.id } ]
+            )
+          }
+        end
+        let(:gateway2) { create(:cloud_gateway, account: "test") }
+        let(:service) { create(:service, owner: user) }
 
-        it "does not create route" do
-          expect { post('/api/v1/routes', params:, headers:) }
-            .not_to change(Route, :count)
+        before do
+          create(:route,
+                 hostname:      "example.com",
+                 path:          "/",
+                 cloud_gateway: gateway1,
+                 owner:         user)
         end
 
-        it "renders error" do
-          # expect { post('/api/v1/routes', params:, headers:) }
-          #   .to raise_error(ActiveRecord::RecordInvalid)
-          #
-          post('/api/v1/routes', params:, headers:)
+        it "does not allow creating route with same hostname and path in the same gateway" do
+          expect do
+            post '/api/v1/routes', params: request_body, headers:
+          end.not_to change(Route, :count)
 
           expect(response).to have_http_status(:unprocessable_content)
+          expect(response.parsed_body["errors"])
+            .to eq([ "Validation failed: Hostname with this path already exists for this cloud gateway" ])
+        end
 
-          expect(response.parsed_body)
-            .to eq({ "code"    => "ENT025",
-                     "data"    => nil,
-                     "errors"  => [ "Validation failed: Route to service port already created" ],
-                     "message" => "Route creation failed. Invalid data",
-                     "status"  => 422 })
+        it "allows creating route with same hostname but different path in the same gateway" do
+          request_body["route"]["path"] = "/api"
+
+          expect do
+            post '/api/v1/routes', params: request_body, headers:
+          end.to change(Route, :count).by(1)
+
+          expect(response).to have_http_status(:created)
+        end
+
+        it "allows creating route with same path but different hostname in the same gateway" do
+          request_body["route"]["hostname"] = "test.com"
+
+          expect do
+            post '/api/v1/routes', params: request_body, headers:
+          end.to change(Route, :count).by(1)
+
+          expect(response).to have_http_status(:created)
+        end
+
+        it "allows creating route with same hostname and path in a different gateway" do
+          request_body["route"]["cloud_gateway_id"] = gateway2.id
+
+          expect do
+            post '/api/v1/routes', params: request_body, headers:
+          end.to change(Route, :count).by(1)
+
+          expect(response).to have_http_status(:created)
         end
       end
     end
 
-    it 'valdates route name on uniqueness among gateway' do
+    it 'valdates route name on uniqueness among account' do
       gateway = create(:cloud_gateway, account: 'test')
       service = create(:service, owner: 'member@example.com')
       create(
