@@ -2,11 +2,11 @@ class Route
   class Tcp < Route
     before_validation { self.path = "" }
     before_validation { self.insecure = "" }
-    before_validation { self.tls_termination = "" }
+    before_validation { self.tls_termination = "passthrough" }
 
     validates :path, absence: true
     validates :insecure, absence: true
-    validates :tls_termination, absence: true
+    validates :tls_termination, inclusion: { in: [ "passthrough" ] }
 
     def merge_config(generated_config)
       return if services.none?

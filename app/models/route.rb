@@ -41,11 +41,22 @@ class Route < ApplicationRecord
   }
 
   def update(data, new_services)
-    update!(data)
+    tls = data["tls_termination"]
+    route =
+      if tls.nil?
+        self
+      else
+        klass = tls == "passthrough" ? Route::Tcp : Route::Http
+        is_a?(klass) ? self : becomes!(klass)
+      end
 
-    routes_services.destroy_all
+    route.update!(data)
+
+    route.routes_services.destroy_all
     RoutesService.generate_name
-    update_services(new_services)
+    route.send(:update_services, new_services)
+
+    route
   end
 
   # NOTE: We do not show RedirectScheme middleware because it only applies to
