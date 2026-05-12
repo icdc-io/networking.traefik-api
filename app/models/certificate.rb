@@ -19,6 +19,15 @@ class Certificate < ApplicationRecord
     cert
   end
 
+  def self.config(path:)
+    pluck(:name, :cert_path, :key_path).map do |cert|
+      {
+        "certFile" => "#{path}#{cert[0]}/#{cert[1].split('/').last}",
+        "keyFile"  => "#{path}#{cert[0]}/#{cert[2].split('/').last}"
+      }
+    end
+  end
+
   def update_content(params)
     write_files(params.slice("cert", "key", "ca", "dest_ca"))
 

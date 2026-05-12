@@ -35,6 +35,7 @@ class ApplicationController < ActionController::API
   def switch_locale(&)
     set_error_code("003")
     locale = extract_locale_from_accept_language_header || I18n.default_locale
+    locale = "en" unless I18n.available_locales.map(&:to_s).include?(locale)
     I18n.with_locale(locale, &)
   end
 

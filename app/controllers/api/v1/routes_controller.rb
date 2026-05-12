@@ -6,7 +6,11 @@ module Api
 
       def index
         set_error_code("023")
-        render json: Route.filtered, status: :ok
+        routes = Route.filtered.includes(
+          %i[cloud_gateway healthcheck routes_services services
+             user_middlewares]
+        )
+        render json: routes, status: :ok
       end
 
       def show
@@ -22,8 +26,7 @@ module Api
         end
         route_params = route_create_params
         if User.current_user.role == "member"
-          route_params[:owner] =
-            User.current_user.userid
+          route_params[:owner] = User.current_user.userid
         end
         Route.transaction do
           @route = Route.create!(route_params)
@@ -58,6 +61,8 @@ module Api
               )
             end
           end
+
+          @route.update_middlewares(middleware_params)
         end
         render json: @route, status: :created
       end
@@ -67,7 +72,7 @@ module Api
         services = @route_params.delete(:services)
         Route.transaction do
           update_certificate
-          @route.update(sanitize_params[:route], services)
+          @route = @route.update(sanitize_params[:route], services)
           if @route.healthcheck_enabled
             if @route.healthcheck
               @route.healthcheck.update!(healthcheck_params)
@@ -77,6 +82,7 @@ module Api
           else
             @route.healthcheck&.destroy!
           end
+          @route.update_middlewares(middleware_params) if middleware_params
         end
         render json: @route.reload, status: :ok
       end
@@ -101,7 +107,7 @@ module Api
         return unless id && !CloudGateway.filtered.exists?(id:)
 
         message = I18n.t("errors.cloud_gateway.record_not_found")
-        render_not_found_response(message:, code: "032", data: { message: })
+        render_not_found_response(message:, code: "ENT032", data: { message: })
       end
 
       def update_certificate
@@ -123,9 +129,8 @@ module Api
       end
 
       def params_white_list
-        %w[name hostname path target_port insecure tls_termination labels
-           cloud_gateway_id owner source_proto destination_proto ip_version
-           healthcheck_enabled]
+        %w[name hostname path target_port insecure tls_termination
+           cloud_gateway_id owner ip_version healthcheck_enabled]
       end
 
       def healthcheck_params
@@ -139,9 +144,14 @@ module Api
       def route_create_params
         params.expect(
           route: %i[name hostname path target_port insecure tls_termination
-                    labels cloud_gateway_id owner source_proto destination_proto
-                    ip_version certificate_id healthcheck_enabled]
+                    cloud_gateway_id owner ip_version certificate_id healthcheck_enabled]
         )
+      end
+
+      def middleware_params
+        @middleware_params ||=
+          @route_params
+          .permit(middlewares: [ :type, options: {} ])[:middlewares]
       end
     end
   end

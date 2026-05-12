@@ -8,6 +8,7 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
   ]
 )
 SimpleCov.start do
+  add_group "Channels",    "app/channels"
   add_group "Controllers", "app/controllers"
   add_group "Mailers",     "app/mailers"
   add_group "Models",      "app/models"
@@ -90,7 +91,10 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
 end
 
-ENV['OPERATOR_GROUP'] = 'location.operator'
-ENV['LOCATION_DOMAIN'] = 'dcz.lab.icdc.io'
+ENV['OPERATOR_GROUP']  = 'location.operator'
+ENV['LOCATION_DOMAIN'] = 'example.com'
 ENV['SCOPES_MAP_FILE'] = 'config/rbac/rbac_scopes.yml'
 ENV['ROUTES_MAP_FILE'] = 'config/rbac/rbac_routes.yml'
+# ENV['SMTP_SERVER']     = 'example.com'
+# ENV['SMTP_PORT']       = '587'
+# ENV['SMTP_FROM']       = 'noreply@example.com'

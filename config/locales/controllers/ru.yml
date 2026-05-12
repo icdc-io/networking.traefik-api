@@ -1,6 +1,6 @@
 ru:
   errors:
-    cloud_gateway: 
+    cloud_gateway:
       record_not_found: 'Неверный запрос, облачный шлюз не найден'
     certificate:
       record_not_found: 'Неверный запрос, сертификат не найден'
@@ -29,6 +29,8 @@ ru:
             certificate_error: 'Ошибка обновления сертификата. Данные некорректны'
           delete:
             invalid_foreign_key: 'Ошибка удаления сертификата'
+          download:
+            file_not_found: 'Ошибка загрузки сертификата. Файл для загрузки не найден'
         gateways:
           create_cloudgw:
             record_invalid: 'Ошибка создания облачного шлюза. Данные некорректны'
@@ -41,3 +43,6 @@ ru:
           update:
             record_invalid: 'Ошибка обновления веб-маршрута. Данные некорректны'
             invalid_foreign_key: 'Ошибка обновления веб-маршрута. Выбранный сертификат не существует'
+        options:
+          middlewares:
+            invalid_route_type: 'Некорректный тип веб-маршрута'

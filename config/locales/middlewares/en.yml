@@ -1,0 +1,205 @@
+en:
+  middlewares:
+    http:
+      addPrefix:
+        scheme:
+          description: The AddPrefix middleware updates the path of a request before forwarding it.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/addprefix/
+          options:
+            prefix:
+              description: String to add before the current path in the requested URL. It should include a leading slash (/).
+      basicAuth:
+        scheme:
+          description: The BasicAuth middleware grants access to services to authorized users only.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/
+          options:
+            users:
+              description: Array of authorized users. Each user must be declared using the name:hashed-password format.
+            usersFile:
+              description: Path to an external file that contains the authorized users for the middleware. The file content is a list of name:hashed-password.
+            realm:
+              description: Allow customizing the realm for the authentication.
+            headerField:
+              description: Allow defining a header field to store the authenticated user.
+            removeHeader:
+              description: Allow removing the authorization header before forwarding the request to your service.
+      headers:
+        scheme:
+          description: The Headers middleware manages the headers of requests and responses.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/headers/
+          options:
+            customRequestHeaders:
+              description: Lists the header names and values for requests.
+            customResponseHeaders:
+              description: Lists the header names and values for responses.
+            accessControlAllowCredentials:
+              description: Indicates if the request can include user credentials.
+            accessControlAllowHeaders:
+              description: Specifies allowed request header names.
+            accessControlAllowMethods:
+              description: Specifies allowed request methods.
+            accessControlAllowOriginList:
+              description: Specifies allowed origins.
+            accessControlAllowOriginListRegex:
+              description: Allows origins matching regex.
+            accessControlExposeHeaders:
+              description: Specifies which headers are safe to expose to the API of a CORS API specification.
+            accessControlMaxAge:
+              description: Time (in seconds) to cache preflight requests.
+            addVaryHeader:
+              description: Used in conjunction with accessControlAllowOriginList to determine whether the Vary header should be added or modified to demonstrate that server responses can differ based on the value of the origin header.
+            allowedHosts:
+              description: Lists allowed domain names.
+            hostsProxyHeaders:
+              description: Specifies header keys for proxied hostname.
+            sslProxyHeaders:
+              description: >
+                Defines a set of header keys with associated values that would indicate a valid HTTPS request. It can be useful when using other proxies (example: "X-Forwarded-Proto": "https").
+
+            stsSeconds:
+              description: Max age for Strict-Transport-Security header.
+            stsIncludeSubdomains:
+              description: If set to true, the includeSubDomains directive is appended to the Strict-Transport-Security header.
+            stsPreload:
+              description: Adds preload flag to STS header.
+            forceSTSHeader:
+              description: Adds STS header for HTTP connections.
+            frameDeny:
+              description: Set frameDeny to true to add the X-Frame-Options header with the value of DENY.
+            customFrameOptionsValue:
+              description: Allows the X-Frame-Options header value to be set with a custom value. This overrides the FrameDeny option.
+            contentTypeNosniff:
+              description: Set contentTypeNosniff to true to add the X-Content-Type-Options header with the value nosniff.
+            browserXssFilter:
+              description: Set browserXssFilter to true to add the X-XSS-Protection header with the value 1; mode=block.
+            customBrowserXSSValue:
+              description: Allows the X-XSS-Protection header value to be set with a custom value. This overrides the BrowserXssFilter option.
+            contentSecurityPolicy:
+              description: Allows the Content-Security-Policy header value to be set with a custom value.
+            contentSecurityPolicyReportOnly:
+              description: Allows the Content-Security-Policy-Report-Only header value to be set with a custom value.
+            publicKey:
+              description: Implements HPKP for certificate pinning.
+            referrerPolicy:
+              description: Controls forwarding of Referer header.
+            permissionsPolicy:
+              description: Allows sites to control browser features.
+            isDevelopment:
+              description: Set true when developing to mitigate the unwanted effects of the AllowedHosts, SSL, and STS options. Usually testing takes place using HTTP, not HTTPS, and on localhost, not your production domain.
+      ipAllowList:
+        scheme:
+          description: IpAllowList accepts / refuses requests based on the client IP.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/ipallowlist/
+          options:
+            sourceRange:
+              description: List of allowed IPs (or ranges of allowed IPs by using CIDR notation).
+            ipStrategy:
+              depth:
+                description: Depth position of the IP to select in the X-Forwarded-For header (starting from the right). 0 means no depth. If greater than the total number of IPs in X-Forwarded-For, then the client IP is empty. If higher than 0, the excludedIPs options is not evaluated.
+              excludedIPs:
+                description: Allows Traefik to scan the X-Forwarded-For header and select the first IP not in the list. If depth is specified, excludedIPs is ignored.
+              ipv6Subnet:
+                description: If ipv6Subnet is provided and the selected IP is IPv6, the IP is transformed into the first IP of the subnet it belongs to.
+      rateLimit:
+        scheme:
+          description: The RateLimit middleware ensures that services will receive a fair amount of requests, and allows you to define what fair is.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/ratelimit/
+          options:
+            average:
+              description: Number of requests used to define the rate using the period. 0 means no rate limiting.
+            period:
+              description: Period of time used to define the rate.
+            burst:
+              description: Maximum number of requests allowed to go through at the very same moment.
+            sourceCriterion:
+              requestHost:
+                description: Whether to consider the request host as the source.
+              requestHeaderName:
+                description: Name of the header used to group incoming requests.
+              ipStrategy:
+                depth:
+                  description: Depth position of the IP to select in the X-Forwarded-For header (starting from the right). 0 means no depth. If greater than the total number of IPs in X-Forwarded-For, then the client IP is empty. If higher than 0, the excludedIPs options is not evaluated.
+                excludedIPs:
+                  description: Allows scanning the X-Forwarded-For header and select the first IP not in the list. If depth is specified, excludedIPs is ignored.
+                ipv6Subnet:
+                  description: If ipv6Subnet is provided and the selected IP is IPv6, the IP is transformed into the first IP of the subnet it belongs to.
+                  # redis:
+                  # #   description: The redis configuration enables distributed rate limiting by using Redis to store rate limit tokens across multiple Traefik instances. This allows you to enforce consistent rate limits across a cluster of Traefik proxies. When Redis is not configured, Traefik uses in-memory storage for rate limiting, which works only for the individual Traefik instance.
+                  #   endpoints:
+                  #     description: List of Redis server endpoints for distributed rate limiting. You can specify multiple endpoints for Redis cluster or high availability setups.
+                  #   username:
+                  #     description: Username for Redis authentication.
+                  #   password:
+                  #     description: Password for Redis authentication. In Kubernetes, these can be provided via secrets.
+                  #   db:
+                  #     description: Redis database number to select.
+                  #   poolSize:
+                  #     description: Defines the base number of socket connections in the pool. If set to 0, it defaults to 10 connections per CPU core as reported by runtime.GOMAXPROCS. If there are not enough connections in the pool, new connections will be allocated beyond poolSize, up to maxActiveConns.
+                  #   minIdleConns:
+                  #     description: Minimum number of idle connections to maintain in the pool. This is useful when establishing new connections is slow. A value of 0 means idle connections are not automatically closed.
+                  #   maxActiveConns:
+                  #     description: Maximum number of connections the pool can allocate at any given time. A value of 0 means no limit.
+                  #   readTimeout:
+                  #     description: Timeout for socket reads. If reached, commands will fail with a timeout instead of blocking. Zero means no timeout.
+                  #   writeTimeout:
+                  #     description: Timeout for socket writes. If reached, commands will fail with a timeout instead of blocking. Zero means no timeout.
+                  #   dialTimeout:
+                  #     description: Timeout for establishing new connections. Zero means no timeout.
+                  #   tls:
+                  #     ca:
+                  #       description: Path to the certificate authority used for the secure connection to Redis, it defaults to the system bundle.
+                  #     cert:
+                  #       description: Path to the public certificate used for the secure connection to Redis. When this option is set, the key option is required.
+                  #     key:
+                  #       description: Path to the private key used for the secure connection to Redis. When this option is set, the cert option is required.
+                  #     insecureSkipVerify:
+                  #       description: If insecureSkipVerify is true, the TLS connection to Redis accepts any certificate presented by the server regardless of the hostnames it covers.
+      redirectScheme:
+        scheme:
+          description: The RedirectScheme middleware redirects the request if the request scheme is different from the configured scheme.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/redirectscheme/
+          options:
+            scheme:
+              description: Scheme of the new URL.
+            permanent:
+              description: Enable a permanent redirection.
+            port:
+              description: Port of the new URL.
+      replacePath:
+        scheme:
+          description: The ReplacePath middleware will replace the actual path with the specified one and store the original path in a X-Replaced-Path header.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/replacepath/
+          options:
+            path:
+              description: The path option defines the path to use as replacement in the request URL.
+      replacePathRegex:
+        scheme:
+          description: The ReplacePathRegex middleware will replace the matching path with the specified one and store the original path in an X-Replaced-Path header.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/replacepathregex/
+          options:
+            regex:
+              description: Regular expression to match and capture the path from the request URL.
+            replacement:
+              description: Replacement path format, which can include captured variables. $1x is equivalent to ${1x}, not ${1}x (see Regexp.Expand), so use ${1} syntax.
+      stripPrefix:
+        scheme:
+          description: The StripPrefix middleware strips the matching path prefix and stores it in an X-Forwarded-Prefix header.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/stripprefix/
+          options:
+            prefixes:
+              description: List of prefixes to strip from the request URL. If your backend is serving assets (for example, images or JavaScript files), it can use the X-Forwarded-Prefix header to construct relative URLs.
+      stripPrefixRegex:
+        scheme:
+          description: The stripPrefixRegex middleware strips the matching path prefix and stores it in an X-Forwarded-Prefix header.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/stripprefixregex/
+          options:
+            regex:
+              description: List of regular expressions to match the path prefix from the request URL. For instance, /products also matches /products/shoes and /products/shirts.
+    tcp:
+      ipAllowList:
+        scheme:
+          description: IpAllowList limits allowed requests based on the client IP.
+          link: https://doc.traefik.io/traefik/reference/routing-configuration/tcp/middlewares/ipallowlist/
+          options:
+            sourceRange:
+              description: The sourceRange option sets the allowed IPs (or ranges of allowed IPs by using CIDR notation).

@@ -2,15 +2,17 @@ class RoutesService < ApplicationRecord
   belongs_to :route
   belongs_to :service
 
-  validates :name,
-            uniqueness: { message: "(Route to service port already created)" }
+  validates :name, presence: true, uniqueness: true
+  validates :service_id, uniqueness: { scope: :route_id }
+
+  before_validation { self.name ||= self.class.unique_name }
 
   def self.generate_name
     name = Haikunator.haikunate(0)
     name if RoutesService.where(name:).none?
   end
 
-  def self.unique_name(name)
+  def self.unique_name(name = generate_name)
     "#{name}-#{maximum(:id).to_i.next}"
   end
 

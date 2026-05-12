@@ -1,19 +1,13 @@
 FactoryBot.define do
   factory :route do
     cloud_gateway
-    name              { "Route-#{rand(165_437_652).to_s(36)}" }
+    sequence(:name)   { |n| "Route-#{n}" }
     hostname          { "#{name.downcase}.computedev.zby.icdc.io" }
-    target_port       { rand(1000..60_000) }
+    target_port       { 3000 }
     tls_termination   { "" }
-    owner             { "test_member@test.com" }
+    owner             { "user@example.com" }
     path              { "/" }
-    source_proto      { "tcp" }
-    destination_proto { "tcp" }
     ip_version        { 4 }
     insecure          { "" }
-    labels            { rand(36..1295).to_s(36).upcase.to_s }
-
-    # services
-    # certificate
   end
 end

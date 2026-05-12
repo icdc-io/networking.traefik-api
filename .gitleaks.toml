@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[allowlist]
+# Test-only JWTs in swagger (not production secrets)
+paths = ["swagger/v1/swagger.yaml"]
+
+regexes = [
+  'MIIJRQIBADANBgkqhkiG9w0BAQEFAASCCS8wggkrAgEAAoICAQDfZiC8vaaxVZ4h',
+  'MIIFKzCCBBOgAwIBAgISA11qRPW4BPDV/sS4j3ZP1iktMA0GCSqGSIb3DQEBCwUA',
+  'MIIGIDCCBAigAwIBAgIUMzFmSJ1zWSys9mqGaK8yjOpXffcw',
+]

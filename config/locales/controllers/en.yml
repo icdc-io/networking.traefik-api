@@ -1,6 +1,6 @@
 en:
   errors:
-    cloud_gateway: 
+    cloud_gateway:
       record_not_found: 'Bad request, cloud gateway not found'
     certificate:
       record_not_found: 'Bad request, certificate not found'
@@ -29,6 +29,8 @@ en:
             certificate_error: 'Certificates updating failed. Invalid data'
           delete:
             invalid_foreign_key: 'Certificate deleting failed'
+          download:
+            file_not_found: 'Certificate downloading failed. File not found'
         gateways:
           create_cloudgw:
             record_invalid: 'Cloud gateway creation failed. Invalid data'
@@ -41,3 +43,6 @@ en:
           update:
             record_invalid: 'Route updating failed. Invalid data'
             invalid_foreign_key: 'Route updating failed. Сertificate does not exist'
+        options:
+          middlewares:
+            invalid_route_type: 'Invalid route type'
