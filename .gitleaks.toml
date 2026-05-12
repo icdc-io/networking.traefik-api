@@ -1,4 +1,5 @@
-title = "gitleaks config for traefik-api"
+[extend]
+useDefault = true
 
 [allowlist]
 paths = []
