@@ -3,6 +3,11 @@ class Middleware < ApplicationRecord
 
   belongs_to :route
 
+  scope :incompatible_with, lambda { |route|
+    route_type = route.type.split("::").second
+    where("type NOT LIKE ?", "Middleware::#{route_type}::%")
+  }
+
   before_save { self.options = options_hash }
 
   validates_with MiddlewareRawKeysValidator

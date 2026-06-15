@@ -40,6 +40,8 @@ class Route < ApplicationRecord
     message: "with this path already exists for this cloud gateway"
   }
 
+  after_save :destroy_incompatible_middlewares!
+
   def update(data, new_services)
     tls = data["tls_termination"]
     route =
@@ -199,5 +201,9 @@ class Route < ApplicationRecord
 
   def add_middlewares(generated_config)
     generated_config[pretty_type]["middlewares"].merge!(middlewares.config)
+  end
+
+  def destroy_incompatible_middlewares!
+    middlewares.incompatible_with(self).destroy_all
   end
 end
