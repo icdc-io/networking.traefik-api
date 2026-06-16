@@ -83,6 +83,33 @@ RSpec.describe CloudGateway, :aggregate_failures do
       end
     end
 
+    context "when changing from http edge+redirect to tcp passthrough" do
+      let!(:route) do
+        create(:route_http, cloud_gateway:, tls_termination: "edge",
+               insecure: "redirect")
+      end
+      let!(:service) { create(:service) }
+      let!(:route_service) { create(:route_service, route:, service:) }
+
+      before do
+        route.update(
+          { "tls_termination" => "passthrough", "insecure" => "" },
+          [ { "id" => service.id } ]
+        )
+      end
+
+      it "returns tcp config without incompatible middlewares" do
+        updated_route = Route.find(route.id)
+        config = YAML.load(cloud_gateway.config)
+
+        expect(updated_route.middlewares.where("type LIKE ?", "Middleware::Http::%"))
+          .to be_none
+        expect(config.dig("tcp", "routers", updated_route.name))
+          .not_to have_key("middlewares")
+        expect(config["tcp"]).not_to have_key("middlewares")
+      end
+    end
+
     context "with healthcheck route" do
       let!(:route) do
         create(:route, cloud_gateway:, healthcheck_enabled: true)
