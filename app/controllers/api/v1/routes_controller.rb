@@ -1,6 +1,8 @@
 module Api
   module V1
     class RoutesController < ApplicationController
+      wrap_parameters false
+
       before_action :set_route, only: %i[update show destroy]
       before_action :check_params, only: %i[create update]
 
@@ -20,9 +22,9 @@ module Api
 
       def create
         set_error_code("025")
-        services = params[:route].delete(:services)
-        if params[:route][:healthcheck_enabled]
-          healthcheck_params = params[:route].delete(:healthcheck)
+        services = @route_params.delete(:services)
+        if @route_params[:healthcheck_enabled]
+          healthcheck_params = @route_params.delete(:healthcheck)
         end
         route_params = route_create_params
         if User.current_user.role == "member"
@@ -72,7 +74,7 @@ module Api
         services = @route_params.delete(:services)
         Route.transaction do
           update_certificate
-          @route = @route.update(sanitize_params[:route], services)
+          @route = @route.update(sanitize_params, services)
           if @route.healthcheck_enabled
             if @route.healthcheck
               @route.healthcheck.update!(healthcheck_params)
@@ -100,7 +102,7 @@ module Api
       end
 
       def check_params
-        @route_params = params[:route]
+        @route_params = params[:route] || params
         render json: @route unless @route_params
 
         id = @route_params[:cloud_gateway_id]
@@ -125,7 +127,7 @@ module Api
       end
 
       def sanitize_params
-        params.permit(route: params_white_list)
+        @route_params.permit(*params_white_list)
       end
 
       def params_white_list
@@ -142,9 +144,10 @@ module Api
       end
 
       def route_create_params
-        params.expect(
-          route: %i[name hostname path target_port insecure tls_termination
-                    cloud_gateway_id owner ip_version certificate_id healthcheck_enabled]
+        @route_params.permit(
+          :name, :hostname, :path, :target_port, :insecure, :tls_termination,
+          :cloud_gateway_id, :owner, :ip_version, :certificate_id,
+          :healthcheck_enabled
         )
       end
 
