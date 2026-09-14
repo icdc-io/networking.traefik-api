@@ -48,6 +48,23 @@ RSpec.describe Route::Tcp, :aggregate_failures do
   # |insecure|tls_termination|valid|tcp|
   # |--------|---------------|-----|---|
   # |""      |passthrough    |+    |+  |
-  # |allow   |passthrough    |     |   |
-  # |redirect|passthrough    |     |   |
+  # |allow   |passthrough    |+    |+  |
+  # |redirect|passthrough    |+    |+  |
+
+  it "validates insecure value" do
+    route.insecure = "invalid_value"
+    expect(route).not_to be_valid
+  end
+
+  context "with insecure allow or redirect and passthrough" do
+    it "is valid with insecure = \"allow\"" do
+      route.insecure = "allow"
+      expect(route).to be_valid
+    end
+
+    it "is valid with insecure = \"redirect\"" do
+      route.insecure = "redirect"
+      expect(route).to be_valid
+    end
+  end
 end
