@@ -283,6 +283,25 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
         expect(routes_services.pluck(:service_id, :value))
           .to eq(services.pluck(:id, :weight))
       end
+
+      [ 0, -1, 2.5, "abc" ].each do |weight|
+        context "with invalid weight #{weight.inspect}" do
+          let(:services) do
+            create_list(:service, 2, owner: user).map do |service|
+              { id: service.id, weight: }
+            end
+          end
+
+          it "does not create route" do
+            expect { post('/api/v1/routes', params:, headers:) }
+              .not_to(change { [ Route.count, RoutesService.count ] })
+
+            expect(response).to have_http_status(:unprocessable_content)
+            expect(response.parsed_body["errors"].join)
+              .to include("Weight must be an integer")
+          end
+        end
+      end
     end
 
     context "with service in params attached to another route" do
