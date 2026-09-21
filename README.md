@@ -42,7 +42,7 @@ Authorization is enforced via RBAC rules configured by `ROUTES_MAP_FILE` (defaul
 
 ## ⏱️ Scheduled jobs (Sidekiq Cron)
 
-Cron jobs are configured in `config/schedule.yml` (e.g. `LoadServicesJob`, `DeleteServicesJob`).
+Cron jobs are configured in `config/schedule.yml` (e.g. `LoadServicesJob`).
 
 Sidekiq UI is mounted at **`/sidekiq`** (see `config/routes.rb`).
 

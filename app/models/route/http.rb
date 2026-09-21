@@ -45,13 +45,14 @@ class Route
         "entryPoints" => [ "web" ]
       }
 
-      if redirect?
-        router["middlewares"] = [ redirect_middleware.name ]
-      elsif middlewares.any?
-        router["middlewares"] = middlewares.names
-      end
+      mws = http_middleware_names
+      router["middlewares"] = mws if mws.any?
 
       generated_config["http"]["routers"]["#{name}-http"] = router
+    end
+
+    def http_middleware_names
+      redirect? ? [ redirect_middleware.name ] : middlewares.names
     end
 
     def add_https_router(generated_config)
@@ -76,9 +77,23 @@ class Route
       end
     end
 
+    def add_healthcheck(service_configs)
+      hc = healthcheck.attributes
+                      .except("id", "route_id", "created_at", "updated_at")
+                      .compact
+
+      hc["interval"] = "#{hc['interval']}s" if hc["interval"]
+      hc["timeout"]  = "#{hc['timeout']}s" if hc["timeout"]
+      hc["followRedirects"] = hc.delete("follow_redirects")
+      hc.delete_if { |_, v| [ "", {} ].include? v }
+
+      service_configs.each do |service_config|
+        service_config["loadBalancer"]["healthCheck"] = hc
+      end
+    end
+
     def lb_server(service)
-      ip_version ||= 4
-      service.addresses(ip_version).split(",").map do |ip|
+      service.addresses(ip_version).map do |ip|
         url = "#{schema}://#{ip}"
         url += ":#{target_port.to_i}" if target_port
         { "url" => url }

@@ -18,6 +18,21 @@ RSpec.describe Middleware::Http::AddPrefix, :aggregate_failures do
     expect(create(:middleware_http_add_prefix)).to be_valid
   end
 
+  it "is invalid when prefix does not start with slash" do
+    [ "foo", "11", 11, "" ].each do |prefix|
+      middleware.options = { "prefix" => prefix }
+      expect(middleware).not_to be_valid, "#{prefix.inspect} must be invalid"
+      expect(middleware.errors[:prefix]).to be_present
+    end
+  end
+
+  it "keeps numeric prefix as string" do
+    middleware.options = { "prefix" => "/11" }
+    middleware.save!
+    expect(middleware.reload.options["prefix"]).to eq("/11")
+    expect(middleware.config.values.first["addPrefix"]["prefix"]).to eq("/11")
+  end
+
   I18n.available_locales.each do |locale|
     context "with #{locale} locale" do
       it "has localization for description" do

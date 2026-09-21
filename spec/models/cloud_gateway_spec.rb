@@ -89,7 +89,8 @@ RSpec.describe CloudGateway, :aggregate_failures do
       end
       let!(:service) { create(:service) }
       let!(:route_service) { create(:route_service, route:, service:) }
-      let!(:ip) { service.addresses(4).split(",").first.strip }
+      let!(:ip) { service.addresses(4).first }
+      let(:http_port) { Route::Tcp::InsecureHttp::TARGET_PORT }
       let!(:mw) { "#{route.name}-redirect" }
       let!(:http_router_name) { "#{route.name}-http" }
 
@@ -111,7 +112,15 @@ RSpec.describe CloudGateway, :aggregate_failures do
           .to eq(
             {
               "loadBalancer" => {
-                "servers" => [ { "url" => "http://#{ip}:#{route.target_port}" } ]
+                "servers" => [ { "url" => "http://#{ip}:#{http_port}" } ]
+              }
+            }
+          )
+        expect(config.dig("tcp", "services", route_service.name))
+          .to eq(
+            {
+              "loadBalancer" => {
+                "servers" => [ { "address" => "#{ip}:#{route.target_port}" } ]
               }
             }
           )
@@ -126,7 +135,8 @@ RSpec.describe CloudGateway, :aggregate_failures do
       end
       let!(:service) { create(:service) }
       let!(:route_service) { create(:route_service, route:, service:) }
-      let!(:ip) { service.addresses(4).split(",").first.strip }
+      let!(:ip) { service.addresses(4).first }
+      let(:http_port) { Route::Tcp::InsecureHttp::TARGET_PORT }
       let!(:http_router_name) { "#{route.name}-http" }
       let!(:redirect_mw) { "#{route.name}-redirect" }
 
@@ -144,7 +154,15 @@ RSpec.describe CloudGateway, :aggregate_failures do
           .to eq(
             {
               "loadBalancer" => {
-                "servers" => [ { "url" => "http://#{ip}:#{route.target_port}" } ]
+                "servers" => [ { "url" => "http://#{ip}:#{http_port}" } ]
+              }
+            }
+          )
+        expect(config.dig("tcp", "services", route_service.name))
+          .to eq(
+            {
+              "loadBalancer" => {
+                "servers" => [ { "address" => "#{ip}:#{route.target_port}" } ]
               }
             }
           )

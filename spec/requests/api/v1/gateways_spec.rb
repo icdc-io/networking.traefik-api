@@ -361,7 +361,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
         account: 'test'
       )
       services = Array.new(3) do
-        { service: create(:service), weight: rand(1..100).to_f }
+        { service: create(:service), weight: rand(1..100) }
       end
       cert = create_certificate(account: 'test')
       route = create(
@@ -381,7 +381,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       expect(response).to have_http_status(:ok)
       yaml = YAML.load(response.body)
       services_block = {
-        routes_service.first.group_name.to_s => {
+        route.service_name => {
           "weighted" => {
             "services" => services.map do |service|
               { "name"   => service[:service].routes_services.first.name.to_s,
@@ -393,7 +393,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
       services.each do |service|
         services_block.merge!(service[:service].routes_services.first.name.to_s => {
                                 "loadBalancer" => {
-                                  "servers" => [ { "address" => "#{service[:service].addresses(4)}:#{route.target_port}" } ]
+                                  "servers" => [ { "address" => "#{service[:service].addresses(4).first}:#{route.target_port}" } ]
                                 }
                               })
       end
@@ -413,7 +413,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
               "entryPoints" => [ "web" ]
             },
             "#{route.name}-http"  => {
-              "service"     => routes_service.first.group_name,
+              "service"     => route.service_name,
               "rule"        => "Host(`#{route.hostname}`)",
               "middlewares" => [ middleware.name ],
               "entryPoints" => [ "web" ]
@@ -421,7 +421,7 @@ describe 'Api::V1::GatewaysController', :aggregate_failures do
             "#{route.name}-https" => {
               "entryPoints" => [ "websecure" ],
               "rule"        => "Host(`#{route.hostname}`)",
-              "service"     => routes_service.first.group_name,
+              "service"     => route.service_name,
               "tls"         => true
             }
           },
