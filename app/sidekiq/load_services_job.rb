@@ -106,7 +106,7 @@ class LoadServicesJob < ApplicationJob
     }
   end
 
-  def parse_id_addresses(networks)
+  def parse_ip_addresses(networks)
     networks.flat_map do |network|
       network["allocations"].filter_map do |alloc|
         alloc["type"] == "nic" && alloc["ip"].presence
