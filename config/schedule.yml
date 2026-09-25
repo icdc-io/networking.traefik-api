@@ -1,8 +1,5 @@
 "Load list of services":
   class: LoadServicesJob
-  description: Load list of services from Compute and store it into database
-  cron: Every 15 minutes
-"Delete retired services":
-  class: DeleteServicesJob
-  description: Iterate over each service and delete retired services
+  description: Load list of services from Compute, store them into database
+    and delete the ones gone from Compute
   cron: Every 15 minutes

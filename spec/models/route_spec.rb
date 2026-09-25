@@ -42,4 +42,25 @@ RSpec.describe Route, :aggregate_failures do
     expect(route).to be_valid
     expect(create(:route)).to be_valid
   end
+
+  describe "incompatible middleware cleanup" do
+    let(:service) { create(:service) }
+
+    it "removes HTTP middleware when changing to tcp passthrough" do
+      route = create(:route_http, cloud_gateway:, tls_termination: "edge",
+                     insecure: "redirect")
+      create(:route_service, route:, service:)
+
+      expect(route.middlewares.where(type: "Middleware::Http::RedirectScheme"))
+        .to exist
+
+      updated = route.update(
+        { "tls_termination" => "passthrough", "insecure" => "" },
+        [ { "id" => service.id } ]
+      )
+
+      expect(updated).to be_a(Route::Tcp)
+      expect(updated.middlewares).to be_empty
+    end
+  end
 end

@@ -40,6 +40,8 @@ class Route < ApplicationRecord
     message: "with this path already exists for this cloud gateway"
   }
 
+  after_save :destroy_incompatible_middlewares!
+
   def update(data, new_services)
     tls = data["tls_termination"]
     route =
@@ -125,42 +127,48 @@ class Route < ApplicationRecord
     raise NotImplementedError
   end
 
-  private
-
   def service_name
     if services.one?
       routes_services.first.name
     else
-      routes_services.first.group_name
+      "#{name}-group"
     end
   end
 
+  private
+
   def add_services(generated_config)
     services_section = generated_config[pretty_type]["services"]
-    route_service = routes_services.first
 
-    if route_service.balance_type == "loadbalancer"
-      services_section[route_service.name] = {
+    service_sections = []
+    # Add direct service(s) balancing to backend servers
+    routes_services.includes(:service).find_each do |route_service|
+      service_sections << services_section[route_service.name] = {
         "loadBalancer" => {
           "servers" => lb_server(route_service.service)
         }
       }
-    else
-      services_section[route_service.group_name] = {
+    end
+    # NOTE: here we pass all service_configs as list, so it can render healthcheck section via YAML anchors
+    add_healthcheck(service_sections) if healthcheck_enabled
+
+    # Add weighted service (group service) if there are many services
+    route_service = routes_services.first
+    if route_service.balance_type.to_sym == :weighted # rubocop:disable Style/GuardClause
+      service_section = services_section[service_name] = {
         "weighted" => {
           "services" => weighted(routes_services)
         }
       }
-      routes_services.includes(:service).find_each do |routes_service|
-        services_section[routes_service.name.to_s] = {
-          "loadBalancer" => {
-            "servers" => lb_server(routes_service.service)
-          }
-        }
+      if healthcheck_enabled # rubocop:disable Style/GuardClause
+        # Just enable healthcheck for group service, real healthcheck will be in child services
+        service_section["weighted"]["healthCheck"] = {}
       end
     end
+  end
 
-    healthcheck_section(services_section) if healthcheck_enabled
+  def add_healthcheck(service_configs)
+    raise NotImplementedError
   end
 
   def lb_server(service)
@@ -171,33 +179,17 @@ class Route < ApplicationRecord
     route_services.map do |route_service|
       {
         "name"   => route_service.name,
-        "weight" => route_service.value || 1
+        # Traefik expects integer weight, but it is stored as float
+        "weight" => (route_service.value || 1).to_i
       }
-    end
-  end
-
-  def healthcheck_section(lb_config)
-    hc = healthcheck.attributes
-                    .except("id", "route_id", "created_at", "updated_at")
-                    .compact
-
-    hc["interval"] = "#{hc['interval']}s" if hc["interval"]
-    hc["timeout"]  = "#{hc['timeout']}s" if hc["timeout"]
-
-    hc["followRedirects"] = hc.delete("follow_redirects")
-
-    hc.delete_if { |_, v| [ "", {} ].include? v }
-
-    lb_config.each_value do |lb|
-      if lb["loadBalancer"]
-        lb["loadBalancer"]["healthCheck"] = hc
-      elsif lb["weighted"]
-        lb["weighted"]["healthCheck"] = {}
-      end
     end
   end
 
   def add_middlewares(generated_config)
     generated_config[pretty_type]["middlewares"].merge!(middlewares.config)
+  end
+
+  def destroy_incompatible_middlewares!
+    middlewares.incompatible_with(self).destroy_all
   end
 end
