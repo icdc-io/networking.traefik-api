@@ -240,6 +240,42 @@ describe 'Api::V1::RoutesController', :aggregate_failures do
       end
     end
 
+    context "with tls edge and insecure redirect" do
+      let(:params) do
+        {
+          'route' => attributes_for(
+            :route_http,
+            owner:            user,
+            cloud_gateway_id: gateway.id,
+            tls_termination:  "edge",
+            insecure:         "redirect",
+            services:
+          )
+        }.as_json
+      end
+
+      it "creates http route with redirect middleware" do
+        post('/api/v1/routes', params:, headers:)
+
+        expect(response).to have_http_status(:created)
+        route = Route.last
+        expect(route).to be_a(Route::Http)
+        expect(route.redirect_middleware).to be_present
+        expect(route.redirect_middleware.options)
+          .to eq({ "scheme" => "https", "permanent" => true })
+      end
+
+      it "renders gateway config with redirect middleware" do
+        post('/api/v1/routes', params:, headers:)
+
+        route = Route.last
+        config = YAML.load(gateway.config)
+        expect(config.dig("http", "routers", "#{route.name}-http",
+                          "middlewares"))
+          .to eq([ route.redirect_middleware.name ])
+      end
+    end
+
     context "with more than 1 service in params" do
       let(:services) do
         create_list(:service, 2, owner: user).map do |service|

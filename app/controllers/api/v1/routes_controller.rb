@@ -31,7 +31,10 @@ module Api
           route_params[:owner] = User.current_user.userid
         end
         Route.transaction do
-          @route = Route.create!(route_params)
+          # NOTE: instantiate STI subclass explicitly, otherwise subclass
+          # callbacks (e.g. Route::Http redirect middleware) are not run
+          @route = Route.class_for(route_params[:tls_termination])
+                        .create!(route_params)
 
           if @route.healthcheck_enabled
             @route.create_healthcheck!(
