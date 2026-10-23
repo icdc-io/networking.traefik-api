@@ -42,13 +42,17 @@ class Route < ApplicationRecord
 
   after_save :destroy_incompatible_middlewares!
 
+  def self.class_for(tls_termination)
+    tls_termination == "passthrough" ? Route::Tcp : Route::Http
+  end
+
   def update(data, new_services)
     tls = data["tls_termination"]
     route =
       if tls.nil?
         self
       else
-        klass = tls == "passthrough" ? Route::Tcp : Route::Http
+        klass = Route.class_for(tls)
         is_a?(klass) ? self : becomes!(klass)
       end
 
